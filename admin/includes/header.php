@@ -57,6 +57,8 @@
 
             .main-content {
                 margin-top: 56px;
+                padding-bottom: 80px;
+                /* Space for bottom navigation */
             }
         }
 

@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nama_ayah = sanitize($conn, $_POST['nama_ayah'] ?? '');
         $nik_ayah = sanitize($conn, $_POST['nik_ayah'] ?? '');
         $tempat_lahir_ayah = sanitize($conn, $_POST['tempat_lahir_ayah'] ?? '');
-        $tanggal_lahir_ayah = sanitize($conn, $_POST['tanggal_lahir_ayah'] ?? '');
+        $tanggal_lahir_ayah = !empty($_POST['tanggal_lahir_ayah']) ? sanitize($conn, $_POST['tanggal_lahir_ayah']) : null;
         $pekerjaan_ayah = sanitize($conn, $_POST['pekerjaan_ayah'] ?? '');
         $penghasilan_ayah = sanitize($conn, $_POST['penghasilan_ayah'] ?? '');
 
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nama_ibu = sanitize($conn, $_POST['nama_ibu'] ?? '');
         $nik_ibu = sanitize($conn, $_POST['nik_ibu'] ?? '');
         $tempat_lahir_ibu = sanitize($conn, $_POST['tempat_lahir_ibu'] ?? '');
-        $tanggal_lahir_ibu = sanitize($conn, $_POST['tanggal_lahir_ibu'] ?? '');
+        $tanggal_lahir_ibu = !empty($_POST['tanggal_lahir_ibu']) ? sanitize($conn, $_POST['tanggal_lahir_ibu']) : null;
         $pekerjaan_ibu = sanitize($conn, $_POST['pekerjaan_ibu'] ?? '');
         $penghasilan_ibu = sanitize($conn, $_POST['penghasilan_ibu'] ?? '');
 
@@ -309,6 +309,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: pendaftaran.php?msg=error');
         }
         exit;
+    }
+
+    // =============================================
+    // FITUR: Kirim WhatsApp Ucapan Selamat
+    // =============================================
+    if ($action === 'send_welcome_wa' && $id > 0) {
+        require_once '../api/whatsapp.php';
+
+        // Get pendaftar data
+        $stmt = $conn->prepare("SELECT nama, no_registrasi, lembaga, no_hp_wali FROM pendaftaran WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $data = $stmt->get_result()->fetch_assoc();
+
+        if ($data) {
+            // Generate welcome message with placeholder password
+            $password = '(Gunakan password yang Anda buat saat registrasi)';
+            $groupLink = 'https://chat.whatsapp.com/L4X6uCkZlAf0vwmhJgaJV2';
+
+            $waMessage = waTemplatePendaftaran(
+                $data['nama'],
+                $data['no_registrasi'],
+                $data['lembaga'],
+                $data['no_hp_wali'],
+                $password,
+                $groupLink
+            );
+
+            // Send WhatsApp
+            $waResult = sendWhatsApp($data['no_hp_wali'], $waMessage);
+
+            if ($waResult['success']) {
+                logActivity('WA_WELCOME', "Kirim ucapan selamat ke: {$data['nama']} ({$data['no_hp_wali']})");
+            }
+
+            header('Location: pendaftaran.php?msg=wa_sent');
+            exit;
+        }
     }
 }
 
@@ -1532,6 +1570,13 @@ $queryString = http_build_query($queryParams);
                     placeholder="Tulis catatan/alasan untuk pendaftar (misal: dokumen belum lengkap, foto tidak jelas, dll). Pesan ini akan muncul di dashboard pendaftar."></textarea>
                 <p class="text-xs text-blue-500 mt-2"><i class="fas fa-info-circle mr-1"></i>Pesan ini akan tampil di
                     dashboard user jika status pending/ditolak</p>
+
+                <!-- WhatsApp Welcome Button -->
+                <button type="button" onclick="sendWelcomeWA()"
+                    class="mt-3 w-full py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition flex items-center justify-center gap-2">
+                    <i class="fab fa-whatsapp text-lg"></i>
+                    Kirim Ucapan Selamat via WhatsApp
+                </button>
             </div>
 
             <div class="flex gap-3 pt-4 border-t sticky bottom-0 bg-white">
@@ -2273,6 +2318,28 @@ $queryString = http_build_query($queryParams);
             showWaConfirmModal(editId, editNama);
         } else {
             alert('Data pendaftar tidak ditemukan');
+        }
+    }
+    // Send Welcome WhatsApp Message
+    function sendWelcomeWA() {
+        const editId = document.getElementById('editId').value;
+        const editNama = document.getElementById('editNama').value;
+
+        if (!editId || !editNama) {
+            alert('Data pendaftar tidak ditemukan');
+            return;
+        }
+
+        if (confirm(`Kirim ucapan selamat pendaftaran ke ${editNama}?`)) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                <?= csrfField() ?>
+                <input type="hidden" name="action" value="send_welcome_wa">
+                <input type="hidden" name="id" value="${editId}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
         }
     }
 </script>

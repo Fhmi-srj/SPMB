@@ -95,6 +95,67 @@ while ($row = $result->fetch_assoc()) {
     $dailyData[$row['date']] = $row['total'];
 }
 
+// Pos Keuangan Summary
+$posKeuanganSummary = [];
+
+// Get total pemasukan per category from pos_keuangan calculation
+$pemasukanQuery = $conn->query("
+    SELECT 
+        SUM(CASE WHEN p.status_mukim = 'PONDOK PP MAMBAUL HUDA' THEN 
+            (SELECT COALESCE(biaya_pondok, 0) FROM biaya WHERE nama_item = 'Registrasi' AND kategori = 'PENDAFTARAN' LIMIT 1)
+        ELSE 0 END) as total_registrasi,
+        
+        SUM(CASE WHEN p.lembaga IN ('MA', 'MA ALHIKAM') THEN 
+            LEAST(tp.total_pembayaran, (SELECT COALESCE(SUM(biaya_ma), 0) FROM biaya WHERE kategori = 'DAFTAR_ULANG'))
+        ELSE 0 END) as total_ma,
+        
+        SUM(CASE WHEN p.lembaga IN ('SMP', 'SMP NU BP') THEN 
+            LEAST(tp.total_pembayaran, (SELECT COALESCE(SUM(biaya_smp), 0) FROM biaya WHERE kategori = 'DAFTAR_ULANG'))
+        ELSE 0 END) as total_smp,
+        
+        SUM(CASE WHEN p.status_mukim = 'PONDOK PP MAMBAUL HUDA' THEN 
+            (SELECT COALESCE(biaya_pondok, 0) FROM biaya WHERE nama_item = 'Infaq Bulan Pertama' AND kategori = 'DAFTAR_ULANG' LIMIT 1)
+        ELSE 0 END) as total_pondok
+    FROM pendaftaran p
+    LEFT JOIN (SELECT pendaftaran_id, SUM(nominal) as total_pembayaran FROM transaksi_pemasukan GROUP BY pendaftaran_id) tp ON p.id = tp.pendaftaran_id
+");
+$pemasukanData = $pemasukanQuery->fetch_assoc();
+
+$posKeuanganSummary['Registrasi'] = [
+    'pemasukan' => intval($pemasukanData['total_registrasi'] ?? 0),
+    'pengeluaran' => 0
+];
+$posKeuanganSummary['MA'] = [
+    'pemasukan' => intval($pemasukanData['total_ma'] ?? 0),
+    'pengeluaran' => 0
+];
+$posKeuanganSummary['SMP'] = [
+    'pemasukan' => intval($pemasukanData['total_smp'] ?? 0),
+    'pengeluaran' => 0
+];
+$posKeuanganSummary['Pondok'] = [
+    'pemasukan' => intval($pemasukanData['total_pondok'] ?? 0),
+    'pengeluaran' => 0
+];
+$posKeuanganSummary['Perlengkapan'] = [
+    'pemasukan' => 0,
+    'pengeluaran' => 0
+];
+
+// Get pengeluaran per category
+$pengeluaranQuery = $conn->query("SELECT kategori, SUM(nominal) as total FROM transaksi_pengeluaran GROUP BY kategori");
+while ($row = $pengeluaranQuery->fetch_assoc()) {
+    $kategori = $row['kategori'];
+    if (isset($posKeuanganSummary[$kategori])) {
+        $posKeuanganSummary[$kategori]['pengeluaran'] = intval($row['total']);
+    } else {
+        $posKeuanganSummary[$kategori] = [
+            'pemasukan' => 0,
+            'pengeluaran' => intval($row['total'])
+        ];
+    }
+}
+
 $conn->close();
 
 // Page config
@@ -224,6 +285,70 @@ for ($i = 5; $i >= 0; $i--) {
             </div>
         </div>
 
+        <!-- Pos Keuangan Summary -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-gray-800">
+                    <i class="fas fa-wallet text-primary mr-2"></i>Pos Keuangan
+                </h3>
+                <a href="pos_keuangan.php" class="text-sm text-primary hover:text-primary-dark">
+                    Lihat Detail <i class="fas fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pemasukan</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pengeluaran</th>
+                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sisa</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        <?php 
+                        $totalPemasukan = 0;
+                        $totalPengeluaran = 0;
+                        $totalSisa = 0;
+                        
+                        foreach ($posKeuanganSummary as $kategori => $data): 
+                            $sisa = $data['pemasukan'] - $data['pengeluaran'];
+                            $totalPemasukan += $data['pemasukan'];
+                            $totalPengeluaran += $data['pengeluaran'];
+                            $totalSisa += $sisa;
+                            $sisaClass = $sisa >= 0 ? 'text-green-600' : 'text-red-600';
+                        ?>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-3 text-sm font-medium text-gray-800"><?= htmlspecialchars($kategori) ?></td>
+                                <td class="px-4 py-3 text-sm text-right text-gray-600">
+                                    Rp <?= number_format($data['pemasukan'], 0, ',', '.') ?>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-right text-gray-600">
+                                    Rp <?= number_format($data['pengeluaran'], 0, ',', '.') ?>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-right font-semibold <?= $sisaClass ?>">
+                                    Rp <?= number_format($sisa, 0, ',', '.') ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <!-- Total Row -->
+                        <tr class="bg-gray-50 font-bold">
+                            <td class="px-4 py-3 text-sm text-gray-800">TOTAL</td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-800">
+                                Rp <?= number_format($totalPemasukan, 0, ',', '.') ?>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-right text-gray-800">
+                                Rp <?= number_format($totalPengeluaran, 0, ',', '.') ?>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-right <?= $totalSisa >= 0 ? 'text-green-600' : 'text-red-600' ?>">
+                                Rp <?= number_format($totalSisa, 0, ',', '.') ?>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <!-- Monthly Chart -->
@@ -249,9 +374,10 @@ for ($i = 5; $i >= 0; $i--) {
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
             <!-- Document Completion -->
             <div class="bg-white rounded-xl shadow-sm p-4">
-                <h3 class="font-semibold text-gray-800 mb-4"><i class="fas fa-folder-open text-primary mr-2"></i>Kelengkapan Dokumen</h3>
+                <h3 class="font-semibold text-gray-800 mb-4"><i
+                        class="fas fa-folder-open text-primary mr-2"></i>Kelengkapan Dokumen</h3>
                 <div class="space-y-3">
-                    <?php 
+                    <?php
                     $docLabels = [
                         'file_kk' => 'Kartu Keluarga',
                         'file_ktp_ortu' => 'KTP Orang Tua',
@@ -263,23 +389,25 @@ for ($i = 5; $i >= 0; $i--) {
                         $count = $docStats[$field] ?? 0;
                         $total = $stats['total'] ?: 1;
                         $percentage = round(($count / $total) * 100);
-                    ?>
-                    <div>
-                        <div class="flex justify-between text-xs mb-1">
-                            <span class="text-gray-600"><?= $label ?></span>
-                            <span class="text-gray-500"><?= $count ?>/<?= $stats['total'] ?></span>
+                        ?>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-gray-600"><?= $label ?></span>
+                                <span class="text-gray-500"><?= $count ?>/<?= $stats['total'] ?></span>
+                            </div>
+                            <div class="w-full bg-gray-100 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full transition-all" style="width: <?= $percentage ?>%">
+                                </div>
+                            </div>
                         </div>
-                        <div class="w-full bg-gray-100 rounded-full h-2">
-                            <div class="bg-primary h-2 rounded-full transition-all" style="width: <?= $percentage ?>%"></div>
-                        </div>
-                    </div>
                     <?php endforeach; ?>
                 </div>
             </div>
 
             <!-- Gender Chart -->
             <div class="bg-white rounded-xl shadow-sm p-4">
-                <h3 class="font-semibold text-gray-800 mb-4"><i class="fas fa-venus-mars text-primary mr-2"></i>Distribusi Gender</h3>
+                <h3 class="font-semibold text-gray-800 mb-4"><i
+                        class="fas fa-venus-mars text-primary mr-2"></i>Distribusi Gender</h3>
                 <div class="h-48 flex items-center justify-center">
                     <canvas id="genderChart"></canvas>
                 </div>
@@ -287,7 +415,8 @@ for ($i = 5; $i >= 0; $i--) {
 
             <!-- Source Info Chart -->
             <div class="bg-white rounded-xl shadow-sm p-4">
-                <h3 class="font-semibold text-gray-800 mb-4"><i class="fas fa-bullhorn text-primary mr-2"></i>Sumber Informasi</h3>
+                <h3 class="font-semibold text-gray-800 mb-4"><i class="fas fa-bullhorn text-primary mr-2"></i>Sumber
+                    Informasi</h3>
                 <div class="h-48">
                     <canvas id="sumberChart"></canvas>
                 </div>

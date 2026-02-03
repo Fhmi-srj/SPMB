@@ -14,35 +14,77 @@ $page = max(1, intval($_GET['page'] ?? 1));
 $perPage = 20;
 $offset = ($page - 1) * $perPage;
 
-// Build query
-$where = [];
+// Build WHERE conditions for filtering
+$whereConditions = [];
 $params = [];
 $types = '';
 
 if ($action) {
-    $where[] = "al.action = ?";
+    $whereConditions[] = "action = ?";
     $params[] = $action;
     $types .= 's';
 }
 
 if ($dateFrom) {
-    $where[] = "DATE(al.created_at) >= ?";
+    $whereConditions[] = "DATE(created_at) >= ?";
     $params[] = $dateFrom;
     $types .= 's';
 }
 
 if ($dateTo) {
-    $where[] = "DATE(al.created_at) <= ?";
+    $whereConditions[] = "DATE(created_at) <= ?";
     $params[] = $dateTo;
     $types .= 's';
 }
 
-$whereClause = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$whereClause = !empty($whereConditions) ? 'WHERE ' . implode(' AND ', $whereConditions) : '';
+
+// Combined query using UNION to get logs from both tables
+$unionQuery = "
+    SELECT 
+        created_at,
+        admin_nama,
+        action,
+        description,
+        ip_address,
+        'admin' as source
+    FROM (
+        SELECT 
+            al.created_at,
+            COALESCE(a.nama, 'System') as admin_nama,
+            al.action,
+            al.description,
+            al.ip_address
+        FROM activity_log al
+        LEFT JOIN admin a ON al.admin_id = a.id
+        
+        UNION ALL
+        
+        SELECT 
+            la.created_at,
+            la.user_name as admin_nama,
+            la.aksi as action,
+            CONCAT('[', la.modul, '] ', la.detail) as description,
+            '' as ip_address
+        FROM log_aktivitas la
+    ) combined
+    $whereClause
+    ORDER BY created_at DESC
+    LIMIT ? OFFSET ?
+";
 
 // Get total count
-$countSql = "SELECT COUNT(*) as total FROM activity_log al $whereClause";
-$countStmt = $conn->prepare($countSql);
-if ($params) {
+$countQuery = "
+    SELECT COUNT(*) as total FROM (
+        SELECT created_at, action FROM activity_log
+        UNION ALL
+        SELECT created_at, aksi as action FROM log_aktivitas
+    ) combined
+    $whereClause
+";
+
+$countStmt = $conn->prepare($countQuery);
+if (!empty($params)) {
     $countStmt->bind_param($types, ...$params);
 }
 $countStmt->execute();
@@ -50,17 +92,12 @@ $totalRows = $countStmt->get_result()->fetch_assoc()['total'];
 $totalPages = ceil($totalRows / $perPage);
 
 // Get paginated data
-$sql = "SELECT al.*, a.nama as admin_nama 
-        FROM activity_log al 
-        LEFT JOIN admin a ON al.admin_id = a.id 
-        $whereClause 
-        ORDER BY al.created_at DESC 
-        LIMIT ? OFFSET ?";
-$stmt = $conn->prepare($sql);
-$params[] = $perPage;
-$params[] = $offset;
-$types .= 'ii';
-$stmt->bind_param($types, ...$params);
+$stmt = $conn->prepare($unionQuery);
+$allParams = $params;
+$allParams[] = $perPage;
+$allParams[] = $offset;
+$allTypes = $types . 'ii';
+$stmt->bind_param($allTypes, ...$allParams);
 $stmt->execute();
 $result = $stmt->get_result();
 $logs = [];
@@ -68,8 +105,16 @@ while ($row = $result->fetch_assoc()) {
     $logs[] = $row;
 }
 
-// Get distinct actions for filter
-$actionsResult = $conn->query("SELECT DISTINCT action FROM activity_log ORDER BY action");
+// Get distinct actions for filter (from both tables)
+$actionsQuery = "
+    SELECT DISTINCT action FROM (
+        SELECT action FROM activity_log
+        UNION
+        SELECT aksi as action FROM log_aktivitas
+    ) combined
+    ORDER BY action
+";
+$actionsResult = $conn->query($actionsQuery);
 $actions = [];
 while ($row = $actionsResult->fetch_assoc()) {
     $actions[] = $row['action'];
@@ -101,10 +146,13 @@ $queryString = http_build_query($queryParams);
         <!-- Filters -->
         <div class="bg-white rounded-xl shadow-sm p-4 mb-4">
             <form method="GET" class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <select name="action" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
+                <select name="action"
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
                     <option value="">Semua Aksi</option>
                     <?php foreach ($actions as $a): ?>
-                    <option value="<?= htmlspecialchars($a) ?>" <?= $action === $a ? 'selected' : '' ?>><?= htmlspecialchars($a) ?></option>
+                        <option value="<?= htmlspecialchars($a) ?>" <?= $action === $a ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($a) ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
                 <input type="date" name="from" value="<?= htmlspecialchars($dateFrom) ?>" placeholder="Dari tanggal"
@@ -112,10 +160,12 @@ $queryString = http_build_query($queryParams);
                 <input type="date" name="to" value="<?= htmlspecialchars($dateTo) ?>" placeholder="Sampai tanggal"
                     class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none">
                 <div class="flex gap-2">
-                    <button type="submit" class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition">
+                    <button type="submit"
+                        class="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition">
                         <i class="fas fa-search mr-2"></i>Filter
                     </button>
-                    <a href="aktivitas.php" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    <a href="aktivitas.php"
+                        class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
                         <i class="fas fa-times"></i>
                     </a>
                 </div>
@@ -125,88 +175,99 @@ $queryString = http_build_query($queryParams);
         <!-- Table -->
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
             <?php if (empty($logs)): ?>
-            <div class="p-8 text-center text-gray-500">
-                <i class="fas fa-history text-4xl mb-3"></i>
-                <p>Belum ada aktivitas tercatat</p>
-            </div>
+                <div class="p-8 text-center text-gray-500">
+                    <i class="fas fa-history text-4xl mb-3"></i>
+                    <p>Belum ada aktivitas tercatat</p>
+                </div>
             <?php else: ?>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        <?php foreach ($logs as $log): ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-3 text-sm text-gray-500">
-                                <?= date('d M Y', strtotime($log['created_at'])) ?><br>
-                                <span class="text-xs"><?= date('H:i:s', strtotime($log['created_at'])) ?></span>
-                            </td>
-                            <td class="px-4 py-3 text-sm font-medium text-gray-800"><?= htmlspecialchars($log['admin_nama'] ?? 'System') ?></td>
-                            <td class="px-4 py-3">
-                                <?php
-                                $actionColors = [
-                                    'LOGIN' => 'bg-green-100 text-green-800',
-                                    'LOGOUT' => 'bg-gray-100 text-gray-800',
-                                    'DELETE' => 'bg-red-100 text-red-800',
-                                    'STATUS_UPDATE' => 'bg-blue-100 text-blue-800',
-                                    'PROFILE_UPDATE' => 'bg-yellow-100 text-yellow-800',
-                                    'PASSWORD_CHANGE' => 'bg-purple-100 text-purple-800'
-                                ];
-                                $color = $actionColors[$log['action']] ?? 'bg-gray-100 text-gray-700';
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            <?php foreach ($logs as $log): ?>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm text-gray-500">
+                                        <?= date('d M Y', strtotime($log['created_at'])) ?><br>
+                                        <span class="text-xs"><?= date('H:i:s', strtotime($log['created_at'])) ?></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm font-medium text-gray-800">
+                                        <?= htmlspecialchars($log['admin_nama'] ?? 'System') ?>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <?php
+                                        $actionColors = [
+                                            'LOGIN' => 'bg-green-100 text-green-800',
+                                            'LOGOUT' => 'bg-gray-100 text-gray-800',
+                                            'CREATE' => 'bg-blue-100 text-blue-800',
+                                            'UPDATE' => 'bg-yellow-100 text-yellow-800',
+                                            'DELETE' => 'bg-red-100 text-red-800',
+                                            'STATUS_UPDATE' => 'bg-blue-100 text-blue-800',
+                                            'PROFILE_UPDATE' => 'bg-yellow-100 text-yellow-800',
+                                            'PASSWORD_CHANGE' => 'bg-purple-100 text-purple-800'
+                                        ];
+                                        $color = $actionColors[$log['action']] ?? 'bg-gray-100 text-gray-700';
+                                        ?>
+                                        <span
+                                            class="px-2 py-1 rounded-full text-xs font-medium <?= $color ?>"><?= htmlspecialchars($log['action']) ?></span>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($log['description']) ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-gray-400 font-mono">
+                                        <?= htmlspecialchars($log['ip_address']) ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <p class="text-sm text-gray-500">
+                        Menampilkan <?= $offset + 1 ?>-<?= min($offset + $perPage, $totalRows) ?> dari <?= $totalRows ?> log
+                    </p>
+                    <?php if ($totalPages > 1): ?>
+                        <div class="flex gap-1">
+                            <?php if ($page > 1): ?>
+                                <a href="?<?= $queryString ?>&page=<?= $page - 1 ?>"
+                                    class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            <?php endif; ?>
+
+                            <?php
+                            $start = max(1, $page - 2);
+                            $end = min($totalPages, $page + 2);
+                            for ($p = $start; $p <= $end; $p++):
                                 ?>
-                                <span class="px-2 py-1 rounded-full text-xs font-medium <?= $color ?>"><?= htmlspecialchars($log['action']) ?></span>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($log['description']) ?></td>
-                            <td class="px-4 py-3 text-xs text-gray-400 font-mono"><?= htmlspecialchars($log['ip_address']) ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="p-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <p class="text-sm text-gray-500">
-                    Menampilkan <?= $offset + 1 ?>-<?= min($offset + $perPage, $totalRows) ?> dari <?= $totalRows ?> log
-                </p>
-                <?php if ($totalPages > 1): ?>
-                <div class="flex gap-1">
-                    <?php if ($page > 1): ?>
-                    <a href="?<?= $queryString ?>&page=<?= $page - 1 ?>" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                    <?php endif; ?>
-                    
-                    <?php
-                    $start = max(1, $page - 2);
-                    $end = min($totalPages, $page + 2);
-                    for ($p = $start; $p <= $end; $p++):
-                    ?>
-                    <a href="?<?= $queryString ?>&page=<?= $p ?>" 
-                       class="px-3 py-1 border rounded-lg text-sm <?= $p === $page ? 'bg-primary text-white border-primary' : 'border-gray-300 hover:bg-gray-50' ?>">
-                        <?= $p ?>
-                    </a>
-                    <?php endfor; ?>
-                    
-                    <?php if ($page < $totalPages): ?>
-                    <a href="?<?= $queryString ?>&page=<?= $page + 1 ?>" class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
+                                <a href="?<?= $queryString ?>&page=<?= $p ?>"
+                                    class="px-3 py-1 border rounded-lg text-sm <?= $p === $page ? 'bg-primary text-white border-primary' : 'border-gray-300 hover:bg-gray-50' ?>">
+                                    <?= $p ?>
+                                </a>
+                            <?php endfor; ?>
+
+                            <?php if ($page < $totalPages): ?>
+                                <a href="?<?= $queryString ?>&page=<?= $page + 1 ?>"
+                                    class="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            <?php endif; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
-                <?php endif; ?>
-            </div>
             <?php endif; ?>
         </div>
     </main>
 </div>
 
 </body>
+
 </html>
