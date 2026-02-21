@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = sanitize($conn, $_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    $stmt = $conn->prepare("SELECT id, username, password, nama FROM admin WHERE username = ?");
+    $stmt = $conn->prepare("SELECT id, username, password, nama, role FROM admin WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_id'] = $row['id'];
             $_SESSION['admin_nama'] = $row['nama'];
             $_SESSION['admin_username'] = $row['username'];
+            $_SESSION['admin_role'] = $row['role'];
 
             logActivity('LOGIN', 'Login berhasil');
 

@@ -36,6 +36,19 @@
             transition: transform 0.3s ease;
         }
 
+        /* Hide sidebar scrollbar but keep scrollable */
+        .sidebar nav {
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE/Edge */
+        }
+
+        .sidebar nav::-webkit-scrollbar {
+            display: none;
+            /* Chrome/Safari/Opera */
+        }
+
         .main-content {
             flex: 1;
             overflow-y: auto;

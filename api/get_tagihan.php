@@ -57,7 +57,7 @@ $perlengkapanRow = $stmt->get_result()->fetch_assoc();
 $perlengkapanTotal = $perlengkapanRow['total'] ?? 0;
 
 // Get total paid
-$paidQuery = "SELECT SUM(nominal) as total FROM transaksi_pemasukan WHERE pendaftaran_id = ?";
+$paidQuery = "SELECT SUM(nominal) as total FROM transaksi_pemasukan WHERE pendaftaran_id = ? AND status = 'approved'";
 $stmt = $conn->prepare($paidQuery);
 $stmt->bind_param("i", $pendaftaran_id);
 $stmt->execute();

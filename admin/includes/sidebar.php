@@ -5,10 +5,53 @@
  * Usage: Set $currentPage before including this file
  * Example: $currentPage = 'dashboard';
  */
+
+// Role label helper
+function getRoleLabel($role)
+{
+    switch ($role) {
+        case 'super_admin':
+            return 'Super Admin';
+        case 'admin':
+            return 'Admin';
+        case 'panitia':
+            return 'Panitia';
+        default:
+            return 'User';
+    }
+}
+function getRoleBadgeColor($role)
+{
+    switch ($role) {
+        case 'super_admin':
+            return 'bg-red-500';
+        case 'admin':
+            return 'bg-blue-500';
+        case 'panitia':
+            return 'bg-green-500';
+        default:
+            return 'bg-gray-500';
+    }
+}
+$currentRole = getRole();
+$roleLabel = getRoleLabel($currentRole);
+$roleBadgeColor = getRoleBadgeColor($currentRole);
+
+// Pending transaction count for Super Admin badge
+$pendingTransCount = 0;
+if (isSuperAdmin()) {
+    $sidebarConn = getConnection();
+    $pendingResult = $sidebarConn->query("SELECT 
+        (SELECT COUNT(*) FROM transaksi_pemasukan WHERE status = 'pending') + 
+        (SELECT COUNT(*) FROM transaksi_pengeluaran WHERE status = 'pending') as total");
+    if ($pendingResult) {
+        $pendingTransCount = intval($pendingResult->fetch_assoc()['total']);
+    }
+    $sidebarConn->close();
+}
 ?>
 <!-- Mobile Header -->
 <div class="md:hidden bg-primary text-white p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-40">
-    <button onclick="toggleSidebar()" class="text-xl"><i class="fas fa-bars"></i></button>
     <span class="font-bold">Admin SPMB</span>
     <a href="logout.php" class="text-xl"><i class="fas fa-sign-out-alt"></i></a>
 </div>
@@ -29,22 +72,39 @@
             class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'pendaftaran' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
             <i class="fas fa-users w-5"></i><span>Data Pendaftar</span>
         </a>
-        <a href="biaya.php"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'biaya' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
-            <i class="fas fa-money-bill w-5"></i><span>Biaya</span>
-        </a>
-        <a href="perlengkapan.php"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'perlengkapan' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
-            <i class="fas fa-box w-5"></i><span>Perlengkapan</span>
-        </a>
-        <a href="transaksi.php"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'transaksi' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
-            <i class="fas fa-money-bill-wave w-5"></i><span>Transaksi</span>
-        </a>
-        <a href="pos_keuangan.php"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'pos_keuangan' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
-            <i class="fas fa-chart-pie w-5"></i><span>Pos Keuangan</span>
-        </a>
+
+        <?php if (canAccessAdmin()): ?>
+            <!-- Menu Administrasi (Super Admin & Admin only) -->
+            <div class="pt-2 mt-2 border-t border-white/10">
+                <p class="px-4 py-1 text-xs text-white/40 uppercase tracking-wider">Administrasi</p>
+            </div>
+            <a href="biaya.php"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'biaya' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
+                <i class="fas fa-money-bill w-5"></i><span>Biaya</span>
+            </a>
+            <a href="perlengkapan.php"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'perlengkapan' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
+                <i class="fas fa-box w-5"></i><span>Perlengkapan</span>
+            </a>
+            <a href="transaksi.php"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'transaksi' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
+                <i class="fas fa-money-bill-wave w-5"></i>
+                <span class="flex-1">Transaksi</span>
+                <?php if ($pendingTransCount > 0): ?>
+                    <span
+                        class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold bg-yellow-400 text-yellow-900 rounded-full"><?= $pendingTransCount ?></span>
+                <?php endif; ?>
+            </a>
+            <a href="pos_keuangan.php"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'pos_keuangan' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
+                <i class="fas fa-chart-pie w-5"></i><span>Pos Keuangan</span>
+            </a>
+        <?php endif; ?>
+
+        <!-- Menu Umum -->
+        <div class="pt-2 mt-2 border-t border-white/10">
+            <p class="px-4 py-1 text-xs text-white/40 uppercase tracking-wider">Lainnya</p>
+        </div>
         <a href="beasiswa.php"
             class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'beasiswa' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
             <i class="fas fa-graduation-cap w-5"></i><span>Beasiswa</span>
@@ -57,10 +117,23 @@
             class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'pengaturan' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
             <i class="fas fa-cog w-5"></i><span>Pengaturan</span>
         </a>
-        <a href="aktivitas.php"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'aktivitas' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
-            <i class="fas fa-history w-5"></i><span>Log Aktivitas</span>
-        </a>
+        <?php if (canAccessAdmin()): ?>
+            <a href="aktivitas.php"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'aktivitas' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
+                <i class="fas fa-history w-5"></i><span>Log Aktivitas</span>
+            </a>
+        <?php endif; ?>
+
+        <?php if (isSuperAdmin()): ?>
+            <!-- Menu Super Admin -->
+            <div class="pt-2 mt-2 border-t border-white/10">
+                <p class="px-4 py-1 text-xs text-white/40 uppercase tracking-wider">Super Admin</p>
+            </div>
+            <a href="kelola_user.php"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg <?= $currentPage === 'kelola_user' ? 'bg-white/10 text-white' : 'hover:bg-white/10 text-white/80 hover:text-white' ?> transition">
+                <i class="fas fa-user-cog w-5"></i><span>Kelola User</span>
+            </a>
+        <?php endif; ?>
     </nav>
 
 
@@ -72,7 +145,8 @@
             </div>
             <div class="flex-1">
                 <p class="font-medium text-sm"><?= htmlspecialchars($_SESSION['admin_nama'] ?? 'Admin') ?></p>
-                <p class="text-xs text-white/60">Klik untuk edit profil</p>
+                <span
+                    class="inline-block px-2 py-0.5 text-xs rounded-full <?= $roleBadgeColor ?> text-white"><?= $roleLabel ?></span>
             </div>
             <i class="fas fa-chevron-right text-white/40 text-xs"></i>
         </a>
@@ -112,12 +186,21 @@
             <span class="text-xs font-medium text-gray-500 mt-1">Menu</span>
         </button>
 
-        <!-- Transaksi -->
-        <a href="transaksi.php"
-            class="flex flex-col items-center gap-1 px-3 py-2 <?= $currentPage === 'transaksi' ? 'text-primary' : 'text-gray-500' ?> transition">
-            <i class="fas fa-money-bill-wave text-xl"></i>
-            <span class="text-xs font-medium">Transaksi</span>
-        </a>
+        <?php if (canAccessAdmin()): ?>
+            <!-- Transaksi (only for admin roles) -->
+            <a href="transaksi.php"
+                class="flex flex-col items-center gap-1 px-3 py-2 <?= $currentPage === 'transaksi' ? 'text-primary' : 'text-gray-500' ?> transition">
+                <i class="fas fa-money-bill-wave text-xl"></i>
+                <span class="text-xs font-medium">Transaksi</span>
+            </a>
+        <?php else: ?>
+            <!-- Beasiswa (for panitia) -->
+            <a href="beasiswa.php"
+                class="flex flex-col items-center gap-1 px-3 py-2 <?= $currentPage === 'beasiswa' ? 'text-primary' : 'text-gray-500' ?> transition">
+                <i class="fas fa-graduation-cap text-xl"></i>
+                <span class="text-xs font-medium">Beasiswa</span>
+            </a>
+        <?php endif; ?>
 
         <!-- Pengaturan -->
         <a href="pengaturan.php"
@@ -142,21 +225,23 @@
             </button>
         </div>
         <div class="grid grid-cols-3 gap-3">
-            <a href="biaya.php"
-                class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'biaya' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
-                <i class="fas fa-money-bill text-2xl"></i>
-                <span class="text-xs font-medium text-center">Biaya</span>
-            </a>
-            <a href="perlengkapan.php"
-                class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'perlengkapan' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
-                <i class="fas fa-box text-2xl"></i>
-                <span class="text-xs font-medium text-center">Perlengkapan</span>
-            </a>
-            <a href="pos_keuangan.php"
-                class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'pos_keuangan' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
-                <i class="fas fa-chart-pie text-2xl"></i>
-                <span class="text-xs font-medium text-center">Pos Keuangan</span>
-            </a>
+            <?php if (canAccessAdmin()): ?>
+                <a href="biaya.php"
+                    class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'biaya' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
+                    <i class="fas fa-money-bill text-2xl"></i>
+                    <span class="text-xs font-medium text-center">Biaya</span>
+                </a>
+                <a href="perlengkapan.php"
+                    class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'perlengkapan' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
+                    <i class="fas fa-box text-2xl"></i>
+                    <span class="text-xs font-medium text-center">Perlengkapan</span>
+                </a>
+                <a href="pos_keuangan.php"
+                    class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'pos_keuangan' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
+                    <i class="fas fa-chart-pie text-2xl"></i>
+                    <span class="text-xs font-medium text-center">Pos Keuangan</span>
+                </a>
+            <?php endif; ?>
             <a href="beasiswa.php"
                 class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'beasiswa' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
                 <i class="fas fa-graduation-cap text-2xl"></i>
@@ -172,6 +257,13 @@
                 <i class="fas fa-history text-2xl"></i>
                 <span class="text-xs font-medium text-center">Log Aktivitas</span>
             </a>
+            <?php if (isSuperAdmin()): ?>
+                <a href="kelola_user.php"
+                    class="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition <?= $currentPage === 'kelola_user' ? 'bg-primary/10 text-primary' : 'text-gray-600' ?>">
+                    <i class="fas fa-user-cog text-2xl"></i>
+                    <span class="text-xs font-medium text-center">Kelola User</span>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>

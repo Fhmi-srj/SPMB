@@ -1,6 +1,6 @@
 <?php
 require_once '../api/config.php';
-requireLogin();
+requireRole(['super_admin', 'admin']);
 
 $conn = getConnection();
 $message = '';

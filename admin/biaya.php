@@ -1,6 +1,6 @@
 <?php
 require_once '../api/config.php';
-requireLogin();
+requireRole(['super_admin', 'admin']);
 
 $conn = getConnection();
 $message = '';
@@ -272,7 +272,8 @@ $currentPage = 'biaya';
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-sm text-gray-500"><?= $no++ ?></td>
                                     <td class="px-4 py-3 text-sm font-medium text-gray-800">
-                                        <?= htmlspecialchars($item['nama_item']) ?></td>
+                                        <?= htmlspecialchars($item['nama_item']) ?>
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-600 text-right">
                                         Rp<?= number_format($item['nominal'], 0, ',', '.') ?></td>
                                     <td class="px-4 py-3 text-sm text-gray-600 text-center"><?= $item['urutan'] ?></td>

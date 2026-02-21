@@ -1,6 +1,6 @@
 <?php
 require_once '../api/config.php';
-requireLogin();
+requireRole(['super_admin', 'admin']);
 
 $conn = getConnection();
 $message = '';
@@ -33,12 +33,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pendaftarData = $conn->query("SELECT nama FROM pendaftaran WHERE id = $pendaftaran_id")->fetch_assoc();
         $namaPendaftar = $pendaftarData['nama'] ?? 'Unknown';
 
-        $stmt = $conn->prepare("INSERT INTO transaksi_pemasukan (invoice, pendaftaran_id, tanggal, nominal, jenis_pembayaran, keterangan) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("sisiss", $invoice, $pendaftaran_id, $tanggal, $nominal, $jenis_pembayaran, $keterangan);
+        // Determine status based on role
+        $inputBy = $_SESSION['admin_id'];
+        $inputAt = date('Y-m-d H:i:s');
+        if (isSuperAdmin()) {
+            $status = 'approved';
+            $approvedBy = $_SESSION['admin_id'];
+            $approvedAt = date('Y-m-d H:i:s');
+        } else {
+            $status = 'pending';
+            $approvedBy = null;
+            $approvedAt = null;
+        }
+
+        $stmt = $conn->prepare("INSERT INTO transaksi_pemasukan (invoice, pendaftaran_id, tanggal, nominal, jenis_pembayaran, keterangan, status, input_by, input_at, approved_by, approved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("sisisssisis", $invoice, $pendaftaran_id, $tanggal, $nominal, $jenis_pembayaran, $keterangan, $status, $inputBy, $inputAt, $approvedBy, $approvedAt);
 
         if ($stmt->execute()) {
-            $message = 'Pemasukan berhasil ditambahkan!';
-            logTransaksi($conn, 'CREATE', 'PEMASUKAN', "Tambah pemasukan $namaPendaftar - Rp" . number_format($nominal, 0, ',', '.'));
+            $statusLabel = $status === 'approved' ? '' : ' (Menunggu ACC)';
+            $message = 'Pemasukan berhasil ditambahkan!' . $statusLabel;
+            logTransaksi($conn, 'CREATE', 'PEMASUKAN', "Tambah pemasukan $namaPendaftar - Rp" . number_format($nominal, 0, ',', '.') . $statusLabel);
         } else {
             $error = 'Gagal menambahkan pemasukan: ' . $conn->error;
         }
@@ -76,12 +90,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Generate invoice
         $invoice = 'INV-OUT-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
 
-        $stmt = $conn->prepare("INSERT INTO transaksi_pengeluaran (invoice, tanggal, nominal, kategori, keterangan) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssiss", $invoice, $tanggal, $nominal, $kategori, $keterangan);
+        // Determine status based on role
+        $inputBy = $_SESSION['admin_id'];
+        $inputAt = date('Y-m-d H:i:s');
+        if (isSuperAdmin()) {
+            $status = 'approved';
+            $approvedBy = $_SESSION['admin_id'];
+            $approvedAt = date('Y-m-d H:i:s');
+        } else {
+            $status = 'pending';
+            $approvedBy = null;
+            $approvedAt = null;
+        }
+
+        $stmt = $conn->prepare("INSERT INTO transaksi_pengeluaran (invoice, tanggal, nominal, kategori, keterangan, status, input_by, input_at, approved_by, approved_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssisssisis", $invoice, $tanggal, $nominal, $kategori, $keterangan, $status, $inputBy, $inputAt, $approvedBy, $approvedAt);
 
         if ($stmt->execute()) {
-            $message = 'Pengeluaran berhasil ditambahkan!';
-            logTransaksi($conn, 'CREATE', 'PENGELUARAN', "Tambah pengeluaran $invoice - Rp" . number_format($nominal, 0, ',', '.') . " ($kategori)");
+            $statusLabel = $status === 'approved' ? '' : ' (Menunggu ACC)';
+            $message = 'Pengeluaran berhasil ditambahkan!' . $statusLabel;
+            logTransaksi($conn, 'CREATE', 'PENGELUARAN', "Tambah pengeluaran $invoice - Rp" . number_format($nominal, 0, ',', '.') . " ($kategori)" . $statusLabel);
         } else {
             $error = 'Gagal menambahkan pengeluaran: ' . $conn->error;
         }
@@ -147,6 +175,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'Gagal menghapus pengeluaran!';
         }
     }
+
+    // Approve pemasukan
+    if ($action === 'approve_pemasukan') {
+        $id = intval($_POST['id']);
+        $stmt = $conn->prepare("UPDATE transaksi_pemasukan SET status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?");
+        $stmt->bind_param("ii", $_SESSION['admin_id'], $id);
+        if ($stmt->execute()) {
+            $data = $conn->query("SELECT tp.nominal, p.nama FROM transaksi_pemasukan tp JOIN pendaftaran p ON tp.pendaftaran_id = p.id WHERE tp.id = $id")->fetch_assoc();
+            $message = 'Pemasukan berhasil di-ACC!';
+            logTransaksi($conn, 'APPROVE', 'PEMASUKAN', "ACC pemasukan " . ($data['nama'] ?? '') . " - Rp" . number_format($data['nominal'] ?? 0, 0, ',', '.'));
+        } else {
+            $error = 'Gagal meng-ACC pemasukan!';
+        }
+    }
+
+    // Reject pemasukan
+    if ($action === 'reject_pemasukan') {
+        $id = intval($_POST['id']);
+        $catatan = sanitize($conn, $_POST['catatan_approval'] ?? '');
+        $stmt = $conn->prepare("UPDATE transaksi_pemasukan SET status = 'rejected', approved_by = ?, approved_at = NOW(), catatan_approval = ? WHERE id = ?");
+        $stmt->bind_param("isi", $_SESSION['admin_id'], $catatan, $id);
+        if ($stmt->execute()) {
+            $message = 'Pemasukan ditolak.';
+            logTransaksi($conn, 'REJECT', 'PEMASUKAN', "Tolak pemasukan ID $id" . ($catatan ? ": $catatan" : ''));
+        } else {
+            $error = 'Gagal menolak pemasukan!';
+        }
+    }
+
+    // Approve pengeluaran
+    if ($action === 'approve_pengeluaran') {
+        $id = intval($_POST['id']);
+        $stmt = $conn->prepare("UPDATE transaksi_pengeluaran SET status = 'approved', approved_by = ?, approved_at = NOW() WHERE id = ?");
+        $stmt->bind_param("ii", $_SESSION['admin_id'], $id);
+        if ($stmt->execute()) {
+            $data = $conn->query("SELECT invoice, nominal FROM transaksi_pengeluaran WHERE id = $id")->fetch_assoc();
+            $message = 'Pengeluaran berhasil di-ACC!';
+            logTransaksi($conn, 'APPROVE', 'PENGELUARAN', "ACC pengeluaran " . ($data['invoice'] ?? '') . " - Rp" . number_format($data['nominal'] ?? 0, 0, ',', '.'));
+        } else {
+            $error = 'Gagal meng-ACC pengeluaran!';
+        }
+    }
+
+    // Reject pengeluaran
+    if ($action === 'reject_pengeluaran') {
+        $id = intval($_POST['id']);
+        $catatan = sanitize($conn, $_POST['catatan_approval'] ?? '');
+        $stmt = $conn->prepare("UPDATE transaksi_pengeluaran SET status = 'rejected', approved_by = ?, approved_at = NOW(), catatan_approval = ? WHERE id = ?");
+        $stmt->bind_param("isi", $_SESSION['admin_id'], $catatan, $id);
+        if ($stmt->execute()) {
+            $message = 'Pengeluaran ditolak.';
+            logTransaksi($conn, 'REJECT', 'PENGELUARAN', "Tolak pengeluaran ID $id" . ($catatan ? ": $catatan" : ''));
+        } else {
+            $error = 'Gagal menolak pengeluaran!';
+        }
+    }
 }
 
 // Get filter parameters
@@ -170,9 +254,12 @@ switch ($filterPeriode) {
 }
 
 // Get pemasukan data
-$pemasukanQuery = "SELECT tp.*, p.nama, p.no_registrasi 
+$pemasukanQuery = "SELECT tp.*, p.nama, p.no_registrasi,
+                   a_input.nama as input_nama, a_approve.nama as approve_nama
                    FROM transaksi_pemasukan tp
                    JOIN pendaftaran p ON tp.pendaftaran_id = p.id
+                   LEFT JOIN admin a_input ON tp.input_by = a_input.id
+                   LEFT JOIN admin a_approve ON tp.approved_by = a_approve.id
                    WHERE 1=1 $dateFilter";
 
 if ($filterNama) {
@@ -186,26 +273,33 @@ $pemasukanQuery .= " ORDER BY tp.tanggal DESC, tp.created_at DESC";
 $pemasukanResult = $conn->query($pemasukanQuery);
 
 // Get pengeluaran data
-$pengeluaranQuery = "SELECT * FROM transaksi_pengeluaran WHERE 1=1 $dateFilter";
+$pengeluaranQuery = "SELECT tp.*, a_input.nama as input_nama, a_approve.nama as approve_nama
+                     FROM transaksi_pengeluaran tp
+                     LEFT JOIN admin a_input ON tp.input_by = a_input.id
+                     LEFT JOIN admin a_approve ON tp.approved_by = a_approve.id
+                     WHERE 1=1 $dateFilter";
 
 if ($filterKategori) {
-    $pengeluaranQuery .= " AND kategori = '" . $conn->real_escape_string($filterKategori) . "'";
+    $pengeluaranQuery .= " AND tp.kategori = '" . $conn->real_escape_string($filterKategori) . "'";
 }
 
-$pengeluaranQuery .= " ORDER BY tanggal DESC, created_at DESC";
+$pengeluaranQuery .= " ORDER BY tp.tanggal DESC, tp.created_at DESC";
 $pengeluaranResult = $conn->query($pengeluaranQuery);
 
-// Calculate summary
+// Calculate summary (only approved transactions)
 $summaryQuery = "
     SELECT 
-        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pemasukan WHERE 1=1 $dateFilter) as total_masuk,
-        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pengeluaran WHERE 1=1 $dateFilter) as total_keluar
+        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pemasukan WHERE status = 'approved' $dateFilter) as total_masuk,
+        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pengeluaran WHERE status = 'approved' $dateFilter) as total_keluar,
+        (SELECT COUNT(*) FROM transaksi_pemasukan WHERE status = 'pending') as pending_masuk,
+        (SELECT COUNT(*) FROM transaksi_pengeluaran WHERE status = 'pending') as pending_keluar
 ";
 $summaryResult = $conn->query($summaryQuery);
 $summary = $summaryResult->fetch_assoc();
 $totalMasuk = $summary['total_masuk'];
 $totalKeluar = $summary['total_keluar'];
 $saldo = $totalMasuk - $totalKeluar;
+$totalPending = $summary['pending_masuk'] + $summary['pending_keluar'];
 
 // Get kategori list matching pos_keuangan columns
 $kategoriList = ['Registrasi', 'MA', 'SMP', 'Pondok'];
@@ -344,24 +438,29 @@ $currentPage = 'transaksi';
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Input
+                                </th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status
                                 </th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             <?php while ($row = $pemasukanResult->fetch_assoc()): ?>
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50 <?= $row['status'] === 'rejected' ? 'opacity-60' : '' ?>">
                                     <td class="px-4 py-3 text-sm font-mono text-gray-600">
                                         <?= htmlspecialchars($row['invoice']) ?>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-600">
-                                        <?= date('d/m/Y', strtotime($row['tanggal'])) ?>
+                                        <div><?= date('d/m/Y', strtotime($row['tanggal'])) ?></div>
+                                        <?php if ($row['input_nama']): ?>
+                                            <div class="text-xs text-gray-400">oleh: <?= htmlspecialchars($row['input_nama']) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="px-4 py-3 text-sm font-medium text-gray-800">
                                         <?= htmlspecialchars($row['nama']) ?>
@@ -372,23 +471,64 @@ $currentPage = 'transaksi';
                                     <td class="px-4 py-3 text-sm text-gray-600">
                                         <?= htmlspecialchars($row['jenis_pembayaran']) ?>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">
-                                        <?= htmlspecialchars($row['keterangan']) ?>
-                                    </td>
                                     <td class="px-4 py-3 text-center">
-                                        <button
-                                            onclick="editPemasukan(<?= $row['id'] ?>, <?= $row['pendaftaran_id'] ?>, '<?= $row['tanggal'] ?>', <?= $row['nominal'] ?>, '<?= htmlspecialchars($row['jenis_pembayaran'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['keterangan'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['nama'], ENT_QUOTES) ?>')"
-                                            class="text-blue-600 hover:text-blue-800 mr-3">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form method="POST" class="inline"
-                                            onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
-                                            <input type="hidden" name="action" value="delete_pemasukan">
-                                            <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                            <button type="submit" class="text-red-600 hover:text-red-800">
-                                                <i class="fas fa-trash"></i>
+                                        <?php
+                                        $badgeClass = match ($row['status']) {
+                                            'approved' => 'bg-green-100 text-green-700',
+                                            'pending' => 'bg-yellow-100 text-yellow-700',
+                                            'rejected' => 'bg-red-100 text-red-700',
+                                            default => 'bg-gray-100 text-gray-700',
+                                        };
+                                        $badgeLabel = match ($row['status']) {
+                                            'approved' => 'ACC',
+                                            'pending' => 'Pending',
+                                            'rejected' => 'Ditolak',
+                                            default => $row['status'],
+                                        };
+                                        ?>
+                                        <span
+                                            class="inline-block px-2 py-1 text-xs font-semibold rounded-full <?= $badgeClass ?>"><?= $badgeLabel ?></span>
+                                        <?php if ($row['status'] === 'approved' && $row['approved_at']): ?>
+                                            <div class="text-xs text-gray-400 mt-1">
+                                                <?= date('d/m/Y', strtotime($row['approved_at'])) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($row['status'] === 'rejected' && $row['catatan_approval']): ?>
+                                            <div class="text-xs text-red-500 mt-1">
+                                                <?= htmlspecialchars($row['catatan_approval']) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                                        <?php if (isSuperAdmin() && $row['status'] === 'pending'): ?>
+                                            <form method="POST" class="inline">
+                                                <input type="hidden" name="action" value="approve_pemasukan">
+                                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                                <button type="submit" class="text-green-600 hover:text-green-800 mr-1"
+                                                    title="ACC">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            </form>
+                                            <button onclick="rejectTransaksi(<?= $row['id'] ?>, 'pemasukan')"
+                                                class="text-red-600 hover:text-red-800 mr-1" title="Tolak">
+                                                <i class="fas fa-times-circle"></i>
                                             </button>
-                                        </form>
+                                        <?php endif; ?>
+                                        <?php if (isSuperAdmin()): ?>
+                                            <button
+                                                onclick="editPemasukan(<?= $row['id'] ?>, <?= $row['pendaftaran_id'] ?>, '<?= $row['tanggal'] ?>', <?= $row['nominal'] ?>, '<?= htmlspecialchars($row['jenis_pembayaran'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['keterangan'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['nama'], ENT_QUOTES) ?>')"
+                                                class="text-blue-600 hover:text-blue-800 mr-1" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form method="POST" class="inline"
+                                                onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
+                                                <input type="hidden" name="action" value="delete_pemasukan">
+                                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                                <button type="submit" class="text-red-600 hover:text-red-800" title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -410,24 +550,29 @@ $currentPage = 'transaksi';
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Input
+                                </th>
                                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal
                                 </th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori
                                 </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan
+                                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status
                                 </th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             <?php while ($row = $pengeluaranResult->fetch_assoc()): ?>
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50 <?= $row['status'] === 'rejected' ? 'opacity-60' : '' ?>">
                                     <td class="px-4 py-3 text-sm font-mono text-gray-600">
                                         <?= htmlspecialchars($row['invoice']) ?>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-gray-600">
-                                        <?= date('d/m/Y', strtotime($row['tanggal'])) ?>
+                                        <div><?= date('d/m/Y', strtotime($row['tanggal'])) ?></div>
+                                        <?php if ($row['input_nama']): ?>
+                                            <div class="text-xs text-gray-400">oleh: <?= htmlspecialchars($row['input_nama']) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-right font-semibold text-red-600">Rp
                                         <?= number_format($row['nominal'], 0, ',', '.') ?>
@@ -435,23 +580,64 @@ $currentPage = 'transaksi';
                                     <td class="px-4 py-3 text-sm text-gray-600">
                                         <?= htmlspecialchars($row['kategori']) ?>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-600">
-                                        <?= htmlspecialchars($row['keterangan']) ?>
-                                    </td>
                                     <td class="px-4 py-3 text-center">
-                                        <button
-                                            onclick="editPengeluaran(<?= $row['id'] ?>, '<?= $row['tanggal'] ?>', <?= $row['nominal'] ?>, '<?= htmlspecialchars($row['kategori'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['keterangan'], ENT_QUOTES) ?>')"
-                                            class="text-blue-600 hover:text-blue-800 mr-3">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <form method="POST" class="inline"
-                                            onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
-                                            <input type="hidden" name="action" value="delete_pengeluaran">
-                                            <input type="hidden" name="id" value="<?= $row['id'] ?>">
-                                            <button type="submit" class="text-red-600 hover:text-red-800">
-                                                <i class="fas fa-trash"></i>
+                                        <?php
+                                        $badgeClass = match ($row['status']) {
+                                            'approved' => 'bg-green-100 text-green-700',
+                                            'pending' => 'bg-yellow-100 text-yellow-700',
+                                            'rejected' => 'bg-red-100 text-red-700',
+                                            default => 'bg-gray-100 text-gray-700',
+                                        };
+                                        $badgeLabel = match ($row['status']) {
+                                            'approved' => 'ACC',
+                                            'pending' => 'Pending',
+                                            'rejected' => 'Ditolak',
+                                            default => $row['status'],
+                                        };
+                                        ?>
+                                        <span
+                                            class="inline-block px-2 py-1 text-xs font-semibold rounded-full <?= $badgeClass ?>"><?= $badgeLabel ?></span>
+                                        <?php if ($row['status'] === 'approved' && $row['approved_at']): ?>
+                                            <div class="text-xs text-gray-400 mt-1">
+                                                <?= date('d/m/Y', strtotime($row['approved_at'])) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($row['status'] === 'rejected' && $row['catatan_approval']): ?>
+                                            <div class="text-xs text-red-500 mt-1">
+                                                <?= htmlspecialchars($row['catatan_approval']) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-center whitespace-nowrap">
+                                        <?php if (isSuperAdmin() && $row['status'] === 'pending'): ?>
+                                            <form method="POST" class="inline">
+                                                <input type="hidden" name="action" value="approve_pengeluaran">
+                                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                                <button type="submit" class="text-green-600 hover:text-green-800 mr-1"
+                                                    title="ACC">
+                                                    <i class="fas fa-check-circle"></i>
+                                                </button>
+                                            </form>
+                                            <button onclick="rejectTransaksi(<?= $row['id'] ?>, 'pengeluaran')"
+                                                class="text-red-600 hover:text-red-800 mr-1" title="Tolak">
+                                                <i class="fas fa-times-circle"></i>
                                             </button>
-                                        </form>
+                                        <?php endif; ?>
+                                        <?php if (isSuperAdmin()): ?>
+                                            <button
+                                                onclick="editPengeluaran(<?= $row['id'] ?>, '<?= $row['tanggal'] ?>', <?= $row['nominal'] ?>, '<?= htmlspecialchars($row['kategori'], ENT_QUOTES) ?>', '<?= htmlspecialchars($row['keterangan'], ENT_QUOTES) ?>')"
+                                                class="text-blue-600 hover:text-blue-800 mr-1" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form method="POST" class="inline"
+                                                onsubmit="return confirm('Yakin ingin menghapus transaksi ini?')">
+                                                <input type="hidden" name="action" value="delete_pengeluaran">
+                                                <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                                <button type="submit" class="text-red-600 hover:text-red-800" title="Hapus">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -778,6 +964,22 @@ $currentPage = 'transaksi';
             }
         });
     });
+
+    // Reject modal
+    function rejectTransaksi(id, tipe) {
+        const catatan = prompt('Catatan alasan penolakan (opsional):');
+        if (catatan === null) return; // User cancelled
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            <input type="hidden" name="action" value="reject_${tipe}">
+            <input type="hidden" name="id" value="${id}">
+            <input type="hidden" name="catatan_approval" value="${catatan}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
 </script>
 
 <?php include 'transaksi_edit_modals.php'; ?>

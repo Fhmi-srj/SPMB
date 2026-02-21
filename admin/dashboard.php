@@ -117,7 +117,7 @@ $pemasukanQuery = $conn->query("
             (SELECT COALESCE(biaya_pondok, 0) FROM biaya WHERE nama_item = 'Infaq Bulan Pertama' AND kategori = 'DAFTAR_ULANG' LIMIT 1)
         ELSE 0 END) as total_pondok
     FROM pendaftaran p
-    LEFT JOIN (SELECT pendaftaran_id, SUM(nominal) as total_pembayaran FROM transaksi_pemasukan GROUP BY pendaftaran_id) tp ON p.id = tp.pendaftaran_id
+    LEFT JOIN (SELECT pendaftaran_id, SUM(nominal) as total_pembayaran FROM transaksi_pemasukan WHERE status = 'approved' GROUP BY pendaftaran_id) tp ON p.id = tp.pendaftaran_id
 ");
 $pemasukanData = $pemasukanQuery->fetch_assoc();
 
@@ -143,7 +143,7 @@ $posKeuanganSummary['Perlengkapan'] = [
 ];
 
 // Get pengeluaran per category
-$pengeluaranQuery = $conn->query("SELECT kategori, SUM(nominal) as total FROM transaksi_pengeluaran GROUP BY kategori");
+$pengeluaranQuery = $conn->query("SELECT kategori, SUM(nominal) as total FROM transaksi_pengeluaran WHERE status = 'approved' GROUP BY kategori");
 while ($row = $pengeluaranQuery->fetch_assoc()) {
     $kategori = $row['kategori'];
     if (isset($posKeuanganSummary[$kategori])) {
@@ -285,69 +285,74 @@ for ($i = 5; $i >= 0; $i--) {
             </div>
         </div>
 
-        <!-- Pos Keuangan Summary -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="font-semibold text-gray-800">
-                    <i class="fas fa-wallet text-primary mr-2"></i>Pos Keuangan
-                </h3>
-                <a href="pos_keuangan.php" class="text-sm text-primary hover:text-primary-dark">
-                    Lihat Detail <i class="fas fa-arrow-right ml-1"></i>
-                </a>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pemasukan</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pengeluaran</th>
-                            <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sisa</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                        <?php 
-                        $totalPemasukan = 0;
-                        $totalPengeluaran = 0;
-                        $totalSisa = 0;
-                        
-                        foreach ($posKeuanganSummary as $kategori => $data): 
-                            $sisa = $data['pemasukan'] - $data['pengeluaran'];
-                            $totalPemasukan += $data['pemasukan'];
-                            $totalPengeluaran += $data['pengeluaran'];
-                            $totalSisa += $sisa;
-                            $sisaClass = $sisa >= 0 ? 'text-green-600' : 'text-red-600';
-                        ?>
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-3 text-sm font-medium text-gray-800"><?= htmlspecialchars($kategori) ?></td>
-                                <td class="px-4 py-3 text-sm text-right text-gray-600">
-                                    Rp <?= number_format($data['pemasukan'], 0, ',', '.') ?>
+        <?php if (canAccessAdmin()): ?>
+            <!-- Pos Keuangan Summary -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-gray-800">
+                        <i class="fas fa-wallet text-primary mr-2"></i>Pos Keuangan
+                    </h3>
+                    <a href="pos_keuangan.php" class="text-sm text-primary hover:text-primary-dark">
+                        Lihat Detail <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pemasukan</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pengeluaran
+                                </th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sisa</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                                <?php
+                                $totalPemasukan = 0;
+                                $totalPengeluaran = 0;
+                                $totalSisa = 0;
+
+                                foreach ($posKeuanganSummary as $kategori => $data):
+                                    $sisa = $data['pemasukan'] - $data['pengeluaran'];
+                                    $totalPemasukan += $data['pemasukan'];
+                                    $totalPengeluaran += $data['pengeluaran'];
+                                    $totalSisa += $sisa;
+                                    $sisaClass = $sisa >= 0 ? 'text-green-600' : 'text-red-600';
+                                    ?>
+                                        <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm font-medium text-gray-800"><?= htmlspecialchars($kategori) ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-right text-gray-600">
+                                        Rp <?= number_format($data['pemasukan'], 0, ',', '.') ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-right text-gray-600">
+                                        Rp <?= number_format($data['pengeluaran'], 0, ',', '.') ?>
+                                    </td>
+                                    <td class="px-4 py-3 text-sm text-right font-semibold <?= $sisaClass ?>">
+                                        Rp <?= number_format($sisa, 0, ',', '.') ?>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <!-- Total Row -->
+                            <tr class="bg-gray-50 font-bold">
+                                <td class="px-4 py-3 text-sm text-gray-800">TOTAL</td>
+                                <td class="px-4 py-3 text-sm text-right text-gray-800">
+                                    Rp <?= number_format($totalPemasukan, 0, ',', '.') ?>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-right text-gray-600">
-                                    Rp <?= number_format($data['pengeluaran'], 0, ',', '.') ?>
+                                <td class="px-4 py-3 text-sm text-right text-gray-800">
+                                    Rp <?= number_format($totalPengeluaran, 0, ',', '.') ?>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-right font-semibold <?= $sisaClass ?>">
-                                    Rp <?= number_format($sisa, 0, ',', '.') ?>
+                                <td
+                                    class="px-4 py-3 text-sm text-right <?= $totalSisa >= 0 ? 'text-green-600' : 'text-red-600' ?>">
+                                    Rp <?= number_format($totalSisa, 0, ',', '.') ?>
                                 </td>
                             </tr>
-                        <?php endforeach; ?>
-                        <!-- Total Row -->
-                        <tr class="bg-gray-50 font-bold">
-                            <td class="px-4 py-3 text-sm text-gray-800">TOTAL</td>
-                            <td class="px-4 py-3 text-sm text-right text-gray-800">
-                                Rp <?= number_format($totalPemasukan, 0, ',', '.') ?>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right text-gray-800">
-                                Rp <?= number_format($totalPengeluaran, 0, ',', '.') ?>
-                            </td>
-                            <td class="px-4 py-3 text-sm text-right <?= $totalSisa >= 0 ? 'text-green-600' : 'text-red-600' ?>">
-                                Rp <?= number_format($totalSisa, 0, ',', '.') ?>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
 
         <!-- Charts Row -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -464,36 +469,38 @@ for ($i = 5; $i >= 0; $i--) {
                 <?php endif; ?>
             </div>
 
-            <!-- Activity Log -->
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="p-4 border-b border-gray-100 flex items-center justify-between">
-                    <h3 class="font-semibold text-gray-800">Aktivitas Terbaru</h3>
-                    <a href="aktivitas.php" class="text-primary text-sm hover:underline">Lihat Semua</a>
-                </div>
+            <?php if (canAccessAdmin()): ?>
+                <!-- Activity Log -->
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b border-gray-100 flex items-center justify-between">
+                        <h3 class="font-semibold text-gray-800">Aktivitas Terbaru</h3>
+                        <a href="aktivitas.php" class="text-primary text-sm hover:underline">Lihat Semua</a>
+                    </div>
 
-                <?php if (empty($activityLog)): ?>
-                    <div class="p-8 text-center text-gray-500">
-                        <i class="fas fa-history text-4xl mb-3"></i>
-                        <p>Belum ada aktivitas tercatat</p>
-                    </div>
-                <?php else: ?>
-                    <div class="divide-y divide-gray-100">
-                        <?php foreach ($activityLog as $log): ?>
-                            <div class="p-3 hover:bg-gray-50">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span
-                                        class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium"><?= htmlspecialchars($log['action']) ?></span>
-                                    <span
-                                        class="text-xs text-gray-400"><?= date('d M H:i', strtotime($log['created_at'])) ?></span>
+                    <?php if (empty($activityLog)): ?>
+                        <div class="p-8 text-center text-gray-500">
+                            <i class="fas fa-history text-4xl mb-3"></i>
+                            <p>Belum ada aktivitas tercatat</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="divide-y divide-gray-100">
+                            <?php foreach ($activityLog as $log): ?>
+                                <div class="p-3 hover:bg-gray-50">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span
+                                            class="px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-medium"><?= htmlspecialchars($log['action']) ?></span>
+                                        <span
+                                            class="text-xs text-gray-400"><?= date('d M H:i', strtotime($log['created_at'])) ?></span>
+                                    </div>
+                                    <p class="text-sm text-gray-600"><?= htmlspecialchars($log['description']) ?></p>
+                                    <p class="text-xs text-gray-400">oleh <?= htmlspecialchars($log['admin_nama'] ?? 'System') ?>
+                                    </p>
                                 </div>
-                                <p class="text-sm text-gray-600"><?= htmlspecialchars($log['description']) ?></p>
-                                <p class="text-xs text-gray-400">oleh <?= htmlspecialchars($log['admin_nama'] ?? 'System') ?>
-                                </p>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </main>
 </div>

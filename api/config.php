@@ -81,6 +81,56 @@ function requireLogin()
 }
 
 // =============================================
+// Role-Based Access Control
+// =============================================
+
+function getRole()
+{
+    return $_SESSION['admin_role'] ?? 'panitia';
+}
+
+/**
+ * Check if current user has one of the given roles
+ * @param string|array $roles Single role or array of roles
+ */
+function hasRole($roles)
+{
+    if (is_string($roles)) {
+        $roles = [$roles];
+    }
+    return in_array(getRole(), $roles);
+}
+
+/**
+ * Require specific role(s) or redirect to dashboard
+ * @param string|array $roles Single role or array of roles
+ */
+function requireRole($roles)
+{
+    requireLogin();
+    if (!hasRole($roles)) {
+        header('Location: dashboard.php');
+        exit;
+    }
+}
+
+/**
+ * Shortcut: can access administrasi pages (non-panitia)
+ */
+function canAccessAdmin()
+{
+    return hasRole(['super_admin', 'admin']);
+}
+
+/**
+ * Shortcut: is super admin
+ */
+function isSuperAdmin()
+{
+    return hasRole('super_admin');
+}
+
+// =============================================
 // Helper Functions
 // =============================================
 
