@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 require_once '../api/config.php';
 requireLogin();
 
@@ -308,19 +310,19 @@ for ($i = 5; $i >= 0; $i--) {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
-                                <?php
-                                $totalPemasukan = 0;
-                                $totalPengeluaran = 0;
-                                $totalSisa = 0;
+                            <?php
+                            $totalPemasukan = 0;
+                            $totalPengeluaran = 0;
+                            $totalSisa = 0;
 
-                                foreach ($posKeuanganSummary as $kategori => $data):
-                                    $sisa = $data['pemasukan'] - $data['pengeluaran'];
-                                    $totalPemasukan += $data['pemasukan'];
-                                    $totalPengeluaran += $data['pengeluaran'];
-                                    $totalSisa += $sisa;
-                                    $sisaClass = $sisa >= 0 ? 'text-green-600' : 'text-red-600';
-                                    ?>
-                                        <tr class="hover:bg-gray-50">
+                            foreach ($posKeuanganSummary as $kategori => $data):
+                                $sisa = $data['pemasukan'] - $data['pengeluaran'];
+                                $totalPemasukan += $data['pemasukan'];
+                                $totalPengeluaran += $data['pengeluaran'];
+                                $totalSisa += $sisa;
+                                $sisaClass = $sisa >= 0 ? 'text-green-600' : 'text-red-600';
+                                ?>
+                                <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-3 text-sm font-medium text-gray-800"><?= htmlspecialchars($kategori) ?>
                                     </td>
                                     <td class="px-4 py-3 text-sm text-right text-gray-600">
@@ -333,7 +335,7 @@ for ($i = 5; $i >= 0; $i--) {
                                         Rp <?= number_format($sisa, 0, ',', '.') ?>
                                     </td>
                                 </tr>
-                                <?php endforeach; ?>
+                            <?php endforeach; ?>
                             <!-- Total Row -->
                             <tr class="bg-gray-50 font-bold">
                                 <td class="px-4 py-3 text-sm text-gray-800">TOTAL</td>
