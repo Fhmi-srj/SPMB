@@ -127,6 +127,7 @@ CREATE TABLE `admin`  (
   `username` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `password` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
   `nama` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
+  `role` enum('super_admin','admin','panitia') NOT NULL DEFAULT 'panitia',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `username`(`username` ASC) USING BTREE
@@ -135,7 +136,7 @@ CREATE TABLE `admin`  (
 -- ----------------------------
 -- Records of admin
 -- ----------------------------
-INSERT INTO `admin` VALUES (1, 'admin_spmb', '$2y$10$j5l3eiUPIZtDdU29guUYFukGeWxPnJ95Mhq.tJLF.66/eNcVw9vZy', 'Admin SPMB', '2025-12-20 22:36:31');
+INSERT INTO `admin` VALUES (1, 'admin_spmb', '$2y$10$j5l3eiUPIZtDdU29guUYFukGeWxPnJ95Mhq.tJLF.66/eNcVw9vZy', 'Admin SPMB', 'super_admin', '2025-12-20 22:36:31');
 
 -- ----------------------------
 -- Table structure for beasiswa

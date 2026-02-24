@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS `admin` (
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nama` varchar(100) DEFAULT NULL,
+  `role` enum('super_admin','admin','panitia') NOT NULL DEFAULT 'panitia',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
