@@ -25,6 +25,13 @@ if [ -f api/config.php.bak ]; then
     cp api/config.php.bak api/config.php
     rm api/config.php.bak
     echo "✅ Config.php hosting di-restore"
+    
+    # Ensure functions.php is included in hosting config
+    if ! grep -q "functions.php" api/config.php; then
+        # Add require_once before the closing ?>
+        sed -i 's|?>|// Load shared functions (auth, CSRF, helpers, RBAC)\nrequire_once __DIR__ . "/functions.php";\n?>|' api/config.php
+        echo "✅ functions.php di-inject ke config hosting"
+    fi
 fi
 
 # Set permission
