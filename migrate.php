@@ -107,16 +107,67 @@ try {
             'desc' => 'Create transaksi_pengeluaran table'
         ],
 
-        // 3. Add status to existing transaksi tables (if tables exist but no status column)
+        // 3. Add columns to existing transaksi tables
         [
             'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'status'",
             'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved' AFTER keterangan",
             'desc' => 'Add status column to transaksi_pemasukan'
         ],
         [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'input_by'",
+            'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN input_by INT NULL AFTER status",
+            'desc' => 'Add input_by column to transaksi_pemasukan'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'input_at'",
+            'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN input_at DATETIME NULL AFTER input_by",
+            'desc' => 'Add input_at column to transaksi_pemasukan'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'approved_by'",
+            'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN approved_by INT NULL AFTER input_at",
+            'desc' => 'Add approved_by column to transaksi_pemasukan'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'approved_at'",
+            'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN approved_at DATETIME NULL AFTER approved_by",
+            'desc' => 'Add approved_at column to transaksi_pemasukan'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'catatan_approval'",
+            'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN catatan_approval TEXT NULL AFTER approved_at",
+            'desc' => 'Add catatan_approval column to transaksi_pemasukan'
+        ],
+
+        [
             'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pengeluaran' AND COLUMN_NAME = 'status'",
             'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved' AFTER keterangan",
             'desc' => 'Add status column to transaksi_pengeluaran'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pengeluaran' AND COLUMN_NAME = 'input_by'",
+            'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN input_by INT NULL AFTER status",
+            'desc' => 'Add input_by column to transaksi_pengeluaran'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pengeluaran' AND COLUMN_NAME = 'input_at'",
+            'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN input_at DATETIME NULL AFTER input_by",
+            'desc' => 'Add input_at column to transaksi_pengeluaran'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pengeluaran' AND COLUMN_NAME = 'approved_by'",
+            'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN approved_by INT NULL AFTER input_at",
+            'desc' => 'Add approved_by column to transaksi_pengeluaran'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pengeluaran' AND COLUMN_NAME = 'approved_at'",
+            'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN approved_at DATETIME NULL AFTER approved_by",
+            'desc' => 'Add approved_at column to transaksi_pengeluaran'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pengeluaran' AND COLUMN_NAME = 'catatan_approval'",
+            'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN catatan_approval TEXT NULL AFTER approved_at",
+            'desc' => 'Add catatan_approval column to transaksi_pengeluaran'
         ],
     ];
 
