@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('biaya', function (Blueprint $table) {
+        if (!Schema::hasTable('biaya')) { Schema::create('biaya', function (Blueprint $table) {
             $table->id();
             $table->enum('kategori', ['PENDAFTARAN', 'DAFTAR_ULANG']);
             $table->string('nama_item', 100);
@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('biaya_ma')->default(0);
             $table->integer('urutan')->default(0);
         });
+        }
     }
 
     public function down(): void
@@ -24,3 +25,4 @@ return new class extends Migration
         Schema::dropIfExists('biaya');
     }
 };
+

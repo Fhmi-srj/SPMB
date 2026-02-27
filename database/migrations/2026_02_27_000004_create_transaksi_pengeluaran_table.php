@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('transaksi_pengeluaran', function (Blueprint $table) {
+        if (!Schema::hasTable('transaksi_pengeluaran')) { Schema::create('transaksi_pengeluaran', function (Blueprint $table) {
             $table->id();
             $table->string('invoice', 50)->unique();
             $table->date('tanggal');
@@ -26,6 +26,7 @@ return new class extends Migration
             $table->index('tanggal', 'idx_pengeluaran_tanggal');
             $table->index('kategori', 'idx_pengeluaran_kategori');
         });
+        }
     }
 
     public function down(): void
@@ -33,3 +34,4 @@ return new class extends Migration
         Schema::dropIfExists('transaksi_pengeluaran');
     }
 };
+

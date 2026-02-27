@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('transaksi_pemasukan', function (Blueprint $table) {
+        if (!Schema::hasTable('transaksi_pemasukan')) { Schema::create('transaksi_pemasukan', function (Blueprint $table) {
             $table->id();
             $table->string('invoice', 50)->unique();
             $table->foreignId('pendaftaran_id')->constrained('pendaftaran')->cascadeOnDelete();
@@ -27,6 +27,7 @@ return new class extends Migration
             $table->index('pendaftaran_id', 'idx_pemasukan_pendaftaran');
             $table->index('tanggal', 'idx_pemasukan_tanggal');
         });
+        }
     }
 
     public function down(): void
@@ -34,3 +35,4 @@ return new class extends Migration
         Schema::dropIfExists('transaksi_pemasukan');
     }
 };
+

@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('beasiswa', function (Blueprint $table) {
+        if (!Schema::hasTable('beasiswa')) { Schema::create('beasiswa', function (Blueprint $table) {
             $table->id();
             $table->string('jenis', 100);
             $table->string('kategori', 100);
@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('benefit', 100);
             $table->integer('urutan')->default(0);
         });
+        }
     }
 
     public function down(): void
@@ -23,3 +24,4 @@ return new class extends Migration
         Schema::dropIfExists('beasiswa');
     }
 };
+

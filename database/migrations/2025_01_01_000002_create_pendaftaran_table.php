@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('pendaftaran', function (Blueprint $table) {
+        if (!Schema::hasTable('pendaftaran')) { Schema::create('pendaftaran', function (Blueprint $table) {
             $table->id();
             $table->string('no_registrasi', 20)->nullable();
             $table->string('nama', 100);
@@ -71,6 +71,7 @@ return new class extends Migration
 
             $table->index('reset_token');
         });
+        }
     }
 
     public function down(): void
@@ -78,3 +79,4 @@ return new class extends Migration
         Schema::dropIfExists('pendaftaran');
     }
 };
+

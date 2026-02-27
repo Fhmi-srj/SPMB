@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('log_aktivitas', function (Blueprint $table) {
+        if (!Schema::hasTable('log_aktivitas')) { Schema::create('log_aktivitas', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->string('user_name', 100)->default('Admin');
@@ -21,6 +21,7 @@ return new class extends Migration
             $table->index('aksi', 'idx_log_aksi');
             $table->index('created_at', 'idx_log_created');
         });
+        }
     }
 
     public function down(): void
@@ -28,3 +29,4 @@ return new class extends Migration
         Schema::dropIfExists('log_aktivitas');
     }
 };
+

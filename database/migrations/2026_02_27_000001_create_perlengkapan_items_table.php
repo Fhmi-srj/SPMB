@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('perlengkapan_items', function (Blueprint $table) {
+        if (!Schema::hasTable('perlengkapan_items')) { Schema::create('perlengkapan_items', function (Blueprint $table) {
             $table->id();
             $table->string('nama_item', 100);
             $table->integer('nominal')->default(0);
@@ -16,6 +16,7 @@ return new class extends Migration
             $table->boolean('aktif')->default(true);
             $table->timestamp('created_at')->useCurrent();
         });
+        }
     }
 
     public function down(): void
@@ -23,3 +24,4 @@ return new class extends Migration
         Schema::dropIfExists('perlengkapan_items');
     }
 };
+

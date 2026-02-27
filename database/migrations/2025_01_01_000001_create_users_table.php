@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        if (!Schema::hasTable('users')) { Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username', 50)->unique();
             $table->string('password');
@@ -17,6 +17,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
+        }
     }
 
     public function down(): void
@@ -24,3 +25,4 @@ return new class extends Migration
         Schema::dropIfExists('users');
     }
 };
+

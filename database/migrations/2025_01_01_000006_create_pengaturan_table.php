@@ -8,12 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('pengaturan', function (Blueprint $table) {
+        if (!Schema::hasTable('pengaturan')) { Schema::create('pengaturan', function (Blueprint $table) {
             $table->id();
             $table->string('kunci', 50)->unique();
             $table->text('nilai')->nullable();
             $table->string('keterangan', 200)->nullable();
         });
+        }
     }
 
     public function down(): void
@@ -21,3 +22,4 @@ return new class extends Migration
         Schema::dropIfExists('pengaturan');
     }
 };
+

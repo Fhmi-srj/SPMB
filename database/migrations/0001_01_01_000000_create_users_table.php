@@ -11,7 +11,7 @@ return new class extends Migration
         // Tabel users dibuat di migration 2025_01_01_000001_create_users_table.php
         // Di sini hanya tabel sessions dan password_reset_tokens
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
+        if (!Schema::hasTable('password_reset_tokens')) { Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
@@ -25,6 +25,7 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+        }
     }
 
     public function down(): void
@@ -33,3 +34,4 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
     }
 };
+

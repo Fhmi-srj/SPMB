@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('activity_log', function (Blueprint $table) {
+        if (!Schema::hasTable('activity_log')) { Schema::create('activity_log', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('action', 50);
@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('ip_address', 45)->nullable();
             $table->timestamp('created_at')->useCurrent();
         });
+        }
     }
 
     public function down(): void
@@ -23,3 +24,4 @@ return new class extends Migration
         Schema::dropIfExists('activity_log');
     }
 };
+
