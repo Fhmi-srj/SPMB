@@ -118,6 +118,30 @@ try {
             'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved' AFTER keterangan",
             'desc' => 'Add status column to transaksi_pengeluaran'
         ],
+
+        // 4. Add approval columns to transaksi tables
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'input_by'",
+            'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN input_by INT DEFAULT NULL AFTER status, ADD COLUMN input_at DATETIME DEFAULT NULL AFTER input_by, ADD COLUMN approved_by INT DEFAULT NULL AFTER input_at, ADD COLUMN approved_at DATETIME DEFAULT NULL AFTER approved_by, ADD COLUMN catatan_approval TEXT DEFAULT NULL AFTER approved_at",
+            'desc' => 'Add approval columns to transaksi_pemasukan'
+        ],
+        [
+            'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pengeluaran' AND COLUMN_NAME = 'input_by'",
+            'sql' => "ALTER TABLE transaksi_pengeluaran ADD COLUMN input_by INT DEFAULT NULL AFTER status, ADD COLUMN input_at DATETIME DEFAULT NULL AFTER input_by, ADD COLUMN approved_by INT DEFAULT NULL AFTER input_at, ADD COLUMN approved_at DATETIME DEFAULT NULL AFTER approved_by, ADD COLUMN catatan_approval TEXT DEFAULT NULL AFTER approved_at",
+            'desc' => 'Add approval columns to transaksi_pengeluaran'
+        ],
+
+        // 5. Fix existing rows with NULL status (set to approved)
+        [
+            'check' => null,
+            'sql' => "UPDATE transaksi_pemasukan SET status = 'approved' WHERE status IS NULL OR status = ''",
+            'desc' => 'Fix NULL status in transaksi_pemasukan to approved'
+        ],
+        [
+            'check' => null,
+            'sql' => "UPDATE transaksi_pengeluaran SET status = 'approved' WHERE status IS NULL OR status = ''",
+            'desc' => 'Fix NULL status in transaksi_pengeluaran to approved'
+        ],
     ];
 
     foreach ($migrations as $m) {
