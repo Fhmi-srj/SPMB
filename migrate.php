@@ -1,7 +1,7 @@
 <?php
 /**
  * Migration Script - Run once then DELETE this file!
- * Access via: https://daftar.mambaulhuda.ponpes.id/migrate.php
+ * Access via: https://daftar.mambaulhuda.ponpes.id/migrate.php?key=fix2026
  */
 
 // Simple security - remove after use
@@ -13,10 +13,17 @@ echo "<pre>\n";
 echo "=== SPMB Database Migration ===\n\n";
 
 try {
-    // Use hosting config
-    require_once __DIR__ . '/api/config.php';
-    $conn = getConnection();
-    echo "✅ Database connected\n\n";
+    // Read DB config directly (avoid including config.php which triggers session/redirect)
+    $configFile = file_get_contents(__DIR__ . '/api/config.php');
+    preg_match("/define\('DB_HOST',\s*'(.+?)'\)/", $configFile, $m1);
+    preg_match("/define\('DB_USER',\s*'(.+?)'\)/", $configFile, $m2);
+    preg_match("/define\('DB_PASS',\s*'(.*?)'\)/", $configFile, $m3);
+    preg_match("/define\('DB_NAME',\s*'(.+?)'\)/", $configFile, $m4);
+
+    $conn = new mysqli($m1[1] ?? 'localhost', $m2[1] ?? 'root', $m3[1] ?? '', $m4[1] ?? 'spmb_db');
+    if ($conn->connect_error) die("DB Error: " . $conn->connect_error);
+    $conn->set_charset("utf8mb4");
+    echo "Connected to: " . ($m4[1] ?? 'spmb_db') . "\n\n";
 
     $migrations = [
         // 1. Add role column to admin
@@ -107,7 +114,7 @@ try {
             'desc' => 'Create transaksi_pengeluaran table'
         ],
 
-        // 3. Add status to existing transaksi tables (if tables exist but no status column)
+        // 3. Add status to existing transaksi tables
         [
             'check' => "SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaksi_pemasukan' AND COLUMN_NAME = 'status'",
             'sql' => "ALTER TABLE transaksi_pemasukan ADD COLUMN status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved' AFTER keterangan",
@@ -131,7 +138,7 @@ try {
             'desc' => 'Add approval columns to transaksi_pengeluaran'
         ],
 
-        // 5. Fix existing rows with NULL status (set to approved)
+        // 5. Fix existing rows with NULL status
         [
             'check' => null,
             'sql' => "UPDATE transaksi_pemasukan SET status = 'approved' WHERE status IS NULL OR status = ''",
@@ -149,25 +156,25 @@ try {
         if ($m['check']) {
             $result = $conn->query($m['check']);
             if ($result && $result->num_rows > 0) {
-                echo "⏭️  SKIP: {$m['desc']} (already exists)\n";
+                echo "SKIP: {$m['desc']} (already exists)\n";
                 $skip = true;
             }
         }
 
         if (!$skip) {
             if ($conn->query($m['sql'])) {
-                echo "✅ OK: {$m['desc']}\n";
+                echo "OK: {$m['desc']}\n";
             } else {
-                echo "❌ ERROR: {$m['desc']} - " . $conn->error . "\n";
+                echo "ERROR: {$m['desc']} - " . $conn->error . "\n";
             }
         }
     }
 
     echo "\n=== Migration Complete ===\n";
-    echo "\n⚠️  DELETE THIS FILE after migration!\n";
+    echo "\nDELETE THIS FILE after migration!\n";
 
     $conn->close();
 } catch (Exception $e) {
-    echo "❌ Error: " . $e->getMessage() . "\n";
+    echo "Error: " . $e->getMessage() . "\n";
 }
 echo "</pre>";
