@@ -1,0 +1,11 @@
+# Config file (different per environment)
+api/config.php
+
+# Uploads
+uploads/
+
+# OS/IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
