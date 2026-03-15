@@ -2079,9 +2079,11 @@ $queryString = http_build_query($queryParams);
     let editKecamatanData = [];
     let editKelurahanData = [];
 
+    const WILAYAH_API = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+
     async function loadEditWilayah() {
         try {
-            const provResponse = await fetch('../api/wilayah.php?type=provinsi');
+            const provResponse = await fetch(WILAYAH_API + '/provinces.json');
             editAllProvinsi = await provResponse.json();
 
             // Populate provinsi dropdown
@@ -2097,7 +2099,7 @@ $queryString = http_build_query($queryParams);
 
             // Fetch all cities in PARALLEL
             const kotaPromises = editAllProvinsi.map(prov =>
-                fetch('../api/wilayah.php?type=kota&id=' + prov.id)
+                fetch(WILAYAH_API + '/regencies/' + prov.id + '.json')
                     .then(r => r.json())
                     .then(kotaList => {
                         if (Array.isArray(kotaList)) {
@@ -2178,7 +2180,7 @@ $queryString = http_build_query($queryParams);
 
     async function loadEditKecamatan(kotaId, keepSelection = false) {
         try {
-            const response = await fetch('../api/wilayah.php?type=kecamatan&id=' + kotaId);
+            const response = await fetch(WILAYAH_API + '/districts/' + kotaId + '.json');
             editKecamatanData = await response.json();
 
             const kecSelect = document.getElementById('editKecamatan');
@@ -2200,7 +2202,7 @@ $queryString = http_build_query($queryParams);
 
     async function loadEditKelurahan(kecamatanId, keepSelection = false) {
         try {
-            const response = await fetch('../api/wilayah.php?type=kelurahan&id=' + kecamatanId);
+            const response = await fetch(WILAYAH_API + '/villages/' + kecamatanId + '.json');
             editKelurahanData = await response.json();
 
             const kelSelect = document.getElementById('editKelurahan');

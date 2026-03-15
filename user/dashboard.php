@@ -1686,9 +1686,11 @@ $statusInfo = $statusLabels[$data['status']] ?? $statusLabels['pending'];
         let userKecamatanData = [];
         let userKelurahanData = [];
 
+        const WILAYAH_API = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+
         async function loadUserWilayah() {
             try {
-                const provResponse = await fetch('../api/wilayah.php?type=provinsi');
+                const provResponse = await fetch(WILAYAH_API + '/provinces.json');
                 userAllProvinsi = await provResponse.json();
 
                 // Populate provinsi dropdown
@@ -1706,7 +1708,7 @@ $statusInfo = $statusLabels[$data['status']] ?? $statusLabels['pending'];
 
                 // Fetch all cities in PARALLEL
                 const kotaPromises = userAllProvinsi.map(prov =>
-                    fetch('../api/wilayah.php?type=kota&id=' + prov.id)
+                    fetch(WILAYAH_API + '/regencies/' + prov.id + '.json')
                         .then(r => r.json())
                         .then(kotaList => {
                             if (Array.isArray(kotaList)) {
@@ -1801,7 +1803,7 @@ $statusInfo = $statusLabels[$data['status']] ?? $statusLabels['pending'];
 
         async function loadUserKecamatan(kotaId, keepSelection = false) {
             try {
-                const response = await fetch('../api/wilayah.php?type=kecamatan&id=' + kotaId);
+                const response = await fetch(WILAYAH_API + '/districts/' + kotaId + '.json');
                 userKecamatanData = await response.json();
 
                 const kecSelect = document.getElementById('userKecamatan');
@@ -1823,7 +1825,7 @@ $statusInfo = $statusLabels[$data['status']] ?? $statusLabels['pending'];
 
         async function loadUserKelurahan(kecamatanId, keepSelection = false) {
             try {
-                const response = await fetch('../api/wilayah.php?type=kelurahan&id=' + kecamatanId);
+                const response = await fetch(WILAYAH_API + '/villages/' + kecamatanId + '.json');
                 userKelurahanData = await response.json();
 
                 const kelSelect = document.getElementById('userKelurahan');
