@@ -286,11 +286,11 @@ if ($filterKategori) {
 $pengeluaranQuery .= " ORDER BY tp.tanggal DESC, tp.created_at DESC";
 $pengeluaranResult = $conn->query($pengeluaranQuery);
 
-// Calculate summary (only approved transactions)
+// Calculate summary (approved + NULL status for backward compat with old data)
 $summaryQuery = "
     SELECT 
-        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pemasukan WHERE status = 'approved' $dateFilter) as total_masuk,
-        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pengeluaran WHERE status = 'approved' $dateFilter) as total_keluar,
+        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pemasukan WHERE (status = 'approved' OR status IS NULL) $dateFilter) as total_masuk,
+        (SELECT COALESCE(SUM(nominal), 0) FROM transaksi_pengeluaran WHERE (status = 'approved' OR status IS NULL) $dateFilter) as total_keluar,
         (SELECT COUNT(*) FROM transaksi_pemasukan WHERE status = 'pending') as pending_masuk,
         (SELECT COUNT(*) FROM transaksi_pengeluaran WHERE status = 'pending') as pending_keluar
 ";
