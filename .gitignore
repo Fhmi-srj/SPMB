@@ -4,8 +4,22 @@ api/config.php
 # Uploads
 uploads/
 
+# Hosting local copy
+hosting/
+
+# Error logs
+error_log
+*/error_log
+
 # OS/IDE files
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+
+# Laravel artifacts (from old setup on hosting)
+.env
+vendor/
+storage/
+bootstrap/cache/
+node_modules/
