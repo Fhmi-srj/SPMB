@@ -1,0 +1,49 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Force HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+    # Allow direct access to existing files and directories
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Clean URL rewrites
+    RewriteRule ^daftar$ pendaftaran.php [L,QSA]
+    RewriteRule ^cek-status$ cek-status.php [L,QSA]
+    RewriteRule ^data-pendaftar$ data-pendaftar.php [L,QSA]
+    RewriteRule ^kartu-peserta$ kartu-peserta.php [L,QSA]
+
+    # Admin routes
+    RewriteRule ^admin/?$ admin/index.php [L,QSA]
+    RewriteRule ^admin/(.+)$ admin/$1 [L,QSA]
+
+    # User routes
+    RewriteRule ^user/?$ user/index.php [L,QSA]
+    RewriteRule ^user/(.+)$ user/$1 [L,QSA]
+
+    # API routes
+    RewriteRule ^api/(.+)$ api/$1 [L,QSA]
+
+    # Default - serve index.php for root
+    RewriteRule ^$ index.php [L,QSA]
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# PHP settings
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    php_value max_execution_time 120
+</IfModule>
