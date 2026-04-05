@@ -1080,13 +1080,11 @@ $conn->close();
         let kecamatanData = [];
         let kelurahanData = [];
 
-        const WILAYAH_API = 'https://www.emsifa.com/api-wilayah-indonesia/api';
-
         // Load all provinces and cities on page load
         async function loadAllWilayah() {
             try {
                 // Load provinces
-                const provResponse = await fetch(WILAYAH_API + '/provinces.json');
+                const provResponse = await fetch('api/wilayah.php?type=provinsi');
                 allProvinsi = await provResponse.json();
 
                 // Populate provinsi dropdown
@@ -1101,7 +1099,7 @@ $conn->close();
 
                 // Load all cities in PARALLEL
                 const kotaPromises = allProvinsi.map(prov =>
-                    fetch(WILAYAH_API + '/regencies/' + prov.id + '.json')
+                    fetch('api/wilayah.php?type=kota&id=' + prov.id)
                         .then(r => r.json())
                         .then(kotaList => {
                             if (Array.isArray(kotaList)) {
@@ -1192,7 +1190,7 @@ $conn->close();
         // Load kecamatan data
         async function loadKecamatan(kotaId) {
             try {
-                const response = await fetch(WILAYAH_API + '/districts/' + kotaId + '.json');
+                const response = await fetch('api/wilayah.php?type=kecamatan&id=' + kotaId);
                 kecamatanData = await response.json();
 
                 const kecSelect = document.getElementById('kecamatan');
@@ -1215,7 +1213,7 @@ $conn->close();
         // Load kelurahan data
         async function loadKelurahan(kecamatanId) {
             try {
-                const response = await fetch(WILAYAH_API + '/villages/' + kecamatanId + '.json');
+                const response = await fetch('api/wilayah.php?type=kelurahan&id=' + kecamatanId);
                 kelurahanData = await response.json();
 
                 const kelSelect = document.getElementById('kelurahan_desa');

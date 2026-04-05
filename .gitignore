@@ -1,25 +1,24 @@
-# Config file (different per environment)
-api/config.php
-
-# Uploads
-uploads/
-
-# Hosting local copy
-hosting/
-
-# Error logs
-error_log
-*/error_log
-
-# OS/IDE files
+*.log
 .DS_Store
-Thumbs.db
-.idea/
-.vscode/
-
-# Laravel artifacts (from old setup on hosting)
 .env
-vendor/
-storage/
-bootstrap/cache/
-node_modules/
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+_old/
+Homestead.json
+Homestead.yaml
+Thumbs.db
