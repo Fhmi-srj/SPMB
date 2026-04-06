@@ -16,11 +16,15 @@ use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\ProfilController;
 use App\Http\Controllers\Api\UserPortalController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\WilayahController;
 
 // =============================================
 // Public Routes (tanpa auth)
 // =============================================
 Route::post('auth/login', [AuthController::class, 'login']);
+
+// Wilayah (Provinsi, Kota, Kecamatan, Kelurahan)
+Route::get('wilayah', [WilayahController::class, 'index']);
 
 // Pengaturan publik (untuk landing page)
 Route::get('pengaturan/public', [PengaturanController::class, 'publicSettings']);
