@@ -41,11 +41,13 @@ export default function Pendaftaran() {
     const [meta, setMeta] = useState({});
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({ search: '', lembaga: '', status: '', page: 1 });
+    const [searchInput, setSearchInput] = useState('');
     const [selected, setSelected] = useState(null);
     const [showDetail, setShowDetail] = useState(false);
     const [showEdit, setShowEdit] = useState(false);
     const [editForm, setEditForm] = useState({});
     const [saving, setSaving] = useState(false);
+    const searchTimer = React.useRef(null);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -59,6 +61,15 @@ export default function Pendaftaran() {
     }, [token, filters]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
+
+    // Debounce search input
+    const handleSearchInput = (value) => {
+        setSearchInput(value);
+        clearTimeout(searchTimer.current);
+        searchTimer.current = setTimeout(() => {
+            setFilters(f => ({ ...f, search: value, page: 1 }));
+        }, 400);
+    };
 
     const openDetail = (row) => { setSelected(row); setShowDetail(true); };
     const openEdit = (row) => {
@@ -146,7 +157,8 @@ export default function Pendaftaran() {
             <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
                 <div className="space-y-3">
                     <input type="text" placeholder="Cari nama, NISN, atau asal sekolah..."
-                        value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value, page: 1 }))}
+                        value={searchInput} onChange={e => handleSearchInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { clearTimeout(searchTimer.current); setFilters(f => ({ ...f, search: searchInput, page: 1 })); } }}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm" />
                     <div className="flex flex-wrap gap-2">
                         <select value={filters.lembaga} onChange={e => setFilters(f => ({ ...f, lembaga: e.target.value, page: 1 }))}
@@ -162,7 +174,7 @@ export default function Pendaftaran() {
                             <option value="verified">Terverifikasi</option>
                             <option value="rejected">Ditolak</option>
                         </select>
-                        <button type="button" onClick={() => setFilters(f => ({ ...f, page: 1 }))}
+                        <button type="button" onClick={() => { clearTimeout(searchTimer.current); setFilters(f => ({ ...f, search: searchInput, page: 1 })); }}
                             className="bg-[#E67E22] text-white px-4 py-2 rounded-lg hover:bg-[#D35400] transition text-sm flex items-center gap-2">
                             <i className="fas fa-search"></i><span className="hidden sm:inline">Cari</span>
                         </button>
