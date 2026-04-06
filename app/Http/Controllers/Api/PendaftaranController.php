@@ -95,6 +95,26 @@ class PendaftaranController extends Controller
         ]);
     }
 
+    /** Cari pendaftar publik berdasarkan nama (untuk halaman Cek Status) */
+    public function searchPublic(Request $request): JsonResponse
+    {
+        $q = $request->query('q', '');
+
+        if (strlen($q) < 2) {
+            return response()->json(['success' => true, 'data' => []]);
+        }
+
+        $results = Pendaftaran::where('nama', 'like', "%{$q}%")
+            ->orderBy('created_at', 'desc')
+            ->limit(20)
+            ->get(['nama', 'lembaga', 'status', 'created_at']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $results,
+        ]);
+    }
+
     /** Buat pendaftaran baru (publik) */
     public function store(Request $request): JsonResponse
     {

@@ -37,6 +37,7 @@ Route::get('kontak', [KontakController::class, 'index']);
 // Pendaftaran publik
 Route::post('pendaftaran', [PendaftaranController::class, 'store']);
 Route::post('pendaftaran/cek-status', [PendaftaranController::class, 'cekStatus']);
+Route::get('cek-status', [PendaftaranController::class, 'searchPublic']);
 
 // User Portal (pendaftar) - Public
 Route::post('user/login', [UserPortalController::class, 'login']);
