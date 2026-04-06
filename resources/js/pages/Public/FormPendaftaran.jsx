@@ -224,29 +224,29 @@ export default function FormPendaftaran() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Provinsi <span className="text-red-500">*</span></label>
-                                        <select value={form.provinsi || ''} onChange={e => { set('provinsi', e.target.value); loadKota(e.target.value); }} className={selectCls}>
+                                        <select value={form.provinsi || ''} onChange={e => { set('provinsi', e.target.value); set('kota_kab', ''); set('kecamatan', ''); set('kelurahan_desa', ''); setKota([]); setKecamatan([]); setKelurahan([]); if (e.target.value) loadKota(e.target.value); }} className={selectCls}>
                                             <option value="">-- Pilih Provinsi --</option>
                                             {provinsi.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
                                         </select>
                                     </div>
-                                    <div>
+                                    <div style={{ opacity: form.provinsi ? 1 : 0.5, transition: 'opacity 0.3s' }}>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Kota/Kabupaten <span className="text-red-500">*</span></label>
-                                        <select value={form.kota_kab || ''} onChange={e => { set('kota_kab', e.target.value); loadKecamatan(e.target.value); }} className={selectCls}>
-                                            <option value="">-- Pilih Kota/Kabupaten --</option>
+                                        <select value={form.kota_kab || ''} onChange={e => { set('kota_kab', e.target.value); set('kecamatan', ''); set('kelurahan_desa', ''); setKecamatan([]); setKelurahan([]); if (e.target.value) loadKecamatan(e.target.value); }} className={selectCls} disabled={!form.provinsi}>
+                                            <option value="">{form.provinsi ? '-- Pilih Kota/Kabupaten --' : '⬆ Pilih Provinsi terlebih dahulu'}</option>
                                             {kota.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
                                         </select>
                                     </div>
-                                    <div>
+                                    <div style={{ opacity: form.kota_kab ? 1 : 0.5, transition: 'opacity 0.3s' }}>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Kecamatan <span className="text-red-500">*</span></label>
-                                        <select value={form.kecamatan || ''} onChange={e => { set('kecamatan', e.target.value); loadKelurahan(e.target.value); }} className={selectCls} disabled={kecamatan.length === 0}>
-                                            <option value="">-- Pilih Kecamatan --</option>
+                                        <select value={form.kecamatan || ''} onChange={e => { set('kecamatan', e.target.value); set('kelurahan_desa', ''); setKelurahan([]); if (e.target.value) loadKelurahan(e.target.value); }} className={selectCls} disabled={!form.kota_kab}>
+                                            <option value="">{form.kota_kab ? '-- Pilih Kecamatan --' : '⬆ Pilih Kota/Kabupaten terlebih dahulu'}</option>
                                             {kecamatan.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
                                         </select>
                                     </div>
-                                    <div>
+                                    <div style={{ opacity: form.kecamatan ? 1 : 0.5, transition: 'opacity 0.3s' }}>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Kelurahan/Desa <span className="text-red-500">*</span></label>
-                                        <select value={form.kelurahan_desa || ''} onChange={e => set('kelurahan_desa', e.target.value)} className={selectCls} disabled={kelurahan.length === 0}>
-                                            <option value="">-- Pilih Kelurahan/Desa --</option>
+                                        <select value={form.kelurahan_desa || ''} onChange={e => set('kelurahan_desa', e.target.value)} className={selectCls} disabled={!form.kecamatan}>
+                                            <option value="">{form.kecamatan ? '-- Pilih Kelurahan/Desa --' : '⬆ Pilih Kecamatan terlebih dahulu'}</option>
                                             {kelurahan.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
                                         </select>
                                     </div>
