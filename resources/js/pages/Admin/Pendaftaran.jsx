@@ -68,7 +68,7 @@ export default function Pendaftaran() {
         clearTimeout(searchTimer.current);
         searchTimer.current = setTimeout(() => {
             setFilters(f => ({ ...f, search: value, page: 1 }));
-        }, 400);
+        }, 300);
     };
 
     const openDetail = (row) => { setSelected(row); setShowDetail(true); };
@@ -156,27 +156,37 @@ export default function Pendaftaran() {
             {/* Filters */}
             <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
                 <div className="space-y-3">
-                    <input type="text" placeholder="Cari nama, NISN, atau asal sekolah..."
-                        value={searchInput} onChange={e => handleSearchInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') { clearTimeout(searchTimer.current); setFilters(f => ({ ...f, search: searchInput, page: 1 })); } }}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm" />
+                    <div className="relative">
+                        <input type="text" placeholder="Cari nama, NISN, atau asal sekolah..."
+                            value={searchInput} onChange={e => handleSearchInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') { clearTimeout(searchTimer.current); setFilters(f => ({ ...f, search: searchInput, page: 1 })); } }}
+                            className="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm transition-all" />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            {loading && <div className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"></div>}
+                            {searchInput && !loading && (
+                                <button onClick={() => { setSearchInput(''); setFilters(f => ({ ...f, search: '', page: 1 })); }} className="text-gray-400 hover:text-gray-600">
+                                    <i className="fas fa-times-circle"></i>
+                                </button>
+                            )}
+                        </div>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                         <select value={filters.lembaga} onChange={e => setFilters(f => ({ ...f, lembaga: e.target.value, page: 1 }))}
-                            className="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm">
+                            className="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm bg-white">
                             <option value="">Semua Lembaga</option>
                             <option value="SMP NU BP">SMP NU BP</option>
                             <option value="MA ALHIKAM">MA ALHIKAM</option>
                         </select>
                         <select value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value, page: 1 }))}
-                            className="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm">
+                            className="flex-1 min-w-[120px] px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm bg-white">
                             <option value="">Semua Status</option>
                             <option value="pending">Menunggu</option>
                             <option value="verified">Terverifikasi</option>
                             <option value="rejected">Ditolak</option>
                         </select>
                         <button type="button" onClick={() => { clearTimeout(searchTimer.current); setFilters(f => ({ ...f, search: searchInput, page: 1 })); }}
-                            className="bg-[#E67E22] text-white px-4 py-2 rounded-lg hover:bg-[#D35400] transition text-sm flex items-center gap-2">
-                            <i className="fas fa-search"></i><span className="hidden sm:inline">Cari</span>
+                            className="bg-[#E67E22] text-white px-6 py-2 rounded-lg hover:bg-[#D35400] transition text-sm font-medium flex items-center gap-2">
+                            <i className="fas fa-search"></i><span>Cari</span>
                         </button>
                     </div>
                 </div>
