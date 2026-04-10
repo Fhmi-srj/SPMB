@@ -203,7 +203,7 @@ class PendaftaranController extends Controller
         $pendaftaran->update($data);
 
         ActivityLog::create([
-            'user_id' => auth()->id(),
+            'admin_id' => auth()->id(),
             'action' => 'UPDATE',
             'description' => 'Mengupdate data pendaftaran: ' . $pendaftaran->nama,
             'ip_address' => $request->ip(),
@@ -236,7 +236,7 @@ class PendaftaranController extends Controller
         $pendaftaran->delete();
 
         ActivityLog::create([
-            'user_id' => auth()->id(),
+            'admin_id' => auth()->id(),
             'action' => 'DELETE',
             'description' => 'Menghapus pendaftaran: ' . $nama,
             'ip_address' => $request->ip(),
@@ -343,7 +343,7 @@ class PendaftaranController extends Controller
         $writer->save($tempPath);
 
         ActivityLog::create([
-            'user_id' => auth()->id(),
+            'admin_id' => auth()->id(),
             'action' => 'EXPORT',
             'description' => 'Export data pendaftaran ke Excel (' . $data->count() . ' records)',
             'ip_address' => request()->ip(),
@@ -385,7 +385,7 @@ class PendaftaranController extends Controller
         $this->sendWhatsApp($pendaftaran->no_hp_wali, $message);
 
         ActivityLog::create([
-            'user_id' => auth()->id(),
+            'admin_id' => auth()->id(),
             'action' => 'WA_BERKAS',
             'description' => 'Kirim notifikasi kekurangan berkas ke: ' . $pendaftaran->nama,
             'ip_address' => $request->ip(),
@@ -408,7 +408,7 @@ class PendaftaranController extends Controller
         $this->sendWhatsApp($pendaftaran->no_hp_wali, $message);
 
         ActivityLog::create([
-            'user_id' => auth()->id(),
+            'admin_id' => auth()->id(),
             'action' => 'WA_WELCOME',
             'description' => 'Kirim ucapan selamat ke: ' . $pendaftaran->nama,
             'ip_address' => $request->ip(),

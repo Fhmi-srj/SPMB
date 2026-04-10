@@ -33,7 +33,7 @@ class BeasiswaController extends Controller
         ]);
 
         ActivityLog::create([
-            'user_id'    => auth()->id(),
+            'admin_id'    => auth()->id(),
             'action'     => 'ADD',
             'description' => 'Tambah beasiswa: ' . $beasiswa->jenis,
             'ip_address' => request()->ip(),

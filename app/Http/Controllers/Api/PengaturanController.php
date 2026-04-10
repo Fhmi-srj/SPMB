@@ -38,7 +38,7 @@ class PengaturanController extends Controller
         $setting->save();
 
         ActivityLog::create([
-            'user_id'    => auth()->id(),
+            'admin_id'    => auth()->id(),
             'action'     => 'UPDATE',
             'description' => "Update pengaturan: {$key}",
             'ip_address' => $request->ip(),
@@ -58,7 +58,7 @@ class PengaturanController extends Controller
         }
 
         ActivityLog::create([
-            'user_id'    => auth()->id(),
+            'admin_id'    => auth()->id(),
             'action'     => 'UPDATE',
             'description' => 'Update pengaturan bulk',
             'ip_address' => $request->ip(),

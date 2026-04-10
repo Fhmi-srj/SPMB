@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         // Log activity
         ActivityLog::create([
-            'user_id'     => $user->id,
+            'admin_id'    => $user->id,
             'action'      => 'LOGIN',
             'description' => 'Login berhasil',
             'ip_address'  => $request->ip(),
@@ -100,7 +100,7 @@ class AuthController extends Controller
         $user->save();
 
         ActivityLog::create([
-            'user_id'     => $user->id,
+            'admin_id'    => $user->id,
             'action'      => 'PASSWORD_CHANGE',
             'description' => 'Mengubah password',
             'ip_address'  => $request->ip(),
