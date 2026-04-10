@@ -14,7 +14,7 @@ class UserManagementController extends Controller
         $users = User::select('id', 'username', 'nama', 'role', 'created_at')
             ->orderBy('id')
             ->get();
-        return response()->json($users);
+        return response()->json(['success' => true, 'data' => $users]);
     }
 
     public function store(Request $request)
