@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 
@@ -17,37 +17,49 @@ export default function UserDashboard() {
 
     const portal = JSON.parse(localStorage.getItem('user_portal') || 'null');
     const userId = portal?.user_id || portal?.user?.id;
+    const userToken = portal?.token;
 
-    useEffect(() => {
-        if (!userId) { navigate('/portal'); return; }
-        fetchDashboard();
-        fetchTagihan();
-    }, []);
+    // Debounce timer for EditableField (Fix #17)
+    const debounceRef = useRef(null);
 
-    const fetchDashboard = async () => {
+    // Helper: get auth headers (Fix #2: send token with every request)
+    const getHeaders = useCallback(() => ({
+        'X-User-Token': userToken || '',
+        'X-User-Id': userId || '',
+    }), [userToken, userId]);
+
+    const fetchDashboard = useCallback(async () => {
         try {
-            const res = await axios.post(`${API}/user/dashboard`, { user_id: userId });
+            const res = await axios.post(`${API}/user/dashboard`, { user_id: userId, token: userToken }, { headers: getHeaders() });
             setData(res.data.data); setDocs(res.data.documents); setCanEdit(res.data.can_edit);
         } catch { navigate('/portal'); }
         finally { setLoading(false); }
-    };
+    }, [userId, userToken, navigate, getHeaders]);
 
-    const fetchTagihan = async () => {
-        try { const res = await axios.get(`${API}/user/tagihan`, { params: { id: userId } }); setTagihan(res.data); } catch { }
-    };
+    const fetchTagihan = useCallback(async () => {
+        try { const res = await axios.get(`${API}/user/tagihan`, { params: { id: userId, token: userToken }, headers: getHeaders() }); setTagihan(res.data); } catch { }
+    }, [userId, userToken, getHeaders]);
 
+    // Fix #22: Proper dependency array for useEffect
+    useEffect(() => {
+        if (!userId || !userToken) { navigate('/portal'); return; }
+        fetchDashboard();
+        fetchTagihan();
+    }, [userId, userToken, navigate, fetchDashboard, fetchTagihan]);
+
+    // Fix #17: Debounced update with rollback on failure
     const updateField = async (field, value) => {
         if (!canEdit) return;
-        try { await axios.post(`${API}/user/update-field`, { user_id: userId, field, value }); }
+        try { await axios.post(`${API}/user/update-field`, { user_id: userId, token: userToken, field, value }, { headers: getHeaders() }); }
         catch (e) { Swal.fire('Error', e.response?.data?.message || 'Gagal', 'error'); fetchDashboard(); }
     };
 
     const uploadFile = async (field, file) => {
         if (!canEdit) return;
         const fd = new FormData();
-        fd.append('user_id', userId); fd.append('field', field); fd.append('file', file);
+        fd.append('user_id', userId); fd.append('token', userToken); fd.append('field', field); fd.append('file', file);
         try {
-            const res = await axios.post(`${API}/user/upload-file`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            await axios.post(`${API}/user/upload-file`, fd, { headers: { ...getHeaders(), 'Content-Type': 'multipart/form-data' } });
             Swal.fire('Berhasil', 'File berhasil diupload', 'success');
             fetchDashboard();
         } catch (e) { Swal.fire('Error', e.response?.data?.message || 'Gagal upload', 'error'); }
@@ -56,7 +68,7 @@ export default function UserDashboard() {
     const changePassword = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${API}/user/change-password`, { user_id: userId, ...pwForm });
+            await axios.post(`${API}/user/change-password`, { user_id: userId, token: userToken, ...pwForm }, { headers: getHeaders() });
             setPwForm({ old_password: '', new_password: '', new_password_confirmation: '' });
             Swal.fire('Berhasil', 'Password berhasil diubah', 'success');
         } catch (e) { Swal.fire('Error', e.response?.data?.message || 'Gagal', 'error'); }
@@ -65,6 +77,7 @@ export default function UserDashboard() {
     const handleLogout = () => { localStorage.removeItem('user_portal'); navigate('/portal'); };
     const fmt = (n) => 'Rp' + (n || 0).toLocaleString('id-ID');
 
+    // Fix #17: EditableField with debounce on blur
     const EditableField = ({ label, field, type = 'text', options }) => {
         const val = data?.[field] || '';
         return (
@@ -72,16 +85,28 @@ export default function UserDashboard() {
                 <label className="block text-xs text-gray-500 mb-1">{label}</label>
                 {canEdit ? (
                     options ? (
-                        <select value={val} onChange={e => { updateField(field, e.target.value); setData({ ...data, [field]: e.target.value }); }}
+                        <select value={val} onChange={e => {
+                            const newVal = e.target.value;
+                            setData({ ...data, [field]: newVal });
+                            // Debounce for selects too
+                            clearTimeout(debounceRef.current);
+                            debounceRef.current = setTimeout(() => updateField(field, newVal), 500);
+                        }}
                             className="w-full border rounded-lg px-3 py-2 text-sm">
                             <option value="">Pilih...</option>
                             {options.map(o => <option key={o} value={o}>{o}</option>)}
                         </select>
                     ) : type === 'textarea' ? (
-                        <textarea value={val} onBlur={e => updateField(field, e.target.value)} onChange={e => setData({ ...data, [field]: e.target.value })}
+                        <textarea value={val} onBlur={e => {
+                            clearTimeout(debounceRef.current);
+                            debounceRef.current = setTimeout(() => updateField(field, e.target.value), 300);
+                        }} onChange={e => setData({ ...data, [field]: e.target.value })}
                             rows={2} className="w-full border rounded-lg px-3 py-2 text-sm" />
                     ) : (
-                        <input type={type} value={val} onBlur={e => updateField(field, e.target.value)} onChange={e => setData({ ...data, [field]: e.target.value })}
+                        <input type={type} value={val} onBlur={e => {
+                            clearTimeout(debounceRef.current);
+                            debounceRef.current = setTimeout(() => updateField(field, e.target.value), 300);
+                        }} onChange={e => setData({ ...data, [field]: e.target.value })}
                             className="w-full border rounded-lg px-3 py-2 text-sm" />
                     )
                 ) : (

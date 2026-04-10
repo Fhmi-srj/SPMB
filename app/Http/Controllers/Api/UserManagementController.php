@@ -20,7 +20,7 @@ class UserManagementController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'username' => 'required|string|max:50|unique:users',
+            'username' => 'required|string|max:50|unique:admin',
             'nama'     => 'required|string|max:100',
             'role'     => 'required|in:super_admin,admin,panitia',
             'password' => 'required|string|min:6',
@@ -46,7 +46,7 @@ class UserManagementController extends Controller
         }
 
         $request->validate([
-            'username' => 'required|string|max:50|unique:users,username,' . $id,
+            'username' => 'required|string|max:50|unique:admin,username,' . $id,
             'nama'     => 'required|string|max:100',
             'role'     => 'required|in:super_admin,admin,panitia',
         ]);

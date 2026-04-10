@@ -118,6 +118,17 @@ class PendaftaranController extends Controller
     /** Buat pendaftaran baru (publik) */
     public function store(Request $request): JsonResponse
     {
+        // Normalize no_hp_wali before validation (Fix #16)
+        if ($request->has('no_hp_wali')) {
+            $phone = preg_replace('/[^0-9]/', '', $request->no_hp_wali);
+            if (str_starts_with($phone, '62')) {
+                $phone = '0' . substr($phone, 2);
+            } elseif (!str_starts_with($phone, '0')) {
+                $phone = '0' . $phone;
+            }
+            $request->merge(['no_hp_wali' => $phone]);
+        }
+
         $request->validate([
             'nama' => 'required|string|max:100',
             'lembaga' => 'required|in:SMP NU BP,MA ALHIKAM',
@@ -136,26 +147,42 @@ class PendaftaranController extends Controller
             ], 403);
         }
 
-        // Generate no_registrasi
-        $tahunAjaran = Pengaturan::where('kunci', 'tahun_ajaran')->value('nilai');
-        $tahun = substr(($tahunAjaran ?? date('Y')), 0, 4);
-        $bulan = date('m');
-        $count = Pendaftaran::whereMonth('created_at', date('m'))->count() + 1;
-        $noReg = str_pad($count, 3, '0', STR_PAD_LEFT) . '.' . $bulan . $tahun;
+        // Generate no_registrasi with DB lock to prevent race condition (Fix #5)
+        $pendaftaran = \DB::transaction(function () use ($request) {
+            $tahunAjaran = Pengaturan::where('kunci', 'tahun_ajaran')->value('nilai');
+            $tahun = substr(($tahunAjaran ?? date('Y')), 0, 4);
+            $bulan = date('m');
+            $count = Pendaftaran::whereMonth('created_at', date('m'))->lockForUpdate()->count() + 1;
+            $noReg = str_pad($count, 3, '0', STR_PAD_LEFT) . '.' . $bulan . $tahun;
 
-        $data = $request->except('password');
-        $data['password'] = Hash::make($request->password);
-        $data['no_registrasi'] = $noReg;
-        $data['status'] = 'pending';
+            // Use whitelist instead of $request->except() to prevent mass assignment (Fix #6, #14)
+            $allowedFields = [
+                'nama', 'lembaga', 'nisn', 'tempat_lahir', 'tanggal_lahir',
+                'jenis_kelamin', 'jumlah_saudara', 'no_kk', 'nik', 'alamat',
+                'provinsi', 'kota_kab', 'kecamatan', 'kelurahan_desa',
+                'asal_sekolah', 'prestasi', 'tingkat_prestasi', 'juara',
+                'pip_pkh', 'status_mukim', 'sumber_info',
+                'nama_ayah', 'tempat_lahir_ayah', 'tanggal_lahir_ayah', 'nik_ayah',
+                'pekerjaan_ayah', 'penghasilan_ayah',
+                'nama_ibu', 'tempat_lahir_ibu', 'tanggal_lahir_ibu', 'nik_ibu',
+                'pekerjaan_ibu', 'penghasilan_ibu',
+                'no_hp_wali',
+            ];
 
-        $pendaftaran = Pendaftaran::create($data);
+            $data = $request->only($allowedFields);
+            $data['password'] = Hash::make($request->password);
+            $data['no_registrasi'] = $noReg;
+            $data['status'] = 'pending';
+
+            return Pendaftaran::create($data);
+        });
 
         return response()->json([
             'success' => true,
-            'message' => 'Pendaftaran berhasil! Nomor registrasi Anda: ' . $noReg,
+            'message' => 'Pendaftaran berhasil! Nomor registrasi Anda: ' . $pendaftaran->no_registrasi,
             'data' => [
                 'id' => $pendaftaran->id,
-                'no_registrasi' => $noReg,
+                'no_registrasi' => $pendaftaran->no_registrasi,
             ],
         ], 201);
     }
@@ -165,11 +192,9 @@ class PendaftaranController extends Controller
     {
         $pendaftaran = Pendaftaran::findOrFail($id);
 
-        $data = $request->except(['password', '_method']);
-
-        if ($request->filled('password')) {
-            $data['password'] = Hash::make($request->password);
-        }
+        // Whitelist only allowed fields for admin update (Fix #15)
+        $allowedFields = ['status', 'catatan_admin'];
+        $data = $request->only($allowedFields);
 
         if ($request->filled('catatan_admin')) {
             $data['catatan_updated_at'] = now();

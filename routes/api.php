@@ -67,11 +67,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pendaftaran (admin CRUD)
     Route::get('pendaftaran', [PendaftaranController::class, 'index']);
-    Route::get('pendaftaran/{id}', [PendaftaranController::class, 'show']);
+    Route::get('pendaftaran/export/excel', [PendaftaranController::class, 'exportExcel']); // Must be BEFORE {id} route
+    Route::get('pendaftaran/{id}', [PendaftaranController::class, 'show'])->where('id', '[0-9]+');
     Route::put('pendaftaran/{id}', [PendaftaranController::class, 'update']);
     Route::delete('pendaftaran/{id}', [PendaftaranController::class, 'destroy']);
     Route::post('pendaftaran/{id}/upload-dokumen', [PendaftaranController::class, 'uploadDokumen']);
-    Route::get('pendaftaran/export/excel', [PendaftaranController::class, 'exportExcel']);
     Route::post('pendaftaran/{id}/notify-berkas', [PendaftaranController::class, 'notifyBerkas']);
     Route::post('pendaftaran/{id}/notify-welcome', [PendaftaranController::class, 'notifyWelcome']);
 

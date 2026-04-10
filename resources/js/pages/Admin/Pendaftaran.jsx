@@ -51,16 +51,26 @@ export default function Pendaftaran() {
 
     const fetchData = useCallback(async () => {
         setLoading(true);
-        const params = new URLSearchParams({ ...filters, per_page: 15 }).toString();
-        const res = await fetch(`/api/pendaftaran?${params}`, {
-            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        });
-        const d = await res.json();
-        if (d.success) { setData(d.data); setMeta(d.meta); }
-        setLoading(false);
+        try {
+            const params = new URLSearchParams({ ...filters, per_page: 15 }).toString();
+            const res = await fetch(`/api/pendaftaran?${params}`, {
+                headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+            });
+            const d = await res.json();
+            if (d.success) { setData(d.data); setMeta(d.meta); }
+        } catch (err) {
+            console.error('fetchData error:', err);
+        } finally {
+            setLoading(false);
+        }
     }, [token, filters]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
+
+    // Fix #27: Cleanup search timer on unmount
+    useEffect(() => {
+        return () => clearTimeout(searchTimer.current);
+    }, []);
 
     // Debounce search input
     const handleSearchInput = (value) => {
@@ -80,17 +90,24 @@ export default function Pendaftaran() {
 
     const handleSaveEdit = async () => {
         setSaving(true);
-        const res = await fetch(`/api/pendaftaran/${selected.id}`, {
-            method: 'PUT',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
-            body: JSON.stringify(editForm),
-        });
-        const d = await res.json();
-        setSaving(false);
-        if (d.success) {
-            setShowEdit(false);
-            Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data diperbarui.', confirmButtonColor: '#E67E22', timer: 1500, showConfirmButton: false });
-            fetchData();
+        try {
+            const res = await fetch(`/api/pendaftaran/${selected.id}`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify(editForm),
+            });
+            const d = await res.json();
+            if (d.success) {
+                setShowEdit(false);
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data diperbarui.', confirmButtonColor: '#E67E22', timer: 1500, showConfirmButton: false });
+                fetchData();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: d.message || 'Gagal memperbarui data.', confirmButtonColor: '#E67E22' });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -106,14 +123,20 @@ export default function Pendaftaran() {
         });
         if (!conf.isConfirmed) return;
 
-        const res = await fetch(`/api/pendaftaran/${row.id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        });
-        const d = await res.json();
-        if (d.success) {
-            Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1500, showConfirmButton: false });
-            fetchData();
+        try {
+            const res = await fetch(`/api/pendaftaran/${row.id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+            });
+            const d = await res.json();
+            if (d.success) {
+                Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1500, showConfirmButton: false });
+                fetchData();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: d.message || 'Gagal menghapus.', confirmButtonColor: '#E67E22' });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
         }
     };
 
@@ -127,17 +150,25 @@ export default function Pendaftaran() {
     };
 
     const handleExport = async () => {
-        const params = new URLSearchParams({ lembaga: filters.lembaga, status: filters.status }).toString();
-        const res = await fetch(`/api/pendaftaran/export/excel?${params}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `data-pendaftar-${Date.now()}.xlsx`;
-        a.click();
-        URL.revokeObjectURL(url);
+        try {
+            const params = new URLSearchParams({ lembaga: filters.lembaga, status: filters.status }).toString();
+            const res = await fetch(`/api/pendaftaran/export/excel?${params}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal mengexport data.', confirmButtonColor: '#E67E22' });
+                return;
+            }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `data-pendaftar-${Date.now()}.xlsx`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan saat export.', confirmButtonColor: '#E67E22' });
+        }
     };
 
     return (

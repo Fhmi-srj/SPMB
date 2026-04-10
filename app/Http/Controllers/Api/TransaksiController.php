@@ -63,9 +63,9 @@ class TransaksiController extends Controller
                       ->orderByDesc('transaksi_pemasukan.created_at')
                       ->get();
 
-        // Summary
+        // Summary (Fix #19: both totals use filtered query)
         $totalApproved = (clone $query)->where('transaksi_pemasukan.status', 'approved')->sum('transaksi_pemasukan.nominal');
-        $totalPending  = TransaksiPemasukan::where('status', 'pending')->sum('nominal');
+        $totalPending  = (clone $query)->where('transaksi_pemasukan.status', 'pending')->sum('transaksi_pemasukan.nominal');
 
         return response()->json([
             'data'    => $data,
@@ -89,31 +89,35 @@ class TransaksiController extends Controller
         $user = auth()->user();
         $isAdmin = in_array($user->role, ['super_admin', 'admin']);
 
-        // Auto-generate invoice
-        $today = now()->format('Ymd');
-        $count = TransaksiPemasukan::whereDate('created_at', today())->count() + 1;
-        $invoice = 'INV-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        // Auto-generate invoice with DB lock to prevent race condition (Fix #21)
+        $data = \DB::transaction(function () use ($request, $user, $isAdmin) {
+            $today = now()->format('Ymd');
+            $count = TransaksiPemasukan::whereDate('created_at', today())->lockForUpdate()->count() + 1;
+            $invoice = 'INV-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
-        $pendaftar = Pendaftaran::find($request->pendaftaran_id);
+            $pendaftar = Pendaftaran::find($request->pendaftaran_id);
 
-        $data = TransaksiPemasukan::create([
-            'invoice'           => $invoice,
-            'pendaftaran_id'    => $request->pendaftaran_id,
-            'tanggal'           => $request->tanggal,
-            'nominal'           => $request->nominal,
-            'jenis_pembayaran'  => $request->jenis_pembayaran,
-            'keterangan'        => $request->keterangan,
-            'status'            => $isAdmin ? 'approved' : 'pending',
-            'input_by'          => $user->id,
-            'input_at'          => now(),
-            'approved_by'       => $isAdmin ? $user->id : null,
-            'approved_at'       => $isAdmin ? now() : null,
-        ]);
+            $txn = TransaksiPemasukan::create([
+                'invoice'           => $invoice,
+                'pendaftaran_id'    => $request->pendaftaran_id,
+                'tanggal'           => $request->tanggal,
+                'nominal'           => $request->nominal,
+                'jenis_pembayaran'  => $request->jenis_pembayaran,
+                'keterangan'        => $request->keterangan,
+                'status'            => $isAdmin ? 'approved' : 'pending',
+                'input_by'          => $user->id,
+                'input_at'          => now(),
+                'approved_by'       => $isAdmin ? $user->id : null,
+                'approved_at'       => $isAdmin ? now() : null,
+            ]);
 
-        $statusLabel = $isAdmin ? '' : ' (Menunggu ACC)';
-        $this->logTransaksi('CREATE', 'PEMASUKAN', "Tambah pemasukan {$pendaftar->nama} - Rp" . number_format($request->nominal, 0, ',', '.') . $statusLabel);
+            $statusLabel = $isAdmin ? '' : ' (Menunggu ACC)';
+            $this->logTransaksi('CREATE', 'PEMASUKAN', "Tambah pemasukan {$pendaftar->nama} - Rp" . number_format($request->nominal, 0, ',', '.') . $statusLabel);
 
-        return response()->json(['message' => 'Pemasukan berhasil ditambahkan!' . $statusLabel, 'data' => $data], 201);
+            return ['data' => $txn, 'statusLabel' => $statusLabel];
+        });
+
+        return response()->json(['message' => 'Pemasukan berhasil ditambahkan!' . $data['statusLabel'], 'data' => $data['data']], 201);
     }
 
     public function updatePemasukan(Request $request, $id)
@@ -225,27 +229,32 @@ class TransaksiController extends Controller
         $user = auth()->user();
         $isAdmin = in_array($user->role, ['super_admin', 'admin']);
 
-        $today = now()->format('Ymd');
-        $count = TransaksiPengeluaran::whereDate('created_at', today())->count() + 1;
-        $invoice = 'OUT-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        // Auto-generate invoice with DB lock to prevent race condition (Fix #21)
+        $data = \DB::transaction(function () use ($request, $user, $isAdmin) {
+            $today = now()->format('Ymd');
+            $count = TransaksiPengeluaran::whereDate('created_at', today())->lockForUpdate()->count() + 1;
+            $invoice = 'OUT-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
-        $data = TransaksiPengeluaran::create([
-            'invoice'    => $invoice,
-            'tanggal'    => $request->tanggal,
-            'nominal'    => $request->nominal,
-            'kategori'   => $request->kategori,
-            'keterangan' => $request->keterangan,
-            'status'     => $isAdmin ? 'approved' : 'pending',
-            'input_by'   => $user->id,
-            'input_at'   => now(),
-            'approved_by'=> $isAdmin ? $user->id : null,
-            'approved_at'=> $isAdmin ? now() : null,
-        ]);
+            $txn = TransaksiPengeluaran::create([
+                'invoice'    => $invoice,
+                'tanggal'    => $request->tanggal,
+                'nominal'    => $request->nominal,
+                'kategori'   => $request->kategori,
+                'keterangan' => $request->keterangan,
+                'status'     => $isAdmin ? 'approved' : 'pending',
+                'input_by'   => $user->id,
+                'input_at'   => now(),
+                'approved_by'=> $isAdmin ? $user->id : null,
+                'approved_at'=> $isAdmin ? now() : null,
+            ]);
 
-        $statusLabel = $isAdmin ? '' : ' (Menunggu ACC)';
-        $this->logTransaksi('CREATE', 'PENGELUARAN', "Tambah pengeluaran {$invoice} - Rp" . number_format($request->nominal, 0, ',', '.') . " ({$request->kategori})" . $statusLabel);
+            $statusLabel = $isAdmin ? '' : ' (Menunggu ACC)';
+            $this->logTransaksi('CREATE', 'PENGELUARAN', "Tambah pengeluaran {$invoice} - Rp" . number_format($request->nominal, 0, ',', '.') . " ({$request->kategori})" . $statusLabel);
 
-        return response()->json(['message' => 'Pengeluaran berhasil ditambahkan!' . $statusLabel, 'data' => $data], 201);
+            return ['data' => $txn, 'statusLabel' => $statusLabel];
+        });
+
+        return response()->json(['message' => 'Pengeluaran berhasil ditambahkan!' . $data['statusLabel'], 'data' => $data['data']], 201);
     }
 
     public function updatePengeluaran(Request $request, $id)

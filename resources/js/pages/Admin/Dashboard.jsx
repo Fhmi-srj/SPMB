@@ -350,7 +350,7 @@ export default function Dashboard() {
                                             <span className="text-xs text-gray-400">{new Date(log.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} {new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
                                         </div>
                                         <p className="text-sm text-gray-600">{log.description}</p>
-                                        <p className="text-xs text-gray-400">oleh {log.admin_nama || 'System'}</p>
+                                        <p className="text-xs text-gray-400">oleh {log.user?.nama || 'System'}</p>
                                     </div>
                                 ))}
                             </div>

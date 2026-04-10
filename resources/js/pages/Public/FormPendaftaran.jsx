@@ -32,9 +32,12 @@ export default function FormPendaftaran() {
         fetch('/api/wilayah?type=provinsi').then(r => r.json()).then(d => setProvinsi(d || [])).catch(() => { });
     }, []);
 
-    // Save draft
+    // Save draft (Fix #18: exclude password from localStorage)
     useEffect(() => {
-        if (Object.keys(form).length > 0) localStorage.setItem('pendaftaran_draft', JSON.stringify(form));
+        if (Object.keys(form).length > 0) {
+            const { password, password_confirm, ...safeDraft } = form;
+            localStorage.setItem('pendaftaran_draft', JSON.stringify(safeDraft));
+        }
     }, [form]);
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));

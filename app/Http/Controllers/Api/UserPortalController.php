@@ -13,6 +13,20 @@ use Illuminate\Support\Facades\Storage;
 
 class UserPortalController extends Controller
 {
+    /**
+     * Helper: Normalize phone number to 0xxx format
+     */
+    private function normalizePhone(string $phone): string
+    {
+        $phone = preg_replace('/[^0-9]/', '', $phone);
+        if (str_starts_with($phone, '62')) {
+            $phone = '0' . substr($phone, 2);
+        } elseif (!str_starts_with($phone, '0')) {
+            $phone = '0' . $phone;
+        }
+        return $phone;
+    }
+
     // ─── LOGIN PENDAFTAR ─────────────────────────────────────────
     public function login(Request $request)
     {
@@ -23,15 +37,17 @@ class UserPortalController extends Controller
 
         $phone = preg_replace('/[^0-9]/', '', $request->phone);
 
-        // Try multiple phone formats
+        // Try multiple phone formats (Fix #16: also try normalized format)
         $phoneFormats = [];
+        $normalized = $this->normalizePhone($phone);
         if (str_starts_with($phone, '62')) {
-            $phoneFormats = [$phone, '+' . $phone, '0' . substr($phone, 2), substr($phone, 2)];
+            $phoneFormats = [$phone, '+' . $phone, '0' . substr($phone, 2), substr($phone, 2), $normalized];
         } elseif (str_starts_with($phone, '0')) {
-            $phoneFormats = [$phone, '62' . substr($phone, 1), '+62' . substr($phone, 1), substr($phone, 1)];
+            $phoneFormats = [$phone, '62' . substr($phone, 1), '+62' . substr($phone, 1), substr($phone, 1), $normalized];
         } else {
-            $phoneFormats = [$phone, '0' . $phone, '62' . $phone, '+62' . $phone];
+            $phoneFormats = [$phone, '0' . $phone, '62' . $phone, '+62' . $phone, $normalized];
         }
+        $phoneFormats = array_unique($phoneFormats);
 
         $user = null;
         foreach ($phoneFormats as $tryPhone) {
@@ -47,8 +63,9 @@ class UserPortalController extends Controller
             return response()->json(['success' => false, 'message' => 'Password salah!'], 401);
         }
 
-        // Create a simple token (store in pendaftaran, or just use a signed value)
+        // Create token and SAVE it (Fix #2: token was never stored/validated)
         $token = bin2hex(random_bytes(32));
+        $user->update(['reset_token' => hash('sha256', $token)]);
 
         return response()->json([
             'success' => true,
@@ -61,21 +78,39 @@ class UserPortalController extends Controller
                     'no_registrasi' => $user->no_registrasi,
                     'status'        => $user->status,
                 ],
-                'token' => $token,
+                'token'   => $token,
                 'user_id' => $user->id,
             ],
         ]);
     }
 
+    // ─── VALIDATE TOKEN (reusable helper) ────────────────────────
+    private function validateToken(Request $request): ?Pendaftaran
+    {
+        $token = $request->header('X-User-Token') ?? $request->input('token');
+        $userId = $request->header('X-User-Id') ?? $request->input('user_id');
+
+        if (!$token || !$userId) return null;
+
+        $user = Pendaftaran::find($userId);
+        if (!$user || !$user->reset_token) return null;
+
+        if (!hash_equals($user->reset_token, hash('sha256', $token))) {
+            return null;
+        }
+
+        return $user;
+    }
+
     // ─── GET DASHBOARD DATA ──────────────────────────────────────
     public function dashboard(Request $request)
     {
-        $userId = $request->user_id;
-        $data = Pendaftaran::find($userId);
-
-        if (!$data) {
-            return response()->json(['success' => false, 'message' => 'Data tidak ditemukan'], 404);
+        $user = $this->validateToken($request);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
         }
+
+        $data = $user;
 
         // Document completion
         $documents = [
@@ -107,8 +142,12 @@ class UserPortalController extends Controller
     // ─── UPDATE FIELD ────────────────────────────────────────────
     public function updateField(Request $request)
     {
+        $user = $this->validateToken($request);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
         $request->validate([
-            'user_id' => 'required|exists:pendaftaran,id',
             'field'   => 'required|string',
             'value'   => 'nullable|string',
         ]);
@@ -129,26 +168,28 @@ class UserPortalController extends Controller
             return response()->json(['success' => false, 'message' => 'Field tidak valid'], 422);
         }
 
-        $data = Pendaftaran::find($request->user_id);
-        if (!in_array($data->status, ['pending', 'rejected'])) {
+        if (!in_array($user->status, ['pending', 'rejected'])) {
             return response()->json(['success' => false, 'message' => 'Data tidak dapat diedit'], 422);
         }
 
-        $data->update([$request->field => $request->value]);
+        $user->update([$request->field => $request->value]);
         return response()->json(['success' => true]);
     }
 
     // ─── UPLOAD FILE ─────────────────────────────────────────────
     public function uploadFile(Request $request)
     {
+        $user = $this->validateToken($request);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
         $request->validate([
-            'user_id' => 'required|exists:pendaftaran,id',
             'field'   => 'required|in:file_kk,file_ktp_ortu,file_akta,file_ijazah,file_sertifikat',
             'file'    => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
-        $data = Pendaftaran::find($request->user_id);
-        if (!in_array($data->status, ['pending', 'rejected'])) {
+        if (!in_array($user->status, ['pending', 'rejected'])) {
             return response()->json(['success' => false, 'message' => 'Data tidak dapat diedit'], 422);
         }
 
@@ -156,15 +197,15 @@ class UserPortalController extends Controller
         $subDir = $field === 'file_sertifikat' ? 'sertifikat' : 'dokumen';
 
         // Delete old file
-        if ($data->$field) {
-            Storage::disk('public')->delete("uploads/{$subDir}/{$data->$field}");
+        if ($user->$field) {
+            Storage::disk('public')->delete("uploads/{$subDir}/{$user->$field}");
         }
 
         $ext = $request->file('file')->getClientOriginalExtension();
-        $filename = $data->id . '_' . $field . '_' . time() . '.' . $ext;
+        $filename = $user->id . '_' . $field . '_' . time() . '.' . $ext;
         $request->file('file')->storeAs("uploads/{$subDir}", $filename, 'public');
 
-        $data->update([$field => $filename]);
+        $user->update([$field => $filename]);
 
         return response()->json([
             'success'  => true,
@@ -176,28 +217,34 @@ class UserPortalController extends Controller
     // ─── CHANGE PASSWORD ─────────────────────────────────────────
     public function changePassword(Request $request)
     {
+        $user = $this->validateToken($request);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
         $request->validate([
-            'user_id'          => 'required|exists:pendaftaran,id',
             'old_password'     => 'required|string',
             'new_password'     => 'required|string|min:6|confirmed',
         ]);
 
-        $data = Pendaftaran::find($request->user_id);
-
-        if (!Hash::check($request->old_password, $data->password)) {
+        if (!Hash::check($request->old_password, $user->password)) {
             return response()->json(['success' => false, 'message' => 'Password lama salah'], 422);
         }
 
-        $data->update(['password' => Hash::make($request->new_password)]);
+        $user->update(['password' => Hash::make($request->new_password)]);
         return response()->json(['success' => true, 'message' => 'Password berhasil diubah']);
     }
 
     // ─── GET TAGIHAN ─────────────────────────────────────────────
     public function getTagihan(Request $request)
     {
-        $id = $request->id;
-        $peserta = Pendaftaran::find($id);
-        if (!$peserta) return response()->json(['error' => 'Peserta not found'], 404);
+        $user = $this->validateToken($request);
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        $peserta = $user;
+        $id = $peserta->id;
 
         $lembagaCol = ($peserta->lembaga === 'SMP NU BP') ? 'biaya_smp' : 'biaya_ma';
         $isPondok = $peserta->status_mukim === 'PONDOK PP MAMBAUL HUDA';

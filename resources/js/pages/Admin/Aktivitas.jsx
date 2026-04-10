@@ -44,7 +44,7 @@ export default function Aktivitas() {
     const handleFilter = (e) => {
         e.preventDefault();
         setPage(1);
-        fetch_();
+        // Fix #10: Don't call fetch_() here — useEffect handles it via dependency on page/filters
     };
 
     const clearFilters = () => {

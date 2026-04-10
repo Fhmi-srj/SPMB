@@ -12,13 +12,25 @@ class TransaksiPengeluaran extends Model
     protected $fillable = [
         'invoice', 'tanggal', 'nominal', 'kategori', 'keterangan', 'status',
         'input_by', 'input_at', 'approved_by', 'approved_at', 'catatan_approval',
+        'created_at',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'input_at' => 'datetime',
         'approved_at' => 'datetime',
+        'created_at' => 'datetime',
     ];
+
+    // Auto-fill created_at since timestamps = false
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (!$model->created_at) {
+                $model->created_at = now();
+            }
+        });
+    }
 
     public function inputByUser()
     {
