@@ -313,7 +313,7 @@ class TransaksiController extends Controller
     public function searchPeserta(Request $request)
     {
         $q = $request->q;
-        if (!$q || strlen($q) < 2) return response()->json([]);
+        if (!$q || strlen($q) < 1) return response()->json(['success' => true, 'data' => []]);
 
         $data = Pendaftaran::where('nama', 'like', "%{$q}%")
             ->orWhere('no_registrasi', 'like', "%{$q}%")
@@ -329,7 +329,7 @@ class TransaksiController extends Controller
                 'label'         => ($r->no_registrasi ?? '-') . ' - ' . $r->nama . ' (' . $r->lembaga . ')',
             ]);
 
-        return response()->json($data);
+        return response()->json(['success' => true, 'data' => $data]);
     }
 
     // ─── LOG AKTIVITAS ───────────────────────────────────────────
