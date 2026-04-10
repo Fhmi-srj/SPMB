@@ -43,7 +43,7 @@ export default function Transaksi() {
 
     const searchPesertaFn = async (q) => {
         setSearchPeserta(q);
-        if (q.length < 2) { setSearchResults([]); return; }
+        if (q.length < 1) { setSearchResults([]); return; }
         try {
             const res = await axios.get(`${API}/transaksi/search-peserta`, { headers, params: { q } });
             setSearchResults(res.data.data || []);
