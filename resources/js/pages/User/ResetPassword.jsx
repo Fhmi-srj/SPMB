@@ -25,6 +25,7 @@ export default function ResetPassword() {
         if (password !== confirm) { Swal.fire('Error', 'Konfirmasi password tidak cocok', 'error'); return; }
         setLoading(true);
         try {
+            await axios.get('/sanctum/csrf-cookie');
             await axios.post('/api/user/reset-password', { token, password, password_confirmation: confirm });
             Swal.fire('Berhasil', 'Password berhasil diubah. Silakan login.', 'success');
             navigate('/portal');

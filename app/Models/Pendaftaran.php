@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pendaftaran extends Model
 {
     protected $table = 'pendaftaran';
+    const UPDATED_AT = null; // Table only has created_at, no updated_at column
 
     protected $fillable = [
         'no_registrasi', 'nama', 'lembaga', 'nisn', 'tempat_lahir', 'tanggal_lahir',

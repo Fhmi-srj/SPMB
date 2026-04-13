@@ -17,6 +17,8 @@ export default function UserLogin() {
         e.preventDefault();
         setLoading(true);
         try {
+            // Fetch CSRF cookie first (required by Sanctum statefulApi)
+            await axios.get('/sanctum/csrf-cookie');
             const res = await axios.post('/api/user/login', { phone, password });
             if (res.data.success) {
                 localStorage.setItem('user_portal', JSON.stringify(res.data.data));
@@ -31,6 +33,7 @@ export default function UserLogin() {
         e.preventDefault();
         setForgotLoading(true);
         try {
+            await axios.get('/sanctum/csrf-cookie');
             const res = await axios.post('/api/user/forgot-password', { no_hp: forgotPhone });
             if (res.data.success) {
                 Swal.fire({ icon: 'success', title: 'Berhasil', text: res.data.message, confirmButtonColor: '#E67E22' });

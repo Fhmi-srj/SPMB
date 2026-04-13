@@ -11,16 +11,33 @@ export default function KartuPeserta() {
     const handleCek = async (e) => {
         e.preventDefault();
         setLoading(true); setError(''); setData(null);
-        const res = await fetch('/api/pendaftaran/cek-status', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ no_hp: noHp }),
-        });
-        const d = await res.json();
-        setLoading(false);
-        if (d.success && d.data.status === 'verified') { setData(d.data); }
-        else if (d.success && d.data.status !== 'verified') { setError('Kartu peserta hanya tersedia untuk pendaftar yang sudah diverifikasi.'); }
-        else { setError(d.message ?? 'Data tidak ditemukan'); }
+        try {
+            // Fetch CSRF cookie first (required by Sanctum statefulApi)
+            await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
+            const xsrfToken = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('XSRF-TOKEN='))
+                ?.split('=')[1];
+
+            const res = await fetch('/api/pendaftaran/cek-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    ...(xsrfToken ? { 'X-XSRF-TOKEN': decodeURIComponent(xsrfToken) } : {}),
+                },
+                body: JSON.stringify({ no_hp: noHp }),
+                credentials: 'same-origin',
+            });
+            const d = await res.json();
+            setLoading(false);
+            if (d.success && d.data.status === 'verified') { setData(d.data); }
+            else if (d.success && d.data.status !== 'verified') { setError('Kartu peserta hanya tersedia untuk pendaftar yang sudah diverifikasi.'); }
+            else { setError(d.message ?? 'Data tidak ditemukan'); }
+        } catch {
+            setLoading(false);
+            setError('Terjadi kesalahan jaringan');
+        }
     };
 
     const handlePrint = () => {

@@ -43,8 +43,11 @@ export default function UserDashboard() {
     // Fix #22: Proper dependency array for useEffect
     useEffect(() => {
         if (!userId || !userToken) { navigate('/portal'); return; }
-        fetchDashboard();
-        fetchTagihan();
+        // Fetch CSRF cookie first, then load data
+        axios.get('/sanctum/csrf-cookie').then(() => {
+            fetchDashboard();
+            fetchTagihan();
+        });
     }, [userId, userToken, navigate, fetchDashboard, fetchTagihan]);
 
     // Fix #17: Debounced update with rollback on failure

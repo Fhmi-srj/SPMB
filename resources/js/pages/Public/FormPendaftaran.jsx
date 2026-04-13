@@ -104,11 +104,27 @@ export default function FormPendaftaran() {
         e.preventDefault();
         setLoading(true);
         try {
+            // Fetch CSRF cookie first (required by Sanctum statefulApi)
+            await fetch('/sanctum/csrf-cookie', { credentials: 'same-origin' });
+
+            const xsrfToken = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('XSRF-TOKEN='))
+                ?.split('=')[1];
+
             const fd = new FormData();
             Object.entries(form).forEach(([k, v]) => { if (v !== undefined && v !== null) fd.append(k, v); });
             Object.entries(files).forEach(([k, v]) => { if (v) fd.append(k, v); });
 
-            const res = await fetch('/api/pendaftaran', { method: 'POST', body: fd });
+            const res = await fetch('/api/pendaftaran', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin',
+                headers: {
+                    Accept: 'application/json',
+                    ...(xsrfToken ? { 'X-XSRF-TOKEN': decodeURIComponent(xsrfToken) } : {}),
+                },
+            });
             const data = await res.json();
 
             if (data.success) {
