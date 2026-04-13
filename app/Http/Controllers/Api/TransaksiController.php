@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\TransaksiPemasukan;
 use App\Models\TransaksiPengeluaran;
-use App\Models\LogAktivitas;
+use App\Models\ActivityLog;
 use App\Models\Pendaftaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,13 +15,11 @@ class TransaksiController extends Controller
     // ─── Helper: Log Aktivitas Transaksi ─────────────────────────
     private function logTransaksi($aksi, $modul, $detail)
     {
-        $user = auth()->user();
-        LogAktivitas::create([
-            'user_id'   => $user?->id,
-            'user_name' => $user?->nama ?? 'Admin',
-            'aksi'      => $aksi,
-            'modul'     => $modul,
-            'detail'    => $detail,
+        ActivityLog::create([
+            'admin_id'    => auth()->id(),
+            'action'      => $aksi,
+            'description' => "[$modul] $detail",
+            'ip_address'  => request()->ip(),
         ]);
     }
 
@@ -31,7 +29,8 @@ class TransaksiController extends Controller
     {
         $query = TransaksiPemasukan::query()
             ->join('pendaftaran', 'transaksi_pemasukan.pendaftaran_id', '=', 'pendaftaran.id')
-            ->select('transaksi_pemasukan.*', 'pendaftaran.nama as nama_pendaftar', 'pendaftaran.lembaga', 'pendaftaran.no_registrasi');
+            ->leftJoin('users as u_input', 'transaksi_pemasukan.input_by', '=', 'u_input.id')
+            ->select('transaksi_pemasukan.*', 'pendaftaran.nama', 'pendaftaran.lembaga', 'pendaftaran.no_registrasi', 'u_input.nama as input_nama');
 
         // Filter periode
         if ($request->periode && $request->periode !== 'semua') {
@@ -183,30 +182,32 @@ class TransaksiController extends Controller
 
     public function indexPengeluaran(Request $request)
     {
-        $query = TransaksiPengeluaran::query();
+        $query = TransaksiPengeluaran::query()
+            ->leftJoin('users as u_input', 'transaksi_pengeluaran.input_by', '=', 'u_input.id')
+            ->select('transaksi_pengeluaran.*', 'u_input.nama as input_nama');
 
         if ($request->periode && $request->periode !== 'semua') {
             switch ($request->periode) {
                 case 'hari_ini':
-                    $query->whereDate('tanggal', today());
+                    $query->whereDate('transaksi_pengeluaran.tanggal', today());
                     break;
                 case 'minggu_ini':
-                    $query->whereBetween('tanggal', [now()->startOfWeek(), now()->endOfWeek()]);
+                    $query->whereBetween('transaksi_pengeluaran.tanggal', [now()->startOfWeek(), now()->endOfWeek()]);
                     break;
                 case 'bulan_ini':
-                    $query->whereMonth('tanggal', now()->month)->whereYear('tanggal', now()->year);
+                    $query->whereMonth('transaksi_pengeluaran.tanggal', now()->month)->whereYear('transaksi_pengeluaran.tanggal', now()->year);
                     break;
             }
         }
 
         if ($request->kategori) {
-            $query->where('kategori', $request->kategori);
+            $query->where('transaksi_pengeluaran.kategori', $request->kategori);
         }
 
-        $data = $query->orderByDesc('tanggal')->orderByDesc('created_at')->get();
+        $data = $query->orderByDesc('transaksi_pengeluaran.tanggal')->orderByDesc('transaksi_pengeluaran.created_at')->get();
 
-        $totalApproved = TransaksiPengeluaran::where('status', 'approved')->sum('nominal');
-        $totalPending  = TransaksiPengeluaran::where('status', 'pending')->sum('nominal');
+        $totalApproved = (clone $query)->where('transaksi_pengeluaran.status', 'approved')->sum('transaksi_pengeluaran.nominal');
+        $totalPending  = (clone $query)->where('transaksi_pengeluaran.status', 'pending')->sum('transaksi_pengeluaran.nominal');
 
         return response()->json([
             'data'    => $data,
@@ -332,11 +333,48 @@ class TransaksiController extends Controller
         return response()->json(['success' => true, 'data' => $data]);
     }
 
-    // ─── LOG AKTIVITAS ───────────────────────────────────────────
+    // ─── INFO TAGIHAN PESERTA (For Admin Transaksi) ──────────────
+    public function getTagihanPeserta($id)
+    {
+        $peserta = Pendaftaran::findOrFail($id);
+        
+        $lembagaCol = ($peserta->lembaga === 'SMP NU BP') ? 'biaya_smp' : 'biaya_ma';
+        $isPondok = $peserta->status_mukim === 'PONDOK PP MAMBAUL HUDA';
+
+        $biayaSekolah = \App\Models\Biaya::sum($lembagaCol);
+        $biayaPondok = $isPondok ? \App\Models\Biaya::sum('biaya_pondok') : 0;
+
+        $perlengkapanTotal = \DB::table('perlengkapan_pesanan')
+            ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
+            ->where('perlengkapan_pesanan.pendaftaran_id', $id)
+            ->where('perlengkapan_pesanan.status', 1)
+            ->sum('perlengkapan_items.nominal');
+
+        $totalPaid = \App\Models\TransaksiPemasukan::where('pendaftaran_id', $id)
+            ->where('status', 'approved')
+            ->sum('nominal');
+
+        $totalTagihan = $biayaSekolah + $biayaPondok + $perlengkapanTotal;
+
+        return response()->json([
+            'success'            => true,
+            'total_tagihan'      => $totalTagihan,
+            'total_dibayar'      => $totalPaid,
+            'sisa_kekurangan'    => $totalTagihan - $totalPaid,
+            'biaya_pondok'       => $biayaPondok,
+            'biaya_sekolah'      => $biayaSekolah,
+            'biaya_perlengkapan' => $perlengkapanTotal,
+            'lembaga'            => $peserta->lembaga,
+            'status_mukim'       => $peserta->status_mukim,
+            'is_pondok'          => $isPondok,
+        ]);
+    }
+
+    // ─── LOG AKTIVITAS (Deprecated) ──────────────────────────────
+    // Previously used LogAktivitas, now using standard ActivityLog unified table
+    // Endpoint kept for backward compatibility if needed, but safe to remove
     public function logAktivitas(Request $request)
     {
-        $data = LogAktivitas::orderByDesc('created_at')
-            ->paginate($request->per_page ?? 20);
-        return response()->json($data);
+        return response()->json(['data' => []]);
     }
 }

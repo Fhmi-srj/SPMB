@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API = '/api';
 const fmt = (n) => 'Rp ' + (n || 0).toLocaleString('id-ID');
 
 export default function Transaksi() {
+    const { token, user } = useAuth();
+    
     const [tab, setTab] = useState('pemasukan');
     const [pemasukan, setPemasukan] = useState([]);
     const [pengeluaran, setPengeluaran] = useState([]);
@@ -19,25 +22,25 @@ export default function Transaksi() {
     const [loading, setLoading] = useState(true);
     const [kategoriList, setKategoriList] = useState(['Registrasi', 'MA', 'SMP', 'Pondok', 'Perlengkapan', 'Lainnya']);
 
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isSuperAdmin = user?.role === 'super_admin';
 
     const headers = { Authorization: `Bearer ${token}` };
 
     const fetchData = useCallback(async () => {
         try {
-            const [res1, res2, res3] = await Promise.all([
+            const [res1, res2] = await Promise.all([
                 axios.get(`${API}/transaksi/pemasukan`, { headers, params: { periode } }),
                 axios.get(`${API}/transaksi/pengeluaran`, { headers, params: { periode } }),
-                axios.get(`${API}/transaksi/summary`, { headers, params: { periode } }),
             ]);
             setPemasukan(res1.data.data || []);
             setPengeluaran(res2.data.data || []);
-            setSummary(res3.data.data || {});
+            
+            const total_masuk = res1.data.summary?.total_approved || 0;
+            const total_keluar = res2.data.summary?.total_approved || 0;
+            setSummary({ total_masuk, total_keluar, saldo: total_masuk - total_keluar });
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
-    }, [periode]);
+    }, [periode, token]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -56,7 +59,7 @@ export default function Transaksi() {
         setSearchResults([]);
         // Load tagihan
         try {
-            const res = await axios.get(`${API}/user/tagihan`, { params: { id: p.id } });
+            const res = await axios.get(`${API}/transaksi/tagihan/${p.id}`, { headers });
             setTagihanInfo(res.data);
         } catch { }
     };

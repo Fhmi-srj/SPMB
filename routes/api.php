@@ -115,6 +115,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('transaksi/search-peserta', [TransaksiController::class, 'searchPeserta']);
     Route::get('transaksi/log-aktivitas', [TransaksiController::class, 'logAktivitas']);
+    Route::get('transaksi/tagihan/{id}', [TransaksiController::class, 'getTagihanPeserta']);
 
     // ─── NEW: Perlengkapan ───────────────────────────────────
     Route::get('perlengkapan/items', [PerlengkapanController::class, 'indexItems']);

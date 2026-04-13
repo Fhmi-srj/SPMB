@@ -80,8 +80,8 @@ export default function UserDashboard() {
     const handleLogout = () => { localStorage.removeItem('user_portal'); navigate('/portal'); };
     const fmt = (n) => 'Rp' + (n || 0).toLocaleString('id-ID');
 
-    // Fix #17: EditableField with debounce on blur
-    const EditableField = ({ label, field, type = 'text', options }) => {
+    // Fix #17: EditableField as a function instead of nested component to prevent focus loss
+    const renderEditableField = (label, field, type = 'text', options = null) => {
         const val = data?.[field] || '';
         return (
             <div className="py-2 border-b border-gray-50">
@@ -187,55 +187,55 @@ export default function UserDashboard() {
                     <div className="p-4 md:p-6">
                         {tab === 'identitas' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                                <EditableField label="Nama Lengkap" field="nama" />
-                                <EditableField label="NIK" field="nik" />
-                                <EditableField label="NISN" field="nisn" />
-                                <EditableField label="No. KK" field="no_kk" />
-                                <EditableField label="Tempat Lahir" field="tempat_lahir" />
-                                <EditableField label="Tanggal Lahir" field="tanggal_lahir" type="date" />
-                                <EditableField label="Jenis Kelamin" field="jenis_kelamin" options={['L', 'P']} />
-                                <EditableField label="Jumlah Saudara" field="jumlah_saudara" type="number" />
-                                <EditableField label="Provinsi" field="provinsi" />
-                                <EditableField label="Kota/Kabupaten" field="kota_kab" />
-                                <EditableField label="Kecamatan" field="kecamatan" />
-                                <EditableField label="Kelurahan/Desa" field="kelurahan_desa" />
-                                <div className="md:col-span-2"><EditableField label="Alamat" field="alamat" type="textarea" /></div>
+                                {renderEditableField('Nama Lengkap', 'nama')}
+                                {renderEditableField('NIK', 'nik')}
+                                {renderEditableField('NISN', 'nisn')}
+                                {renderEditableField('No. KK', 'no_kk')}
+                                {renderEditableField('Tempat Lahir', 'tempat_lahir')}
+                                {renderEditableField('Tanggal Lahir', 'tanggal_lahir', 'date')}
+                                {renderEditableField('Jenis Kelamin', 'jenis_kelamin', 'text', ['L', 'P'])}
+                                {renderEditableField('Jumlah Saudara', 'jumlah_saudara', 'number')}
+                                {renderEditableField('Provinsi', 'provinsi')}
+                                {renderEditableField('Kota/Kabupaten', 'kota_kab')}
+                                {renderEditableField('Kecamatan', 'kecamatan')}
+                                {renderEditableField('Kelurahan/Desa', 'kelurahan_desa')}
+                                <div className="md:col-span-2">{renderEditableField('Alamat', 'alamat', 'textarea')}</div>
                             </div>
                         )}
                         {tab === 'keluarga' && (
                             <div className="space-y-6">
                                 <div><h4 className="font-semibold text-gray-700 mb-3">Data Ayah</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                                        <EditableField label="Nama Ayah" field="nama_ayah" />
-                                        <EditableField label="NIK Ayah" field="nik_ayah" />
-                                        <EditableField label="Tempat Lahir" field="tempat_lahir_ayah" />
-                                        <EditableField label="Tanggal Lahir" field="tanggal_lahir_ayah" type="date" />
-                                        <EditableField label="Pekerjaan" field="pekerjaan_ayah" />
-                                        <EditableField label="Penghasilan" field="penghasilan_ayah" />
+                                        {renderEditableField('Nama Ayah', 'nama_ayah')}
+                                        {renderEditableField('NIK Ayah', 'nik_ayah')}
+                                        {renderEditableField('Tempat Lahir', 'tempat_lahir_ayah')}
+                                        {renderEditableField('Tanggal Lahir', 'tanggal_lahir_ayah', 'date')}
+                                        {renderEditableField('Pekerjaan', 'pekerjaan_ayah')}
+                                        {renderEditableField('Penghasilan', 'penghasilan_ayah')}
                                     </div>
                                 </div>
                                 <div><h4 className="font-semibold text-gray-700 mb-3">Data Ibu</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                                        <EditableField label="Nama Ibu" field="nama_ibu" />
-                                        <EditableField label="NIK Ibu" field="nik_ibu" />
-                                        <EditableField label="Tempat Lahir" field="tempat_lahir_ibu" />
-                                        <EditableField label="Tanggal Lahir" field="tanggal_lahir_ibu" type="date" />
-                                        <EditableField label="Pekerjaan" field="pekerjaan_ibu" />
-                                        <EditableField label="Penghasilan" field="penghasilan_ibu" />
+                                        {renderEditableField('Nama Ibu', 'nama_ibu')}
+                                        {renderEditableField('NIK Ibu', 'nik_ibu')}
+                                        {renderEditableField('Tempat Lahir', 'tempat_lahir_ibu')}
+                                        {renderEditableField('Tanggal Lahir', 'tanggal_lahir_ibu', 'date')}
+                                        {renderEditableField('Pekerjaan', 'pekerjaan_ibu')}
+                                        {renderEditableField('Penghasilan', 'penghasilan_ibu')}
                                     </div>
                                 </div>
                             </div>
                         )}
                         {tab === 'pendidikan' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
-                                <EditableField label="Asal Sekolah" field="asal_sekolah" />
-                                <EditableField label="Lembaga Tujuan" field="lembaga" options={['SMP NU BP', 'MA ALHIKAM']} />
-                                <EditableField label="Status Mukim" field="status_mukim" options={['PONDOK PP MAMBAUL HUDA', 'PONDOK SELAIN PP MAMBAUL HUDA', 'TIDAK PONDOK']} />
-                                <EditableField label="PIP/PKH" field="pip_pkh" />
-                                <EditableField label="Prestasi" field="prestasi" />
-                                <EditableField label="Tingkat Prestasi" field="tingkat_prestasi" options={['KABUPATEN', 'PROVINSI', 'NASIONAL']} />
-                                <EditableField label="Juara" field="juara" options={['1', '2', '3']} />
-                                <EditableField label="Sumber Info" field="sumber_info" />
+                                {renderEditableField('Asal Sekolah', 'asal_sekolah')}
+                                {renderEditableField('Lembaga Tujuan', 'lembaga', 'text', ['SMP NU BP', 'MA ALHIKAM'])}
+                                {renderEditableField('Status Mukim', 'status_mukim', 'text', ['PONDOK PP MAMBAUL HUDA', 'PONDOK SELAIN PP MAMBAUL HUDA', 'TIDAK PONDOK'])}
+                                {renderEditableField('PIP/PKH', 'pip_pkh')}
+                                {renderEditableField('Prestasi', 'prestasi')}
+                                {renderEditableField('Tingkat Prestasi', 'tingkat_prestasi', 'text', ['KABUPATEN', 'PROVINSI', 'NASIONAL'])}
+                                {renderEditableField('Juara', 'juara', 'text', ['1', '2', '3'])}
+                                {renderEditableField('Sumber Info', 'sumber_info')}
                             </div>
                         )}
                         {tab === 'berkas' && (

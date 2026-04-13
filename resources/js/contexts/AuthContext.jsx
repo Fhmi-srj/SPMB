@@ -9,6 +9,14 @@ export function AuthProvider({ children }) {
     const [token, setToken] = useState(() => localStorage.getItem('spmb_token'));
     const [loading, setLoading] = useState(true);
 
+    const logout = useCallback(() => {
+        localStorage.removeItem('spmb_token');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setToken(null);
+        setUser(null);
+    }, []);
+
     const fetchMe = useCallback(async (tkn) => {
         try {
             const res = await fetch(`${API_BASE}/auth/me`, {
@@ -25,7 +33,7 @@ export function AuthProvider({ children }) {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [logout]);
 
     useEffect(() => {
         if (token) {
@@ -65,13 +73,7 @@ export function AuthProvider({ children }) {
         return data;
     };
 
-    const logout = useCallback(() => {
-        localStorage.removeItem('spmb_token');
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
-    }, []);
+    // logout is now defined above fetchMe
 
     return (
         <AuthContext.Provider value={{ user, token, loading, login, logout, isAuthenticated: !!user }}>

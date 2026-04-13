@@ -177,6 +177,23 @@ class PendaftaranController extends Controller
             return Pendaftaran::create($data);
         });
 
+        // Proses upload dokumen jika ada (Fix file upload ignore during registration)
+        $fileFields = ['file_kk', 'file_ktp_ortu', 'file_akta', 'file_ijazah', 'file_sertifikat'];
+        $hasUpload = false;
+        foreach ($fileFields as $field) {
+            if ($request->hasFile($field)) {
+                $file = $request->file($field);
+                $folder = $field === 'file_sertifikat' ? 'sertifikat' : 'dokumen';
+                $filename = $pendaftaran->id . '_' . $field . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs("public/uploads/{$folder}", $filename);
+                $pendaftaran->$field = $filename;
+                $hasUpload = true;
+            }
+        }
+        if ($hasUpload) {
+            $pendaftaran->save();
+        }
+
         return response()->json([
             'success' => true,
             'message' => 'Pendaftaran berhasil! Nomor registrasi Anda: ' . $pendaftaran->no_registrasi,

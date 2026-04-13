@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { useAuth } from '../../contexts/AuthContext';
 
 const API = '/api';
 
@@ -11,8 +12,7 @@ export default function KelolaUser() {
     const [form, setForm] = useState({});
     const [selected, setSelected] = useState(null);
 
-    const token = localStorage.getItem('token');
-    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const { token, user: currentUser } = useAuth();
     const headers = { Authorization: `Bearer ${token}` };
 
     const fetchUsers = useCallback(async () => {
