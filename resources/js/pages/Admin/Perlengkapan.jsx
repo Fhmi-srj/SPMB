@@ -8,7 +8,7 @@ export default function Perlengkapan() {
     const [items, setItems] = useState([]);
     const [peserta, setPeserta] = useState([]);
     const [searchNama, setSearchNama] = useState('');
-    const [filterLembaga, setFilterLembaga] = useState('');
+
     const [loading, setLoading] = useState(true);
 
     const token = localStorage.getItem('token');
@@ -18,13 +18,13 @@ export default function Perlengkapan() {
         try {
             const [itemsRes, pesananRes] = await Promise.all([
                 axios.get(`${API}/perlengkapan/items`, { headers }),
-                axios.get(`${API}/perlengkapan/pesanan`, { headers, params: { search: searchNama, lembaga: filterLembaga } }),
+                axios.get(`${API}/perlengkapan/pesanan`, { headers, params: { search: searchNama } }),
             ]);
             setItems(itemsRes.data.data || []);
             setPeserta(pesananRes.data.data || []);
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
-    }, [searchNama, filterLembaga]);
+    }, [searchNama]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -65,10 +65,10 @@ export default function Perlengkapan() {
 
     const resetFilter = () => {
         setSearchNama('');
-        setFilterLembaga('');
+
     };
 
-    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full"></div></div>;
+    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full"></div></div>;
 
     return (
         <div>
@@ -83,19 +83,11 @@ export default function Perlengkapan() {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Cari Nama</label>
                         <input type="text" value={searchNama} onChange={e => setSearchNama(e.target.value)} placeholder="Nama peserta..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Lembaga</label>
-                        <select value={filterLembaga} onChange={e => setFilterLembaga(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
-                            <option value="">Semua Lembaga</option>
-                            <option value="SMP NU BP">SMP NU BP</option>
-                            <option value="MA ALHIKAM">MA ALHIKAM</option>
-                        </select>
-                    </div>
+
                     <div className="flex items-end gap-2">
-                        <button type="submit" className="bg-[#E67E22] hover:bg-[#d35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition flex-1">
+                        <button type="submit" className="bg-[#1B7A3D] hover:bg-[#145C2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition flex-1">
                             <i className="fas fa-search mr-2"></i>Filter
                         </button>
                         <button type="button" onClick={resetFilter} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
@@ -114,7 +106,7 @@ export default function Perlengkapan() {
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">No</th>
                                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-12 bg-gray-50 z-10">Nama</th>
                                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">JK</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lembaga</th>
+
                                 {items.map(item => (
                                     <th key={item.id} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">{item.nama_item}</th>
                                 ))}
@@ -126,7 +118,7 @@ export default function Perlengkapan() {
                                     <td className="px-4 py-3 text-sm text-gray-500 sticky left-0 bg-white z-10">{idx + 1}</td>
                                     <td className="px-4 py-3 text-sm font-medium text-gray-800 sticky left-12 bg-white z-10">{p.nama}</td>
                                     <td className="px-4 py-3 text-sm text-gray-600 text-center">{p.jenis_kelamin === 'L' ? 'L' : 'P'}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-600">{p.lembaga}</td>
+
                                     {items.map(item => {
                                         const isChecked = p.perlengkapan && p.perlengkapan[item.id] == 1;
                                         return (
@@ -142,7 +134,7 @@ export default function Perlengkapan() {
                             ))}
                             {peserta.length === 0 && (
                                 <tr>
-                                    <td colSpan={4 + items.length} className="px-4 py-8 text-center text-gray-500 text-sm">
+                                    <td colSpan={3 + items.length} className="px-4 py-8 text-center text-gray-500 text-sm">
                                         <i className="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>
                                         <p>Tidak ada data peserta</p>
                                     </td>

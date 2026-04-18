@@ -46,7 +46,7 @@ export default function AdminLayout({ children }) {
             showCancelButton: true,
             confirmButtonText: 'Ya, Logout',
             cancelButtonText: 'Batal',
-            confirmButtonColor: '#E67E22',
+            confirmButtonColor: '#1B7A3D',
         });
         if (confirm.isConfirmed) {
             logout();
@@ -57,10 +57,10 @@ export default function AdminLayout({ children }) {
     return (
         <div className="min-h-screen bg-gray-50" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* Desktop Sidebar */}
-            <aside className="hidden md:flex fixed inset-y-0 left-0 z-50 w-64 bg-[#E67E22] text-white flex-col h-screen">
+            <aside className="hidden md:flex fixed inset-y-0 left-0 z-50 w-64 bg-[#1B7A3D] text-white flex-col h-screen">
                 <div className="p-4 border-b border-white/10">
-                    <h1 className="font-bold text-lg">Admin SPMB</h1>
-                    <p className="text-xs text-white/60">Mambaul Huda</p>
+                    <h1 className="font-bold text-lg">Admin PSB</h1>
+                    <p className="text-xs text-white/60">Nurul Huda An-Najah</p>
                 </div>
 
                 <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }) {
                     <div className="pt-2 mt-2 border-t border-white/10">
                         <p className="px-4 py-1 text-xs text-white/40 uppercase tracking-wider">Lainnya</p>
                     </div>
-                    <SideLink to="/admin/beasiswa" icon="fas fa-graduation-cap" label="Beasiswa" isActive={isActive} />
+
                     <SideLink to="/admin/kontak" icon="fas fa-phone-alt" label="Kontak" isActive={isActive} />
                     <SideLink to="/admin/pengaturan" icon="fas fa-cog" label="Pengaturan" isActive={isActive} />
                     {isAdminRole && <SideLink to="/admin/aktivitas" icon="fas fa-history" label="Log Aktivitas" isActive={isActive} />}
@@ -117,8 +117,8 @@ export default function AdminLayout({ children }) {
             {/* Main Content */}
             <div className="md:ml-64 flex flex-col min-h-screen pb-20 md:pb-0">
                 {/* Mobile Header */}
-                <div className="md:hidden bg-[#E67E22] text-white p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-40">
-                    <span className="font-bold">Admin SPMB</span>
+                <div className="md:hidden bg-[#1B7A3D] text-white p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-40">
+                    <span className="font-bold">Admin PSB</span>
                     <button onClick={handleLogout} className="text-xl"><i className="fas fa-sign-out-alt"></i></button>
                 </div>
 
@@ -131,32 +131,28 @@ export default function AdminLayout({ children }) {
             {/* Mobile Bottom Navigation */}
             <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
                 <div className="flex items-end justify-around px-2 pt-2 pb-3">
-                    <NavLink to="/admin/dashboard" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/dashboard') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
+                    <NavLink to="/admin/dashboard" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/dashboard') ? 'text-[#1B7A3D]' : 'text-gray-500'} transition`}>
                         <i className="fas fa-home text-xl"></i>
                         <span className="text-xs font-medium">Dashboard</span>
                     </NavLink>
-                    <NavLink to="/admin/pendaftaran" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/pendaftaran') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
+                    <NavLink to="/admin/pendaftaran" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/pendaftaran') ? 'text-[#1B7A3D]' : 'text-gray-500'} transition`}>
                         <i className="fas fa-users text-xl"></i>
                         <span className="text-xs font-medium">Pendaftar</span>
                     </NavLink>
                     <button onClick={() => setDropupOpen(!dropupOpen)} className="flex flex-col items-center -mt-6 relative">
-                        <div className="w-14 h-14 bg-[#E67E22] rounded-full flex items-center justify-center shadow-lg hover:bg-[#d35400] transition">
+                        <div className="w-14 h-14 bg-[#1B7A3D] rounded-full flex items-center justify-center shadow-lg hover:bg-[#145C2E] transition">
                             <i className={`fas ${dropupOpen ? 'fa-times' : 'fa-plus'} text-white text-2xl`}></i>
                         </div>
                         <span className="text-xs font-medium text-gray-500 mt-1">Menu</span>
                     </button>
-                    {isAdminRole ? (
-                        <NavLink to="/admin/transaksi" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/transaksi') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
+                    {isAdminRole && (
+                        <NavLink to="/admin/transaksi" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/transaksi') ? 'text-[#1B7A3D]' : 'text-gray-500'} transition`}>
                             <i className="fas fa-money-bill-wave text-xl"></i>
                             <span className="text-xs font-medium">Transaksi</span>
                         </NavLink>
-                    ) : (
-                        <NavLink to="/admin/beasiswa" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/beasiswa') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
-                            <i className="fas fa-graduation-cap text-xl"></i>
-                            <span className="text-xs font-medium">Beasiswa</span>
-                        </NavLink>
                     )}
-                    <NavLink to="/admin/pengaturan" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/pengaturan') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
+
+                    <NavLink to="/admin/pengaturan" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/pengaturan') ? 'text-[#1B7A3D]' : 'text-gray-500'} transition`}>
                         <i className="fas fa-cog text-xl"></i>
                         <span className="text-xs font-medium">Pengaturan</span>
                     </NavLink>
@@ -193,10 +189,7 @@ export default function AdminLayout({ children }) {
                                     </NavLink>
                                 </>
                             )}
-                            <NavLink to="/admin/beasiswa" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                <i className="fas fa-graduation-cap text-2xl"></i>
-                                <span className="text-xs font-medium text-center">Beasiswa</span>
-                            </NavLink>
+
                             <NavLink to="/admin/kontak" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
                                 <i className="fas fa-phone-alt text-2xl"></i>
                                 <span className="text-xs font-medium text-center">Kontak</span>

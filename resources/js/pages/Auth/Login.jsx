@@ -18,10 +18,10 @@ export default function Login() {
             if (res.success) {
                 navigate('/admin/dashboard', { replace: true });
             } else {
-                Swal.fire({ icon: 'error', title: 'Login Gagal', text: res.message, confirmButtonColor: '#E67E22' });
+                Swal.fire({ icon: 'error', title: 'Login Gagal', text: res.message, confirmButtonColor: '#1B7A3D' });
             }
         } catch {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#E67E22' });
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan. Coba lagi.', confirmButtonColor: '#1B7A3D' });
         } finally {
             setLoading(false);
         }
@@ -32,12 +32,12 @@ export default function Login() {
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     {/* Orange gradient header matching PHP */}
-                    <div className="p-6 text-center" style={{ background: 'linear-gradient(to right, #E67E22, #F39C12)' }}>
+                    <div className="p-6 text-center" style={{ background: 'linear-gradient(to right, #1B7A3D, #27AE60)' }}>
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                             <i className="fas fa-user-shield text-3xl text-white"></i>
                         </div>
                         <h1 className="text-xl font-bold text-white">Admin Panel</h1>
-                        <p className="text-white/80 text-sm">SPMB Mambaul Huda</p>
+                        <p className="text-white/80 text-sm">PSB Nurul Huda An-Najah</p>
                     </div>
 
                     <div className="p-6">
@@ -53,7 +53,7 @@ export default function Login() {
                                         value={form.username}
                                         onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
                                         placeholder="Masukkan username"
-                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none transition text-sm"
+                                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none transition text-sm"
                                         required
                                         autoFocus
                                     />
@@ -71,7 +71,7 @@ export default function Login() {
                                         value={form.password}
                                         onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                                         placeholder="Masukkan password"
-                                        className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none transition text-sm"
+                                        className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none transition text-sm"
                                         required
                                     />
                                     <button type="button" onClick={() => setShowPass(v => !v)}
@@ -84,7 +84,7 @@ export default function Login() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-lg transition transform hover:scale-[1.02] active:scale-100 disabled:opacity-70"
+                                className="w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-lg transition transform hover:scale-[1.02] active:scale-100 disabled:opacity-70"
                             >
                                 {loading ? (
                                     <><i className="fas fa-spinner fa-spin mr-2"></i>Masuk...</>
@@ -95,7 +95,7 @@ export default function Login() {
                         </form>
 
                         <div className="mt-6 text-center">
-                            <Link to="/" className="text-sm text-gray-500 hover:text-[#E67E22]">
+                            <Link to="/" className="text-sm text-gray-500 hover:text-[#1B7A3D]">
                                 <i className="fas fa-arrow-left mr-1"></i>Kembali ke Website
                             </Link>
                         </div>
@@ -103,7 +103,7 @@ export default function Login() {
                 </div>
 
                 <p className="text-center text-gray-400 text-xs mt-4">
-                    © {new Date().getFullYear()} SPMB Mambaul Huda Pajomblangan
+                    © {new Date().getFullYear()} PSB Nurul Huda An-Najah
                 </p>
             </div>
         </div>

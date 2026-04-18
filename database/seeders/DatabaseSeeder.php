@@ -17,10 +17,10 @@ class DatabaseSeeder extends Seeder
     {
         // ─── Admin User ────────────────────────────────────────────────────
         User::firstOrCreate(
-            ['username' => 'admin_spmb'],
+            ['username' => 'admin_psb'],
             [
-                'nama'     => 'Admin SPMB',
-                'username' => 'admin_spmb',
+                'nama'     => 'Admin PSB',
+                'username' => 'admin_psb',
                 'role'     => 'super_admin',
                 'password' => Hash::make('admin123'),
             ]
@@ -58,17 +58,16 @@ class DatabaseSeeder extends Seeder
 
         // ─── Biaya Pendaftaran ─────────────────────────────────────────────
         $biayaPendaftaran = [
-            ['kategori' => 'PENDAFTARAN', 'nama_item' => 'Uang Pendaftaran', 'biaya_pondok' => 0, 'biaya_smp' => 150000, 'biaya_ma' => 150000, 'urutan' => 1],
-            ['kategori' => 'PENDAFTARAN', 'nama_item' => 'Formulir Pendaftaran', 'biaya_pondok' => 0, 'biaya_smp' => 50000, 'biaya_ma' => 50000, 'urutan' => 2],
+            ['kategori' => 'PENDAFTARAN', 'nama_item' => 'Uang Pendaftaran', 'biaya' => 150000, 'urutan' => 1],
+            ['kategori' => 'PENDAFTARAN', 'nama_item' => 'Formulir Pendaftaran', 'biaya' => 50000, 'urutan' => 2],
         ];
 
         // ─── Biaya Daftar Ulang ────────────────────────────────────────────
         $biayaDaftarUlang = [
-            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'SPP Bulan Pertama', 'biaya_pondok' => 300000, 'biaya_smp' => 250000, 'biaya_ma' => 300000, 'urutan' => 1],
-            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'Uang Gedung', 'biaya_pondok' => 1500000, 'biaya_smp' => 1000000, 'biaya_ma' => 1500000, 'urutan' => 2],
-            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'Seragam', 'biaya_pondok' => 500000, 'biaya_smp' => 400000, 'biaya_ma' => 450000, 'urutan' => 3],
-            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'Infaq Bulan Pertama', 'biaya_pondok' => 750000, 'biaya_smp' => 0, 'biaya_ma' => 0, 'urutan' => 4],
-            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'Registrasi', 'biaya_pondok' => 0, 'biaya_smp' => 200000, 'biaya_ma' => 250000, 'urutan' => 5],
+            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'SPP Bulan Pertama', 'biaya' => 300000, 'urutan' => 1],
+            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'Uang Gedung', 'biaya' => 1500000, 'urutan' => 2],
+            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'Seragam', 'biaya' => 500000, 'urutan' => 3],
+            ['kategori' => 'DAFTAR_ULANG', 'nama_item' => 'Infaq Bulan Pertama', 'biaya' => 750000, 'urutan' => 4],
         ];
 
         foreach ([...$biayaPendaftaran, ...$biayaDaftarUlang] as $b) {
@@ -80,9 +79,7 @@ class DatabaseSeeder extends Seeder
 
         // ─── Kontak ──────────────────────────────────────────────────────
         $kontakData = [
-            ['lembaga' => 'SMP NU BP', 'nama' => 'Panitia SPMB SMP NU BP', 'no_whatsapp' => '6285999000001', 'link_wa' => 'https://wa.me/6285999000001'],
-            ['lembaga' => 'MA ALHIKAM', 'nama' => 'Panitia SPMB MA ALHIKAM', 'no_whatsapp' => '6285999000002', 'link_wa' => 'https://wa.me/6285999000002'],
-            ['lembaga' => 'UMUM', 'nama' => 'Sekretariat PP Mambaul Huda', 'no_whatsapp' => '6285999000003', 'link_wa' => 'https://wa.me/6285999000003'],
+            ['lembaga' => 'PONDOK', 'nama' => 'Panitia PSB PP Mambaul Huda', 'no_whatsapp' => '6285999000003', 'link_wa' => 'https://wa.me/6285999000003'],
         ];
 
         foreach ($kontakData as $k) {
@@ -102,6 +99,6 @@ class DatabaseSeeder extends Seeder
             PerlengkapanItem::firstOrCreate(['nama_item' => $p['nama_item']], $p);
         }
 
-        $this->command->info('✅ Seeder selesai. Admin: username=admin_spmb, password=admin123');
+        $this->command->info('✅ Seeder selesai. Admin: username=admin_psb, password=admin123');
     }
 }

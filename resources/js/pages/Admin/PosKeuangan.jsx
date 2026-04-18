@@ -22,7 +22,7 @@ export default function PosKeuangan() {
         try {
             const res = await axios.get(`${API}/pos-keuangan`, { headers });
             setData(res.data.data || []);
-            setTotals(res.data.totals || {});
+            setTotals(res.data.summary || {});
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
     };
@@ -35,7 +35,7 @@ export default function PosKeuangan() {
         XLSX.writeFile(wb, 'Pos_Keuangan_' + new Date().toISOString().split('T')[0] + '.xlsx');
     };
 
-    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full"></div></div>;
+    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full"></div></div>;
 
     return (
         <div>
@@ -46,19 +46,11 @@ export default function PosKeuangan() {
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-                    <p className="text-blue-100 text-sm mb-1">Total MA</p>
-                    <h3 className="text-2xl font-bold">{fmt(totals.total_ma)}</h3>
-                </div>
-                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-                    <p className="text-green-100 text-sm mb-1">Total SMP</p>
-                    <h3 className="text-2xl font-bold">{fmt(totals.total_smp)}</h3>
-                </div>
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-                    <p className="text-purple-100 text-sm mb-1">Total Pondok</p>
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white md:col-span-2">
+                    <p className="text-green-100 text-sm mb-1">Total Biaya/Pondok</p>
                     <h3 className="text-2xl font-bold">{fmt(totals.total_pondok)}</h3>
                 </div>
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white md:col-span-2">
                     <p className="text-orange-100 text-sm mb-1">Total Perlengkapan</p>
                     <h3 className="text-2xl font-bold">{fmt(totals.total_perlengkapan)}</h3>
                 </div>
@@ -72,7 +64,7 @@ export default function PosKeuangan() {
                             <i className="fas fa-search text-gray-400"></i>
                         </div>
                         <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari nama siswa..."
-                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-[#E67E22] outline-none transition" />
+                            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-[#1B7A3D] outline-none transition" />
                     </div>
                     <button onClick={exportToExcel} className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition flex items-center justify-center gap-2 whitespace-nowrap">
                         <i className="fas fa-file-excel"></i>
@@ -88,27 +80,19 @@ export default function PosKeuangan() {
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">No</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-12 bg-gray-50 z-10">Nama</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lembaga</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Pondok</th>
+                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-12 bg-gray-50 z-10">Nama Santri</th>
                                 <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tagihan</th>
                                 <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pembayaran</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-gray-50">Registrasi</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-blue-50">MA</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-green-50">SMP</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-purple-50">Pondok</th>
+                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-green-50">Biaya/Pondok</th>
                                 <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-orange-50">Perlengkapan</th>
                                 <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-red-50">Sisa</th>
                             </tr>
                             {/* Total Row */}
-                            <tr className="bg-[#E67E22] text-white font-bold">
-                                <td colSpan={6} className="px-3 py-3">TOTAL</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_registrasi)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_ma)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_smp)}</td>
+                            <tr className="bg-[#1B7A3D] text-white font-bold">
+                                <td colSpan={4} className="px-3 py-3">TOTAL</td>
                                 <td className="px-3 py-3 text-right">{fmt(totals.total_pondok)}</td>
                                 <td className="px-3 py-3 text-right">{fmt(totals.total_perlengkapan)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_sisa)}</td>
+                                <td></td>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -116,20 +100,15 @@ export default function PosKeuangan() {
                                 <tr key={row.id} className="hover:bg-gray-50">
                                     <td className="px-3 py-3 text-gray-500 sticky left-0 bg-white z-10">{idx + 1}</td>
                                     <td className="px-3 py-3 font-medium text-gray-800 sticky left-12 bg-white z-10">{row.nama}</td>
-                                    <td className="px-3 py-3 text-gray-600">{row.lembaga}</td>
-                                    <td className="px-3 py-3 text-gray-600">{row.status_mukim}</td>
                                     <td className="px-3 py-3 text-right text-gray-600">{fmt(row.total_tagihan)}</td>
                                     <td className="px-3 py-3 text-right font-semibold text-green-600">{fmt(row.total_pembayaran)}</td>
-                                    <td className="px-3 py-3 text-right text-gray-700 bg-gray-50">{fmt(row.pos_registrasi)}</td>
-                                    <td className="px-3 py-3 text-right text-blue-700 bg-blue-50">{fmt(row.pos_ma)}</td>
-                                    <td className="px-3 py-3 text-right text-green-700 bg-green-50">{fmt(row.pos_smp)}</td>
-                                    <td className="px-3 py-3 text-right text-purple-700 bg-purple-50">{fmt(row.pos_pondok)}</td>
+                                    <td className="px-3 py-3 text-right text-green-700 bg-green-50">{fmt(row.pos_pondok)}</td>
                                     <td className="px-3 py-3 text-right text-orange-700 bg-orange-50">{fmt(row.pos_perlengkapan)}</td>
                                     <td className="px-3 py-3 text-right text-red-700 bg-red-50">{fmt(row.pos_sisa)}</td>
                                 </tr>
                             ))}
                             {filtered.length === 0 && (
-                                <tr><td colSpan={12} className="px-3 py-8 text-center text-gray-500">Tidak ada data</td></tr>
+                                <tr><td colSpan={7} className="px-3 py-8 text-center text-gray-500">Tidak ada data</td></tr>
                             )}
                         </tbody>
                     </table>

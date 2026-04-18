@@ -82,16 +82,16 @@ export default function Aktivitas() {
             <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
                 <form onSubmit={handleFilter} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <select value={filters.action} onChange={e => setFilters(f => ({ ...f, action: e.target.value }))}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none">
                         <option value="">Semua Aksi</option>
                         {actions.map(a => <option key={a} value={a}>{a}</option>)}
                     </select>
                     <input type="date" value={filters.from} onChange={e => setFilters(f => ({ ...f, from: e.target.value }))} placeholder="Dari tanggal"
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                     <input type="date" value={filters.to} onChange={e => setFilters(f => ({ ...f, to: e.target.value }))} placeholder="Sampai tanggal"
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                     <div className="flex gap-2">
-                        <button type="submit" className="flex-1 bg-[#E67E22] text-white px-4 py-2 rounded-lg hover:bg-[#D35400] transition">
+                        <button type="submit" className="flex-1 bg-[#1B7A3D] text-white px-4 py-2 rounded-lg hover:bg-[#145C2E] transition">
                             <i className="fas fa-search mr-2"></i>Filter
                         </button>
                         <button type="button" onClick={clearFilters} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
@@ -104,7 +104,7 @@ export default function Aktivitas() {
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 {loading ? (
-                    <div className="flex items-center justify-center h-48"><div className="w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full animate-spin"></div></div>
+                    <div className="flex items-center justify-center h-48"><div className="w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full animate-spin"></div></div>
                 ) : data.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">
                         <i className="fas fa-history text-4xl mb-3 block"></i>
@@ -161,7 +161,7 @@ export default function Aktivitas() {
                                     )}
                                     {pageNumbers.map(p => (
                                         <button key={p} onClick={() => setPage(p)}
-                                            className={`px-3 py-1 border rounded-lg text-sm ${p === page ? 'bg-[#E67E22] text-white border-[#E67E22]' : 'border-gray-300 hover:bg-gray-50'}`}>
+                                            className={`px-3 py-1 border rounded-lg text-sm ${p === page ? 'bg-[#1B7A3D] text-white border-[#1B7A3D]' : 'border-gray-300 hover:bg-gray-50'}`}>
                                             {p}
                                         </button>
                                     ))}

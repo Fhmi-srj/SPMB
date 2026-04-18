@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 
 export default function KartuPeserta() {
     const [noHp, setNoHp] = useState('');
@@ -7,6 +7,26 @@ export default function KartuPeserta() {
     const [data, setData] = useState(null);
     const [error, setError] = useState('');
     const printRef = useRef();
+    const [searchParams] = useSearchParams();
+
+    // Auto-fetch by ID if ?id= param is present (admin link)
+    useEffect(() => {
+        const id = searchParams.get('id');
+        if (id) {
+            setLoading(true);
+            const token = localStorage.getItem('auth_token');
+            fetch(`/api/pendaftaran/${id}`, {
+                headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+            })
+                .then(res => res.json())
+                .then(d => {
+                    setLoading(false);
+                    if (d.success && d.data) { setData(d.data); }
+                    else { setError(d.message ?? 'Data tidak ditemukan'); }
+                })
+                .catch(() => { setLoading(false); setError('Terjadi kesalahan jaringan'); });
+        }
+    }, [searchParams]);
 
     const handleCek = async (e) => {
         e.preventDefault();
@@ -45,7 +65,7 @@ export default function KartuPeserta() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <Link to="/" className="text-sm text-gray-500 hover:text-gray-700 transition">← Beranda</Link>
@@ -53,17 +73,17 @@ export default function KartuPeserta() {
                     <p className="text-gray-500 text-sm mt-1">Masukkan No. HP Wali untuk mencetak kartu</p>
                 </div>
 
-                {!data && (
+                {!data && !searchParams.get('id') && (
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
                         <form onSubmit={handleCek} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1.5">No. HP Wali</label>
                                 <input type="tel" value={noHp} onChange={e => setNoHp(e.target.value)}
                                     placeholder="08xxxxxxxxxx"
-                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none" />
+                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-400 focus:border-transparent outline-none" />
                             </div>
                             <button type="submit" disabled={loading}
-                                className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                                className="w-full py-2.5 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-xl text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
                                 {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
                                 {loading ? 'Mencari...' : '🔍 Tampilkan Kartu'}
                             </button>
@@ -72,16 +92,25 @@ export default function KartuPeserta() {
                     </div>
                 )}
 
+                {loading && searchParams.get('id') && (
+                    <div className="flex items-center justify-center h-48">
+                        <div className="w-8 h-8 border-4 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                )}
+
+                {error && searchParams.get('id') && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 text-center">{error}</div>
+                )}
+
                 {data && (
                     <div>
                         {/* Kartu Peserta */}
-                        <div ref={printRef} className="bg-white rounded-2xl shadow-xl border-2 border-orange-200 overflow-hidden print:shadow-none">
+                        <div ref={printRef} className="bg-white rounded-2xl shadow-xl border-2 border-green-200 overflow-hidden print:shadow-none">
                             {/* Header Kartu */}
-                            <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-5 text-white">
+                            <div className="bg-gradient-to-r from-[#1B7A3D] to-[#2E9B4E] px-6 py-5 text-white">
                                 <div className="text-center">
-                                    <div className="font-bold text-lg">KARTU PESERTA</div>
-                                    <div className="text-orange-100 text-sm">PP. Mambaul Huda</div>
-                                    <div className="text-orange-100 text-sm">{data.lembaga}</div>
+                                    <div className="font-bold text-lg">KARTU PESERTA PPDB</div>
+                                    <div className="text-green-100 text-sm">PP. Nurul Huda An-Najah Banin Banat</div>
                                 </div>
                             </div>
 
@@ -89,16 +118,17 @@ export default function KartuPeserta() {
                                 {/* No Registrasi */}
                                 <div className="text-center mb-5">
                                     <div className="text-xs text-gray-500 mb-1">NOMOR REGISTRASI</div>
-                                    <div className="text-3xl font-bold text-orange-500 font-mono">{data.no_registrasi}</div>
+                                    <div className="text-3xl font-bold text-[#1B7A3D] font-mono">{data.no_registrasi}</div>
                                 </div>
 
                                 {/* Info */}
                                 <div className="space-y-2.5 border-t border-gray-100 pt-4">
                                     {[
                                         { l: 'Nama Lengkap', v: data.nama },
-                                        { l: 'Lembaga', v: data.lembaga },
-                                        { l: 'Status', v: '✅ Diterima' },
-                                        { l: 'Tanggal Daftar', v: data.created_at ? new Date(data.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-' },
+                                        { l: 'Lembaga Tujuan', v: data.lembaga || '-' },
+                                        { l: 'Jenis Kelamin', v: data.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' },
+                                        { l: 'Asal Sekolah', v: data.asal_sekolah || '-' },
+                                        { l: 'Status', v: data.status === 'verified' ? '✅ Terverifikasi' : data.status === 'rejected' ? '❌ Ditolak' : '⏳ Menunggu Verifikasi' },
                                     ].map(({ l, v }) => (
                                         <div key={l} className="flex justify-between text-sm">
                                             <span className="text-gray-500">{l}</span>
@@ -107,20 +137,40 @@ export default function KartuPeserta() {
                                     ))}
                                 </div>
 
+                                {/* Status Dokumen */}
+                                <div className="mt-5 border-t border-gray-100 pt-4">
+                                    <div className="text-xs font-semibold text-gray-500 mb-2 uppercase">Status Kelengkapan Dokumen</div>
+                                    <div className="grid grid-cols-2 gap-1.5 text-xs">
+                                        {[
+                                            { l: 'Kartu Keluarga (KK)', f: data.file_kk },
+                                            { l: 'KTP Orang Tua', f: data.file_ktp_ortu },
+                                            { l: 'Akta Kelahiran', f: data.file_akta },
+                                            { l: 'Ijazah', f: data.file_ijazah },
+                                            { l: 'Sertifikat Prestasi', f: data.file_sertifikat },
+                                        ].map(({ l, f }) => (
+                                            <div key={l} className="flex items-center gap-1">
+                                                {f ? <span className="text-green-500">✅</span> : <span className="text-red-500">❌</span>}
+                                                <span className={f ? 'text-gray-700' : 'text-red-600'}>{l}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
                                 {/* Notice */}
-                                <div className="mt-5 p-3 bg-orange-50 rounded-xl text-xs text-orange-700 text-center">
-                                    Kartu ini sebagai bukti pendaftaran resmi. Harap dibawa saat proses daftar ulang.
+                                <div className="mt-5 p-3 bg-green-50 rounded-xl text-xs text-green-700 text-center">
+                                    PP. Nurul Huda An-Najah Banin Banat<br />
+                                    Gg. 2, Tanjung, Simbang Kulon, Kec. Buaran, Kab. Pekalongan
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-3 mt-4">
-                            <button onClick={() => setData(null)}
+                        <div className="flex gap-3 mt-4 print:hidden">
+                            <button onClick={() => { setData(null); window.history.replaceState({}, '', '/kartu-peserta'); }}
                                 className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm hover:bg-gray-50 transition">
                                 Cari Lain
                             </button>
                             <button onClick={handlePrint}
-                                className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition flex items-center justify-center gap-2">
+                                className="flex-1 px-4 py-2.5 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-xl text-sm font-medium transition flex items-center justify-center gap-2">
                                 🖨️ Cetak Kartu
                             </button>
                         </div>
@@ -130,3 +180,4 @@ export default function KartuPeserta() {
         </div>
     );
 }
+

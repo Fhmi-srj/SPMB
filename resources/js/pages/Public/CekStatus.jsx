@@ -37,12 +37,12 @@ export default function CekStatus() {
     return (
         <div className="bg-gray-50 min-h-screen flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* Sticky Topbar */}
-            <header className="sticky top-0 z-50 text-white shadow-md" style={{ background: 'linear-gradient(135deg, #E67E22 0%, #F39C12 100%)' }}>
+            <header className="sticky top-0 z-50 text-white shadow-md" style={{ background: 'linear-gradient(135deg, #1B7A3D 0%, #27AE60 100%)' }}>
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div>
                             <h1 className="font-bold text-lg">Cek Status Pendaftaran</h1>
-                            <p className="text-sm text-white/70 hidden sm:block">SPMB {tahunAjaran}</p>
+                            <p className="text-sm text-white/70 hidden sm:block">PSB {tahunAjaran}</p>
                         </div>
                     </div>
                     <Link to="/" className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition flex items-center gap-2">
@@ -56,18 +56,18 @@ export default function CekStatus() {
                 {/* Search Section */}
                 <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
                     <div className="text-center mb-6">
-                        <div className="w-16 h-16 bg-[#E67E22]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i className="fas fa-search text-2xl text-[#E67E22]"></i>
+                        <div className="w-16 h-16 bg-[#1B7A3D]/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i className="fas fa-search text-2xl text-[#1B7A3D]"></i>
                         </div>
                         <h2 className="text-xl font-bold text-gray-800 mb-2">Cari Status Pendaftaran</h2>
                         <p className="text-gray-500 text-sm">Masukkan nama lengkap untuk melihat status pendaftaran</p>
                     </div>
                     <div className="relative">
                         <input type="text" value={query} onChange={e => { setQuery(e.target.value); search(e.target.value.trim()); }} placeholder="Ketik nama pendaftar..." autoComplete="off"
-                            className="w-full px-5 py-4 pr-12 border-2 border-gray-200 rounded-xl text-base focus:border-[#E67E22] focus:outline-none transition-all"
+                            className="w-full px-5 py-4 pr-12 border-2 border-gray-200 rounded-xl text-base focus:border-[#1B7A3D] focus:outline-none transition-all"
                             style={{ boxShadow: query ? '0 0 0 3px rgba(230,126,34,0.2)' : 'none' }} />
                         <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                            {loading ? <i className="fas fa-spinner animate-spin text-[#E67E22]"></i> : <i className="fas fa-search text-gray-400"></i>}
+                            {loading ? <i className="fas fa-spinner animate-spin text-[#1B7A3D]"></i> : <i className="fas fa-search text-gray-400"></i>}
                         </div>
                     </div>
                     <p className="text-xs text-gray-400 mt-2 text-center">Minimal 2 karakter untuk mencari</p>
@@ -88,13 +88,13 @@ export default function CekStatus() {
                                     <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all" style={{ animation: `fadeIn 0.3s ease ${i * 0.05}s both` }}>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-[#E67E22]/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                                    <i className="fas fa-user text-[#E67E22]"></i>
+                                                <div className="w-10 h-10 bg-[#1B7A3D]/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                                    <i className="fas fa-user text-[#1B7A3D]"></i>
                                                 </div>
                                                 <div>
                                                     <h4 className="font-semibold text-gray-800">{item.nama}</h4>
                                                     <div className="flex items-center gap-2 text-xs text-gray-500">
-                                                        <span>{item.lembaga}</span><span>•</span><span>{date}</span>
+                                                        <span>{date}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -124,7 +124,7 @@ export default function CekStatus() {
                 {results === null && (
                     <div className="text-center py-12">
                         <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i className="fas fa-clipboard-list text-3xl text-[#E67E22]"></i>
+                            <i className="fas fa-clipboard-list text-3xl text-[#1B7A3D]"></i>
                         </div>
                         <h3 className="text-lg font-semibold text-gray-700 mb-2">Cek Status Pendaftar</h3>
                         <p className="text-gray-500 text-sm">Ketik nama di kolom pencarian untuk melihat status</p>
@@ -135,7 +135,7 @@ export default function CekStatus() {
             {/* Footer */}
             <footer className="bg-white border-t border-gray-100 py-4 mt-auto">
                 <div className="max-w-4xl mx-auto px-4 text-center">
-                    <p className="text-sm text-gray-500">© {new Date().getFullYear()} SPMB Terpadu - Yayasan Almukarromah Pajomblangan</p>
+                    <p className="text-sm text-gray-500">© {new Date().getFullYear()} PSB - PP Nurul Huda An-Najah Banin Banat</p>
                 </div>
             </footer>
 

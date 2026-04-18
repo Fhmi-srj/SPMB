@@ -139,7 +139,7 @@ export default function UserDashboard() {
 
             <div className="max-w-5xl mx-auto p-4 md:p-6">
                 {/* Status & Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div className="bg-white rounded-xl shadow-sm p-4">
                         <p className="text-xs text-gray-500">Status Pendaftaran</p>
                         <span className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${statusColor[data.status] || ''}`}>{data.status}</span>
@@ -147,10 +147,6 @@ export default function UserDashboard() {
                     <div className="bg-white rounded-xl shadow-sm p-4">
                         <p className="text-xs text-gray-500">No. Registrasi</p>
                         <p className="mt-1 text-lg font-bold text-gray-800">{data.no_registrasi || '-'}</p>
-                    </div>
-                    <div className="bg-white rounded-xl shadow-sm p-4">
-                        <p className="text-xs text-gray-500">Lembaga</p>
-                        <p className="mt-1 text-lg font-bold text-gray-800">{data.lembaga}</p>
                     </div>
                 </div>
 
@@ -229,8 +225,6 @@ export default function UserDashboard() {
                         {tab === 'pendidikan' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
                                 {renderEditableField('Asal Sekolah', 'asal_sekolah')}
-                                {renderEditableField('Lembaga Tujuan', 'lembaga', 'text', ['SMP NU BP', 'MA ALHIKAM'])}
-                                {renderEditableField('Status Mukim', 'status_mukim', 'text', ['PONDOK PP MAMBAUL HUDA', 'PONDOK SELAIN PP MAMBAUL HUDA', 'TIDAK PONDOK'])}
                                 {renderEditableField('PIP/PKH', 'pip_pkh')}
                                 {renderEditableField('Prestasi', 'prestasi')}
                                 {renderEditableField('Tingkat Prestasi', 'tingkat_prestasi', 'text', ['KABUPATEN', 'PROVINSI', 'NASIONAL'])}

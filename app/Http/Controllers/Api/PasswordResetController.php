@@ -57,7 +57,7 @@ class PasswordResetController extends Controller
         $mpwaSender = config('services.mpwa.sender', env('MPWA_SENDER'));
 
         if ($mpwaUrl) {
-            $message = "Halo {$user->nama},\n\nAnda meminta reset password SPMB.\nKlik link berikut untuk membuat password baru:\n{$resetLink}\n\nLink ini berlaku selama 1 jam.\nJika Anda tidak meminta reset password, abaikan pesan ini.";
+            $message = "Halo {$user->nama},\n\nAnda meminta reset password PSB.\nKlik link berikut untuk membuat password baru:\n{$resetLink}\n\nLink ini berlaku selama 1 jam.\nJika Anda tidak meminta reset password, abaikan pesan ini.";
 
             try {
                 Http::post($mpwaUrl, [

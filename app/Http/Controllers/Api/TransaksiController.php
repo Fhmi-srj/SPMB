@@ -30,7 +30,7 @@ class TransaksiController extends Controller
         $query = TransaksiPemasukan::query()
             ->join('pendaftaran', 'transaksi_pemasukan.pendaftaran_id', '=', 'pendaftaran.id')
             ->leftJoin('users as u_input', 'transaksi_pemasukan.input_by', '=', 'u_input.id')
-            ->select('transaksi_pemasukan.*', 'pendaftaran.nama', 'pendaftaran.lembaga', 'pendaftaran.no_registrasi', 'u_input.nama as input_nama');
+            ->select('transaksi_pemasukan.*', 'pendaftaran.nama', 'pendaftaran.no_registrasi', 'u_input.nama as input_nama');
 
         // Filter periode
         if ($request->periode && $request->periode !== 'semua') {
@@ -318,7 +318,7 @@ class TransaksiController extends Controller
 
         $data = Pendaftaran::where('nama', 'like', "%{$q}%")
             ->orWhere('no_registrasi', 'like', "%{$q}%")
-            ->select('id', 'no_registrasi', 'nama', 'lembaga')
+            ->select('id', 'no_registrasi', 'nama')
             ->orderBy('nama')
             ->limit(10)
             ->get()
@@ -326,8 +326,7 @@ class TransaksiController extends Controller
                 'id'            => $r->id,
                 'no_registrasi' => $r->no_registrasi,
                 'nama'          => $r->nama,
-                'lembaga'       => $r->lembaga,
-                'label'         => ($r->no_registrasi ?? '-') . ' - ' . $r->nama . ' (' . $r->lembaga . ')',
+                'label'         => ($r->no_registrasi ?? '-') . ' - ' . $r->nama,
             ]);
 
         return response()->json(['success' => true, 'data' => $data]);
@@ -338,11 +337,7 @@ class TransaksiController extends Controller
     {
         $peserta = Pendaftaran::findOrFail($id);
         
-        $lembagaCol = ($peserta->lembaga === 'SMP NU BP') ? 'biaya_smp' : 'biaya_ma';
-        $isPondok = $peserta->status_mukim === 'PONDOK PP MAMBAUL HUDA';
-
-        $biayaSekolah = \App\Models\Biaya::sum($lembagaCol);
-        $biayaPondok = $isPondok ? \App\Models\Biaya::sum('biaya_pondok') : 0;
+        $totalBiaya = \App\Models\Biaya::sum('biaya');
 
         $perlengkapanTotal = \DB::table('perlengkapan_pesanan')
             ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
@@ -354,19 +349,15 @@ class TransaksiController extends Controller
             ->where('status', 'approved')
             ->sum('nominal');
 
-        $totalTagihan = $biayaSekolah + $biayaPondok + $perlengkapanTotal;
+        $totalTagihan = $totalBiaya + $perlengkapanTotal;
 
         return response()->json([
             'success'            => true,
             'total_tagihan'      => $totalTagihan,
             'total_dibayar'      => $totalPaid,
             'sisa_kekurangan'    => $totalTagihan - $totalPaid,
-            'biaya_pondok'       => $biayaPondok,
-            'biaya_sekolah'      => $biayaSekolah,
+            'biaya_pendaftaran'  => $totalBiaya,
             'biaya_perlengkapan' => $perlengkapanTotal,
-            'lembaga'            => $peserta->lembaga,
-            'status_mukim'       => $peserta->status_mukim,
-            'is_pondok'          => $isPondok,
         ]);
     }
 

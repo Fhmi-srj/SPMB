@@ -20,7 +20,7 @@ export default function Transaksi() {
     const [searchResults, setSearchResults] = useState([]);
     const [tagihanInfo, setTagihanInfo] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [kategoriList, setKategoriList] = useState(['Registrasi', 'MA', 'SMP', 'Pondok', 'Perlengkapan', 'Lainnya']);
+    const [kategoriList, setKategoriList] = useState(['Brosur/Banner', 'Konsumsi', 'Perlengkapan', 'ATK', 'Transportasi', 'Lainnya']);
 
     const isSuperAdmin = user?.role === 'super_admin';
 
@@ -86,7 +86,7 @@ export default function Transaksi() {
     };
 
     const handleDelete = async (type, id) => {
-        const ok = await Swal.fire({ title: 'Yakin ingin menghapus transaksi ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#E67E22', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
+        const ok = await Swal.fire({ title: 'Yakin ingin menghapus transaksi ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#1B7A3D', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
         if (!ok.isConfirmed) return;
         try {
             await axios.delete(`${API}/transaksi/${type}/${id}`, { headers });
@@ -104,7 +104,7 @@ export default function Transaksi() {
     };
 
     const handleReject = async (type, id) => {
-        const { value: catatan } = await Swal.fire({ title: 'Alasan Penolakan', input: 'textarea', inputPlaceholder: 'Masukkan alasan (opsional)', showCancelButton: true, confirmButtonColor: '#E67E22', confirmButtonText: 'Tolak', cancelButtonText: 'Batal' });
+        const { value: catatan } = await Swal.fire({ title: 'Alasan Penolakan', input: 'textarea', inputPlaceholder: 'Masukkan alasan (opsional)', showCancelButton: true, confirmButtonColor: '#1B7A3D', confirmButtonText: 'Tolak', cancelButtonText: 'Batal' });
         if (catatan === undefined) return;
         try {
             await axios.post(`${API}/transaksi/${type}/${id}/reject`, { catatan_approval: catatan }, { headers });
@@ -131,13 +131,13 @@ export default function Transaksi() {
         return <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${cls[status] || 'bg-gray-100 text-gray-700'}`}>{lbl[status] || status}</span>;
     };
 
-    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full"></div></div>;
+    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full"></div></div>;
 
     return (
         <div>
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Transaksi Keuangan</h2>
-                <p className="text-gray-500 text-sm">Kelola pemasukan dan pengeluaran SPMB</p>
+                <p className="text-gray-500 text-sm">Kelola pemasukan dan pengeluaran PSB</p>
             </div>
 
             {/* Summary Cards */}
@@ -175,13 +175,13 @@ export default function Transaksi() {
             <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
                 <div className="flex flex-wrap gap-2 items-center">
                     <label className="text-sm font-medium text-gray-700">Periode:</label>
-                    <select value={periode} onChange={e => setPeriode(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                    <select value={periode} onChange={e => setPeriode(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none">
                         <option value="semua">Semua</option>
                         <option value="hari_ini">Hari Ini</option>
                         <option value="minggu_ini">Minggu Ini</option>
                         <option value="bulan_ini">Bulan Ini</option>
                     </select>
-                    <button onClick={fetchData} className="bg-[#E67E22] hover:bg-[#d35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <button onClick={fetchData} className="bg-[#1B7A3D] hover:bg-[#145C2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                         <i className="fas fa-filter mr-2"></i>Terapkan
                     </button>
                     <button onClick={() => setPeriode('semua')} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
@@ -194,10 +194,10 @@ export default function Transaksi() {
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="border-b border-gray-200">
                     <nav className="flex w-full">
-                        <button onClick={() => setTab('pemasukan')} className={`flex-1 px-6 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${tab === 'pemasukan' ? 'bg-[#E67E22] text-white border-[#E67E22]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-transparent'}`}>
+                        <button onClick={() => setTab('pemasukan')} className={`flex-1 px-6 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${tab === 'pemasukan' ? 'bg-[#1B7A3D] text-white border-[#1B7A3D]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-transparent'}`}>
                             <i className="fas fa-arrow-down mr-2"></i>Pemasukan
                         </button>
-                        <button onClick={() => setTab('pengeluaran')} className={`flex-1 px-6 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${tab === 'pengeluaran' ? 'bg-[#E67E22] text-white border-[#E67E22]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-transparent'}`}>
+                        <button onClick={() => setTab('pengeluaran')} className={`flex-1 px-6 py-3 text-sm font-medium transition-all duration-200 border-b-2 ${tab === 'pengeluaran' ? 'bg-[#1B7A3D] text-white border-[#1B7A3D]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-transparent'}`}>
                             <i className="fas fa-arrow-up mr-2"></i>Pengeluaran
                         </button>
                     </nav>
@@ -206,7 +206,7 @@ export default function Transaksi() {
                 {/* Pemasukan Tab */}
                 {tab === 'pemasukan' && (
                     <div className="p-6">
-                        <button onClick={() => { setForm({ tanggal: today, nominal: '', jenis_pembayaran: '', keterangan: '' }); setSearchPeserta(''); setTagihanInfo(null); setShowModal('pemasukan'); }} className="bg-[#E67E22] hover:bg-[#d35400] text-white px-4 py-2 rounded-lg text-sm font-medium mb-4 transition">
+                        <button onClick={() => { setForm({ tanggal: today, nominal: '', jenis_pembayaran: '', keterangan: '' }); setSearchPeserta(''); setTagihanInfo(null); setShowModal('pemasukan'); }} className="bg-[#1B7A3D] hover:bg-[#145C2E] text-white px-4 py-2 rounded-lg text-sm font-medium mb-4 transition">
                             <i className="fas fa-plus mr-2"></i>Tambah Pemasukan
                         </button>
                         <div className="overflow-x-auto">
@@ -264,7 +264,7 @@ export default function Transaksi() {
                 {/* Pengeluaran Tab */}
                 {tab === 'pengeluaran' && (
                     <div className="p-6">
-                        <button onClick={() => { setForm({ tanggal: today, nominal: '', kategori: '', keterangan: '' }); setShowModal('pengeluaran'); }} className="bg-[#E67E22] hover:bg-[#d35400] text-white px-4 py-2 rounded-lg text-sm font-medium mb-4 transition">
+                        <button onClick={() => { setForm({ tanggal: today, nominal: '', kategori: '', keterangan: '' }); setShowModal('pengeluaran'); }} className="bg-[#1B7A3D] hover:bg-[#145C2E] text-white px-4 py-2 rounded-lg text-sm font-medium mb-4 transition">
                             <i className="fas fa-plus mr-2"></i>Tambah Pengeluaran
                         </button>
                         <div className="overflow-x-auto">
@@ -331,14 +331,14 @@ export default function Transaksi() {
                                     <div className="mb-4">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Peserta *</label>
                                         <input type="text" value={searchPeserta} onChange={e => searchPesertaFn(e.target.value)} placeholder="Ketik nama atau no. registrasi..." autoComplete="off"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                         {searchResults.length > 0 && (
                                             <div className="mt-2 border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
                                                 {searchResults.map(p => (
                                                     <button type="button" key={p.id} onClick={() => selectPeserta(p)} className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm border-b border-gray-100">
                                                         <span className="font-medium">{p.nama}</span>
                                                         {p.no_registrasi && <span className="text-gray-500 ml-2">({p.no_registrasi})</span>}
-                                                        <span className="text-xs text-gray-400 ml-2">{p.lembaga}</span>
+
                                                     </button>
                                                 ))}
                                             </div>
@@ -361,16 +361,16 @@ export default function Transaksi() {
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal *</label>
-                                    <input type="date" value={form.tanggal || ''} onChange={e => setForm({ ...form, tanggal: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="date" value={form.tanggal || ''} onChange={e => setForm({ ...form, tanggal: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
-                                    <input type="number" value={form.nominal || ''} onChange={e => setForm({ ...form, nominal: e.target.value })} required placeholder="Masukkan nominal" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="number" value={form.nominal || ''} onChange={e => setForm({ ...form, nominal: e.target.value })} required placeholder="Masukkan nominal" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                             </div>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Pembayaran *</label>
-                                <select value={form.jenis_pembayaran || ''} onChange={e => setForm({ ...form, jenis_pembayaran: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                                <select value={form.jenis_pembayaran || ''} onChange={e => setForm({ ...form, jenis_pembayaran: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none">
                                     <option value="">Pilih Jenis</option>
                                     <option value="Transfer">Transfer</option>
                                     <option value="Cash">Cash</option>
@@ -378,11 +378,11 @@ export default function Transaksi() {
                             </div>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-                                <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"></textarea>
+                                <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none"></textarea>
                             </div>
                             <div className="flex gap-2 justify-end">
                                 <button type="button" onClick={() => { setShowModal(null); setTagihanInfo(null); setSearchPeserta(''); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Simpan</button>
+                                <button type="submit" className="px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg transition">Simpan</button>
                             </div>
                         </form>
                     </div>
@@ -400,27 +400,27 @@ export default function Transaksi() {
                             <div className="grid grid-cols-2 gap-4 mb-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal *</label>
-                                    <input type="date" value={form.tanggal || ''} onChange={e => setForm({ ...form, tanggal: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="date" value={form.tanggal || ''} onChange={e => setForm({ ...form, tanggal: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
-                                    <input type="number" value={form.nominal || ''} onChange={e => setForm({ ...form, nominal: e.target.value })} required placeholder="Masukkan nominal" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="number" value={form.nominal || ''} onChange={e => setForm({ ...form, nominal: e.target.value })} required placeholder="Masukkan nominal" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                             </div>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
-                                <select value={form.kategori || ''} onChange={e => setForm({ ...form, kategori: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                                <select value={form.kategori || ''} onChange={e => setForm({ ...form, kategori: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none">
                                     <option value="">Pilih Kategori</option>
                                     {kategoriList.map(k => <option key={k} value={k}>{k}</option>)}
                                 </select>
                             </div>
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-                                <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"></textarea>
+                                <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none"></textarea>
                             </div>
                             <div className="flex gap-2 justify-end">
                                 <button type="button" onClick={() => setShowModal(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Simpan</button>
+                                <button type="submit" className="px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg transition">Simpan</button>
                             </div>
                         </form>
                     </div>

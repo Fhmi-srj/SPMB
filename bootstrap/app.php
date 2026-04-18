@@ -12,7 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->statefulApi();
+        // Disabled statefulApi() to avoid CSRF checks since we use Bearer Tokens
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

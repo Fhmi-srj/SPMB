@@ -24,7 +24,7 @@ export default function Dashboard() {
 
     if (loading) return (
         <div className="flex items-center justify-center h-64">
-            <div className="w-10 h-10 border-4 border-[#E67E22] border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-[#1B7A3D] border-t-transparent rounded-full animate-spin"></div>
         </div>
     );
 
@@ -41,8 +41,8 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-[#E67E22]/10 rounded-lg flex items-center justify-center">
-                            <i className="fas fa-users text-[#E67E22] text-xl"></i>
+                        <div className="w-12 h-12 bg-[#1B7A3D]/10 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-users text-[#1B7A3D] text-xl"></i>
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-gray-800">{stats?.total ?? 0}</p>
@@ -53,22 +53,22 @@ export default function Dashboard() {
                 <div className="bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i className="fas fa-school text-blue-600 text-xl"></i>
+                            <i className="fas fa-male text-blue-600 text-xl"></i>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-800">{stats?.per_lembaga?.['SMP NU BP'] ?? 0}</p>
-                            <p className="text-xs text-gray-500">SMP NU BP</p>
+                            <p className="text-2xl font-bold text-gray-800">{stats?.per_gender?.['L'] ?? 0}</p>
+                            <p className="text-xs text-gray-500">Santri Putra</p>
                         </div>
                     </div>
                 </div>
                 <div className="bg-white rounded-xl p-4 shadow-sm">
                     <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <i className="fas fa-mosque text-green-600 text-xl"></i>
+                        <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
+                            <i className="fas fa-female text-pink-600 text-xl"></i>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold text-gray-800">{stats?.per_lembaga?.['MA ALHIKAM'] ?? 0}</p>
-                            <p className="text-xs text-gray-500">MA ALHIKAM</p>
+                            <p className="text-2xl font-bold text-gray-800">{stats?.per_gender?.['P'] ?? 0}</p>
+                            <p className="text-xs text-gray-500">Santri Putri</p>
                         </div>
                     </div>
                 </div>
@@ -138,9 +138,9 @@ export default function Dashboard() {
                 <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-semibold text-gray-800">
-                            <i className="fas fa-wallet text-[#E67E22] mr-2"></i>Pos Keuangan
+                            <i className="fas fa-wallet text-[#1B7A3D] mr-2"></i>Pos Keuangan
                         </h3>
-                        <Link to="/admin/pos-keuangan" className="text-sm text-[#E67E22] hover:text-[#D35400]">
+                        <Link to="/admin/pos-keuangan" className="text-sm text-[#1B7A3D] hover:text-[#145C2E]">
                             Lihat Detail <i className="fas fa-arrow-right ml-1"></i>
                         </Link>
                     </div>
@@ -189,7 +189,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 {/* Monthly Chart */}
                 <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-chart-bar text-[#E67E22] mr-2"></i>Pendaftaran 6 Bulan Terakhir</h3>
+                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-chart-bar text-[#1B7A3D] mr-2"></i>Pendaftaran 6 Bulan Terakhir</h3>
                     <div className="h-64">
                         {stats?.monthly && (
                             <Bar
@@ -208,17 +208,17 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* Lembaga Chart */}
+                {/* Gender Chart */}
                 <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-chart-pie text-[#E67E22] mr-2"></i>Distribusi per Lembaga</h3>
+                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-chart-pie text-[#1B7A3D] mr-2"></i>Distribusi Santri</h3>
                     <div className="h-64 flex items-center justify-center">
-                        {stats?.per_lembaga && (
+                        {stats?.per_gender && (
                             <Doughnut
                                 data={{
-                                    labels: Object.keys(stats.per_lembaga),
+                                    labels: ['Putra', 'Putri'],
                                     datasets: [{
-                                        data: Object.values(stats.per_lembaga),
-                                        backgroundColor: ['#3B82F6', '#10B981'],
+                                        data: [stats.per_gender['L'] || 0, stats.per_gender['P'] || 0],
+                                        backgroundColor: ['#3B82F6', '#EC4899'],
                                         borderWidth: 0,
                                     }],
                                 }}
@@ -233,7 +233,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 {/* Document Completion */}
                 <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-folder-open text-[#E67E22] mr-2"></i>Kelengkapan Dokumen</h3>
+                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-folder-open text-[#1B7A3D] mr-2"></i>Kelengkapan Dokumen</h3>
                     <div className="space-y-3">
                         {stats?.doc_stats && Object.entries(stats.doc_stats).map(([field, count]) => {
                             const labels = { file_kk: 'Kartu Keluarga', file_ktp_ortu: 'KTP Orang Tua', file_akta: 'Akta Kelahiran', file_ijazah: 'Ijazah', file_sertifikat: 'Sertifikat' };
@@ -246,7 +246,7 @@ export default function Dashboard() {
                                         <span className="text-gray-500">{count}/{stats.total}</span>
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-2">
-                                        <div className="bg-[#E67E22] h-2 rounded-full transition-all" style={{ width: `${pct}%` }}></div>
+                                        <div className="bg-[#1B7A3D] h-2 rounded-full transition-all" style={{ width: `${pct}%` }}></div>
                                     </div>
                                 </div>
                             );
@@ -256,7 +256,7 @@ export default function Dashboard() {
 
                 {/* Gender Chart */}
                 <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-venus-mars text-[#E67E22] mr-2"></i>Distribusi Gender</h3>
+                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-venus-mars text-[#1B7A3D] mr-2"></i>Distribusi Gender</h3>
                     <div className="h-48 flex items-center justify-center">
                         {stats?.per_gender && (
                             <Doughnut
@@ -276,7 +276,7 @@ export default function Dashboard() {
 
                 {/* Sumber Info Chart */}
                 <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-bullhorn text-[#E67E22] mr-2"></i>Sumber Informasi</h3>
+                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-bullhorn text-[#1B7A3D] mr-2"></i>Sumber Informasi</h3>
                     <div className="h-48">
                         {stats?.sumber_info && (
                             <Bar
@@ -302,7 +302,7 @@ export default function Dashboard() {
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                     <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                         <h3 className="font-semibold text-gray-800">Pendaftaran Terbaru</h3>
-                        <Link to="/admin/pendaftaran" className="text-[#E67E22] text-sm hover:underline">Lihat Semua</Link>
+                        <Link to="/admin/pendaftaran" className="text-[#1B7A3D] text-sm hover:underline">Lihat Semua</Link>
                     </div>
                     {(!stats?.latest || stats.latest.length === 0) ? (
                         <div className="p-8 text-center text-gray-500">
@@ -319,7 +319,7 @@ export default function Dashboard() {
                                     <div key={i} className="p-3 hover:bg-gray-50 flex items-center justify-between">
                                         <div>
                                             <p className="font-medium text-sm text-gray-800">{row.nama}</p>
-                                            <p className="text-xs text-gray-500">{row.lembaga} • {row.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} • {date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</p>
+                                            <p className="text-xs text-gray-500">{row.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} • {date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</p>
                                         </div>
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${stCls}`}>{stText}</span>
                                     </div>
@@ -334,7 +334,7 @@ export default function Dashboard() {
                     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div className="p-4 border-b border-gray-100 flex items-center justify-between">
                             <h3 className="font-semibold text-gray-800">Aktivitas Terbaru</h3>
-                            <Link to="/admin/aktivitas" className="text-[#E67E22] text-sm hover:underline">Lihat Semua</Link>
+                            <Link to="/admin/aktivitas" className="text-[#1B7A3D] text-sm hover:underline">Lihat Semua</Link>
                         </div>
                         {(!stats?.activity_log || stats.activity_log.length === 0) ? (
                             <div className="p-8 text-center text-gray-500">

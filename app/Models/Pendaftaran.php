@@ -13,7 +13,7 @@ class Pendaftaran extends Model
         'no_registrasi', 'nama', 'lembaga', 'nisn', 'tempat_lahir', 'tanggal_lahir',
         'jenis_kelamin', 'jumlah_saudara', 'no_kk', 'nik', 'alamat', 'provinsi',
         'kota_kab', 'kecamatan', 'kelurahan_desa', 'asal_sekolah', 'prestasi',
-        'tingkat_prestasi', 'juara', 'file_sertifikat', 'pip_pkh', 'status_mukim',
+        'tingkat_prestasi', 'juara', 'file_sertifikat', 'pip_pkh',
         'sumber_info', 'nama_ayah', 'tempat_lahir_ayah', 'tanggal_lahir_ayah',
         'nik_ayah', 'pekerjaan_ayah', 'penghasilan_ayah', 'nama_ibu',
         'tempat_lahir_ibu', 'tanggal_lahir_ibu', 'nik_ibu', 'pekerjaan_ibu',

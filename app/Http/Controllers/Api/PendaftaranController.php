@@ -31,9 +31,7 @@ class PendaftaranController extends Controller
             });
         }
 
-        if ($request->lembaga) {
-            $query->where('lembaga', $request->lembaga);
-        }
+        // Lembaga filter removed — PSB is pondok-only
 
         if ($request->status) {
             $query->where('status', $request->status);
@@ -107,7 +105,7 @@ class PendaftaranController extends Controller
         $results = Pendaftaran::where('nama', 'like', "%{$q}%")
             ->orderBy('created_at', 'desc')
             ->limit(20)
-            ->get(['nama', 'lembaga', 'status', 'created_at']);
+            ->get(['nama', 'status', 'created_at']);
 
         return response()->json([
             'success' => true,
@@ -131,11 +129,9 @@ class PendaftaranController extends Controller
 
         $request->validate([
             'nama' => 'required|string|max:100',
-            'lembaga' => 'required|in:SMP NU BP,MA ALHIKAM',
             'jenis_kelamin' => 'required|in:L,P',
-            'status_mukim' => 'required|in:PONDOK PP MAMBAUL HUDA,PONDOK SELAIN PP MAMBAUL HUDA,TIDAK PONDOK',
             'no_hp_wali' => 'required|string|max:20|unique:pendaftaran,no_hp_wali',
-            'password' => 'required|string|min:6',
+            'password' => 'nullable|string|min:6',
         ]);
 
         // Cek apakah pendaftaran terbuka
@@ -161,7 +157,7 @@ class PendaftaranController extends Controller
                 'jenis_kelamin', 'jumlah_saudara', 'no_kk', 'nik', 'alamat',
                 'provinsi', 'kota_kab', 'kecamatan', 'kelurahan_desa',
                 'asal_sekolah', 'prestasi', 'tingkat_prestasi', 'juara',
-                'pip_pkh', 'status_mukim', 'sumber_info',
+                'pip_pkh', 'sumber_info',
                 'nama_ayah', 'tempat_lahir_ayah', 'tanggal_lahir_ayah', 'nik_ayah',
                 'pekerjaan_ayah', 'penghasilan_ayah',
                 'nama_ibu', 'tempat_lahir_ibu', 'tanggal_lahir_ibu', 'nik_ibu',
@@ -170,9 +166,10 @@ class PendaftaranController extends Controller
             ];
 
             $data = $request->only($allowedFields);
-            $data['password'] = Hash::make($request->password);
+            $data['password'] = Hash::make($request->password ?? \Str::random(12));
             $data['no_registrasi'] = $noReg;
             $data['status'] = 'pending';
+
 
             return Pendaftaran::create($data);
         });
@@ -204,13 +201,26 @@ class PendaftaranController extends Controller
         ], 201);
     }
 
+    // (Show method belongs after index, already exists at line 61)
     /** Update data pendaftaran (admin) */
     public function update(Request $request, $id): JsonResponse
     {
         $pendaftaran = Pendaftaran::findOrFail($id);
 
-        // Whitelist only allowed fields for admin update (Fix #15)
-        $allowedFields = ['status', 'catatan_admin'];
+        // Whitelist all allowed fields for admin update
+        $allowedFields = [
+            'nama', 'lembaga', 'nisn', 'nik', 'no_kk',
+            'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin',
+            'jumlah_saudara', 'asal_sekolah',
+            'provinsi', 'kota_kab', 'kecamatan', 'kelurahan_desa',
+            'alamat', 'status_mukim', 'pip_pkh', 'sumber_info',
+            'prestasi', 'tingkat_prestasi', 'juara',
+            'nama_ayah', 'nik_ayah', 'tempat_lahir_ayah', 'tanggal_lahir_ayah',
+            'pekerjaan_ayah', 'penghasilan_ayah',
+            'nama_ibu', 'nik_ibu', 'tempat_lahir_ibu', 'tanggal_lahir_ibu',
+            'pekerjaan_ibu', 'penghasilan_ibu',
+            'no_hp_wali', 'status', 'catatan_admin',
+        ];
         $data = $request->only($allowedFields);
 
         if ($request->filled('catatan_admin')) {
@@ -299,7 +309,7 @@ class PendaftaranController extends Controller
     public function exportExcel(Request $request)
     {
         $query = Pendaftaran::query();
-        if ($request->lembaga) $query->where('lembaga', $request->lembaga);
+        // Lembaga filter removed — PSB pondok-only
         if ($request->status) $query->where('status', $request->status);
         $data = $query->orderBy('no_registrasi')->get();
 
@@ -418,7 +428,7 @@ class PendaftaranController extends Controller
         $gruaLink = Pengaturan::where('kunci', 'link_grup_wa')->value('nilai') ?? 'https://wa.me';
 
         $message = "Assalamualaikum, Yth. Wali Murid *{$pendaftaran->nama}*\n\n";
-        $message .= "Selamat! Pendaftaran putra/putri Anda di *{$pendaftaran->lembaga}* telah *DITERIMA*.\n\n";
+        $message .= "Selamat! Pendaftaran putra/putri Anda di *PP Nurul Huda An-Najah* telah *DITERIMA*.\n\n";
         $message .= "Nomor Registrasi: *{$pendaftaran->no_registrasi}*\n\n";
         $message .= "Silakan bergabung dengan grup WhatsApp kami:\n{$gruaLink}\n\nTerima kasih.";
 

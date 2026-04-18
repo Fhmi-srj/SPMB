@@ -25,7 +25,7 @@ export default function UserLogin() {
                 navigate('/portal/dashboard');
             }
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || 'Login gagal', confirmButtonColor: '#E67E22' });
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || 'Login gagal', confirmButtonColor: '#1B7A3D' });
         } finally { setLoading(false); }
     };
 
@@ -36,11 +36,11 @@ export default function UserLogin() {
             await axios.get('/sanctum/csrf-cookie');
             const res = await axios.post('/api/user/forgot-password', { no_hp: forgotPhone });
             if (res.data.success) {
-                Swal.fire({ icon: 'success', title: 'Berhasil', text: res.data.message, confirmButtonColor: '#E67E22' });
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: res.data.message, confirmButtonColor: '#1B7A3D' });
                 setShowForgot(false);
             }
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || 'Gagal mengirim', confirmButtonColor: '#E67E22' });
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || 'Gagal mengirim', confirmButtonColor: '#1B7A3D' });
         } finally { setForgotLoading(false); }
     };
 
@@ -49,7 +49,7 @@ export default function UserLogin() {
             <div className="w-full max-w-md">
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
                     {/* Orange gradient header matching PHP */}
-                    <div className="p-6 text-center" style={{ background: 'linear-gradient(to right, #E67E22, #F39C12)' }}>
+                    <div className="p-6 text-center" style={{ background: 'linear-gradient(to right, #1B7A3D, #27AE60)' }}>
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
                             <i className="fas fa-user-graduate text-3xl text-white"></i>
                         </div>
@@ -69,7 +69,7 @@ export default function UserLogin() {
                                         <span className="bg-gray-100 border border-r-0 border-gray-300 pl-10 pr-2 py-3 rounded-l-lg text-gray-600 text-sm font-medium flex items-center">+62</span>
                                         <input type="text" value={phone} onChange={e => setPhone(e.target.value.replace(/[^0-9]/g, '').replace(/^0+/, ''))}
                                             placeholder="8xxxxxxxxxx" required minLength={9} maxLength={13}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none transition text-sm" />
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none transition text-sm" />
                                     </div>
                                 </div>
                             </div>
@@ -82,7 +82,7 @@ export default function UserLogin() {
                                     </span>
                                     <input type={showPass ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
                                         placeholder="Masukkan password" required
-                                        className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none transition text-sm" />
+                                        className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none transition text-sm" />
                                     <button type="button" onClick={() => setShowPass(!showPass)}
                                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                         <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`}></i>
@@ -91,33 +91,33 @@ export default function UserLogin() {
                             </div>
 
                             <button type="submit" disabled={loading}
-                                className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-lg transition transform hover:scale-[1.02] active:scale-100 disabled:opacity-70">
+                                className="w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-lg transition transform hover:scale-[1.02] active:scale-100 disabled:opacity-70">
                                 {loading ? <><i className="fas fa-spinner fa-spin mr-2"></i>Masuk...</> : <><i className="fas fa-sign-in-alt mr-2"></i>Masuk</>}
                             </button>
                         </form>
 
                         <div className="mt-4 text-center">
-                            <button onClick={() => setShowForgot(true)} className="text-[#E67E22] text-sm font-medium hover:underline">
+                            <button onClick={() => setShowForgot(true)} className="text-[#1B7A3D] text-sm font-medium hover:underline">
                                 <i className="fas fa-key mr-1"></i>Lupa Password?
                             </button>
                         </div>
 
                         <div className="mt-6 text-center">
                             <p className="text-gray-500 text-sm">
-                                Belum punya akun? <Link to="/daftar" className="text-[#E67E22] font-medium hover:underline">Daftar di sini</Link>
+                                Belum punya akun? <Link to="/daftar" className="text-[#1B7A3D] font-medium hover:underline">Daftar di sini</Link>
                             </p>
                         </div>
                     </div>
 
                     <div className="bg-gray-50 p-4 text-center border-t">
-                        <Link to="/" className="text-sm text-gray-500 hover:text-[#E67E22]">
+                        <Link to="/" className="text-sm text-gray-500 hover:text-[#1B7A3D]">
                             <i className="fas fa-arrow-left mr-1"></i>Kembali ke Website
                         </Link>
                     </div>
                 </div>
 
                 <p className="text-center text-gray-400 text-xs mt-4">
-                    © {new Date().getFullYear()} SPMB Mambaul Huda Pajomblangan
+                    © {new Date().getFullYear()} PSB Nurul Huda An-Najah
                 </p>
             </div>
 
@@ -125,7 +125,7 @@ export default function UserLogin() {
             {showForgot && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-                        <div className="p-4 flex justify-between items-center" style={{ background: 'linear-gradient(to right, #E67E22, #F39C12)' }}>
+                        <div className="p-4 flex justify-between items-center" style={{ background: 'linear-gradient(to right, #1B7A3D, #27AE60)' }}>
                             <h3 className="text-lg font-bold text-white"><i className="fas fa-key mr-2"></i>Lupa Password</h3>
                             <button onClick={() => setShowForgot(false)} className="text-white/80 hover:text-white">
                                 <i className="fas fa-times text-xl"></i>
@@ -140,7 +140,7 @@ export default function UserLogin() {
                                         <span className="bg-gray-100 border border-r-0 border-gray-300 px-3 py-3 rounded-l-lg text-gray-600 text-sm font-medium flex items-center">+62</span>
                                         <input type="text" value={forgotPhone} onChange={e => setForgotPhone(e.target.value.replace(/[^0-9]/g, '').replace(/^0+/, ''))}
                                             placeholder="8xxxxxxxxxx" required minLength={9} maxLength={13}
-                                            className="w-full px-4 py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none transition text-sm" />
+                                            className="w-full px-4 py-3 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none transition text-sm" />
                                     </div>
                                 </div>
                                 <button type="submit" disabled={forgotLoading}

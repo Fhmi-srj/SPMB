@@ -15,7 +15,7 @@ export default function Biaya() {
     const [showDelete, setShowDelete] = useState(false);
     const [editing, setEditing] = useState(null);
     const [deleting, setDeleting] = useState(null);
-    const [form, setForm] = useState({ kategori: 'PENDAFTARAN', nama_item: '', biaya_pondok: 0, biaya_smp: 0, biaya_ma: 0, urutan: 0 });
+    const [form, setForm] = useState({ kategori: 'PENDAFTARAN', nama_item: '', biaya: 0, urutan: 0 });
     // Perlengkapan modals
     const [showAddP, setShowAddP] = useState(false);
     const [showEditP, setShowEditP] = useState(false);
@@ -82,7 +82,7 @@ export default function Biaya() {
     };
 
     // Totals
-    const totals = biayaList.reduce((t, b) => ({ pondok: t.pondok + (b.biaya_pondok || 0), smp: t.smp + (b.biaya_smp || 0), ma: t.ma + (b.biaya_ma || 0) }), { pondok: 0, smp: 0, ma: 0 });
+    const totals = biayaList.reduce((t, b) => t + (b.biaya || 0), 0);
 
     // Render table rows with category headers
     const renderBiayaRows = () => {
@@ -93,8 +93,8 @@ export default function Biaya() {
             if (currentKat !== row.kategori) {
                 currentKat = row.kategori;
                 items.push(
-                    <tr key={`cat-${row.kategori}`} className="bg-[#E67E22]/5">
-                        <td colSpan={7} className="px-4 py-2 font-semibold text-[#E67E22] text-sm">
+                    <tr key={`cat-${row.kategori}`} className="bg-[#1B7A3D]/5">
+                        <td colSpan={7} className="px-4 py-2 font-semibold text-[#1B7A3D] text-sm">
                             {row.kategori === 'PENDAFTARAN' ? 'A. PENDAFTARAN' : 'B. DAFTAR ULANG'}
                         </td>
                     </tr>
@@ -105,9 +105,7 @@ export default function Biaya() {
                     <td className="px-4 py-3 text-sm text-gray-500">{no++}</td>
                     <td className="px-4 py-3 text-sm text-gray-600">{row.kategori}</td>
                     <td className="px-4 py-3 text-sm font-medium text-gray-800">{row.nama_item}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{fmt(row.biaya_pondok)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{fmt(row.biaya_smp)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{fmt(row.biaya_ma)}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{fmt(row.biaya)}</td>
                     <td className="px-4 py-3 text-center">
                         <button onClick={() => { setEditing(row); setForm({ ...row }); setShowEdit(true); }} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><i className="fas fa-edit"></i></button>
                         <button onClick={() => { setDeleting(row); setShowDelete(true); }} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash"></i></button>
@@ -147,7 +145,7 @@ export default function Biaya() {
         </div>
     ) : null;
 
-    const inputCls = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none";
+    const inputCls = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none";
 
     return (
         <div>
@@ -156,14 +154,14 @@ export default function Biaya() {
                     <h2 className="text-2xl font-bold text-gray-800">Kelola Biaya</h2>
                     <p className="text-gray-500 text-sm">Atur biaya pendaftaran dan daftar ulang</p>
                 </div>
-                <button onClick={() => { setForm({ kategori: 'PENDAFTARAN', nama_item: '', biaya_pondok: 0, biaya_smp: 0, biaya_ma: 0, urutan: 0 }); setShowAdd(true); }}
-                    className="bg-[#E67E22] hover:bg-[#D35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                <button onClick={() => { setForm({ kategori: 'PENDAFTARAN', nama_item: '', biaya: 0, urutan: 0 }); setShowAdd(true); }}
+                    className="bg-[#1B7A3D] hover:bg-[#145C2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                     <i className="fas fa-plus mr-2"></i>Tambah Item
                 </button>
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center h-32"><div className="w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full animate-spin"></div></div>
+                <div className="flex items-center justify-center h-32"><div className="w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full animate-spin"></div></div>
             ) : (
                 <>
                     {/* Biaya Table */}
@@ -175,19 +173,15 @@ export default function Biaya() {
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Item</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pondok</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">SMP</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">MA</th>
+                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Biaya</th>
                                         <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {renderBiayaRows()}
-                                    <tr className="bg-[#E67E22] text-white font-bold">
+                                    <tr className="bg-[#1B7A3D] text-white font-bold">
                                         <td colSpan={3} className="px-4 py-3 text-sm">TOTAL</td>
-                                        <td className="px-4 py-3 text-sm text-right">Rp{totals.pondok.toLocaleString('id-ID')}</td>
-                                        <td className="px-4 py-3 text-sm text-right">Rp{totals.smp.toLocaleString('id-ID')}</td>
-                                        <td className="px-4 py-3 text-sm text-right">Rp{totals.ma.toLocaleString('id-ID')}</td>
+                                        <td className="px-4 py-3 text-sm text-right">Rp{totals.toLocaleString('id-ID')}</td>
                                         <td></td>
                                     </tr>
                                 </tbody>
@@ -260,20 +254,16 @@ export default function Biaya() {
                         </div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Item</label>
                             <input type="text" value={form.nama_item} onChange={e => setForm(f => ({ ...f, nama_item: e.target.value }))} required className={inputCls} /></div>
-                        <div className="grid grid-cols-3 gap-3">
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Pondok</label>
-                                <input type="number" value={form.biaya_pondok} onChange={e => setForm(f => ({ ...f, biaya_pondok: e.target.value }))} className={inputCls} /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">SMP</label>
-                                <input type="number" value={form.biaya_smp} onChange={e => setForm(f => ({ ...f, biaya_smp: e.target.value }))} className={inputCls} /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">MA</label>
-                                <input type="number" value={form.biaya_ma} onChange={e => setForm(f => ({ ...f, biaya_ma: e.target.value }))} className={inputCls} /></div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Biaya (Rp)</label>
+                            <input type="number" value={form.biaya} onChange={e => setForm(f => ({ ...f, biaya: e.target.value }))} className={inputCls} />
                         </div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
                             <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: e.target.value }))} className={inputCls} /></div>
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
                         <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
                     </div>
                 </form>
             </ModalWrapper>
@@ -288,20 +278,16 @@ export default function Biaya() {
                             </select></div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Item</label>
                             <input type="text" value={form.nama_item} onChange={e => setForm(f => ({ ...f, nama_item: e.target.value }))} required className={inputCls} /></div>
-                        <div className="grid grid-cols-3 gap-3">
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">Pondok</label>
-                                <input type="number" value={form.biaya_pondok} onChange={e => setForm(f => ({ ...f, biaya_pondok: e.target.value }))} className={inputCls} /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">SMP</label>
-                                <input type="number" value={form.biaya_smp} onChange={e => setForm(f => ({ ...f, biaya_smp: e.target.value }))} className={inputCls} /></div>
-                            <div><label className="block text-sm font-medium text-gray-700 mb-1">MA</label>
-                                <input type="number" value={form.biaya_ma} onChange={e => setForm(f => ({ ...f, biaya_ma: e.target.value }))} className={inputCls} /></div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Biaya (Rp)</label>
+                            <input type="number" value={form.biaya} onChange={e => setForm(f => ({ ...f, biaya: e.target.value }))} className={inputCls} />
                         </div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
                             <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: e.target.value }))} className={inputCls} /></div>
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
                         <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
                     </div>
                 </form>
             </ModalWrapper>
@@ -321,7 +307,7 @@ export default function Biaya() {
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
                         <button type="button" onClick={() => setShowAddP(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
                     </div>
                 </form>
             </ModalWrapper>
@@ -339,7 +325,7 @@ export default function Biaya() {
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
                         <button type="button" onClick={() => setShowEditP(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
                     </div>
                 </form>
             </ModalWrapper>

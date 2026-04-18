@@ -16,12 +16,10 @@ class DashboardController extends Controller
     public function statistics(): JsonResponse
     {
         $total = Pendaftaran::count();
-        $perLembaga = Pendaftaran::selectRaw('lembaga, COUNT(*) as total')
-            ->groupBy('lembaga')->pluck('total', 'lembaga');
+        // per_lembaga removed — PSB is pondok-only
         $perStatus = Pendaftaran::selectRaw('status, COUNT(*) as total')
             ->groupBy('status')->pluck('total', 'status');
-        $perMukim = Pendaftaran::selectRaw('status_mukim, COUNT(*) as total')
-            ->groupBy('status_mukim')->pluck('total', 'status_mukim');
+
         $perJK = Pendaftaran::selectRaw('jenis_kelamin, COUNT(*) as total')
             ->groupBy('jenis_kelamin')->pluck('total', 'jenis_kelamin');
 
@@ -52,7 +50,7 @@ class DashboardController extends Controller
         // Latest registrations
         $latest = Pendaftaran::orderByDesc('created_at')
             ->limit(10)
-            ->get(['nama', 'lembaga', 'jenis_kelamin', 'status', 'created_at']);
+            ->get(['nama', 'jenis_kelamin', 'status', 'created_at']);
 
         // Recent activity log
         $activityLog = ActivityLog::with('user:id,nama')
@@ -102,9 +100,9 @@ class DashboardController extends Controller
             'success' => true,
             'data' => [
                 'total'        => $total,
-                'per_lembaga'  => $perLembaga,
+
                 'per_status'   => $perStatus,
-                'per_mukim'    => $perMukim,
+
                 'per_gender'   => $perJK,
                 'monthly'      => [
                     'labels' => $monthlyLabels,

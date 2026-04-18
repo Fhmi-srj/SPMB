@@ -75,7 +75,7 @@ export default function KelolaUser() {
 
     const closeModal = () => { setModal(null); setForm({}); setSelected(null); };
 
-    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full"></div></div>;
+    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full"></div></div>;
 
     return (
         <div>
@@ -84,7 +84,7 @@ export default function KelolaUser() {
                     <h2 className="text-2xl font-bold text-gray-800">Kelola User</h2>
                     <p className="text-gray-500 text-sm">Kelola akun admin, tambah atau edit user</p>
                 </div>
-                <button onClick={() => { setForm({ username: '', nama: '', password: '', role: 'panitia' }); setModal('add'); }} className="bg-[#E67E22] hover:bg-[#d35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                <button onClick={() => { setForm({ username: '', nama: '', password: '', role: 'panitia' }); setModal('add'); }} className="bg-[#1B7A3D] hover:bg-[#145C2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                     <i className="fas fa-user-plus mr-2"></i>Tambah User
                 </button>
             </div>
@@ -109,7 +109,7 @@ export default function KelolaUser() {
                                     <td className="px-4 py-3 text-sm text-gray-500">{idx + 1}</td>
                                     <td className="px-4 py-3 text-sm font-medium text-gray-800">
                                         {user.nama}
-                                        {user.id === currentUser?.id && <span className="text-xs text-[#E67E22] font-normal ml-1">(Anda)</span>}
+                                        {user.id === currentUser?.id && <span className="text-xs text-[#1B7A3D] font-normal ml-1">(Anda)</span>}
                                     </td>
                                     <td className="px-4 py-3 text-sm text-gray-600">{user.username}</td>
                                     <td className="px-4 py-3 text-center">{roleBadge(user.role)}</td>
@@ -148,20 +148,20 @@ export default function KelolaUser() {
                             <div className="p-6 space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                                    <input type="text" value={form.nama || ''} onChange={e => setForm({ ...form, nama: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="text" value={form.nama || ''} onChange={e => setForm({ ...form, nama: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                                    <input type="text" value={form.username || ''} onChange={e => setForm({ ...form, username: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="text" value={form.username || ''} onChange={e => setForm({ ...form, username: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                    <input type="password" value={form.password || ''} onChange={e => setForm({ ...form, password: e.target.value })} required minLength={6} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="password" value={form.password || ''} onChange={e => setForm({ ...form, password: e.target.value })} required minLength={6} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                     <p className="text-xs text-gray-500 mt-1">Minimal 6 karakter</p>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                                    <select value={form.role || 'panitia'} onChange={e => setForm({ ...form, role: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                                    <select value={form.role || 'panitia'} onChange={e => setForm({ ...form, role: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none">
                                         <option value="panitia">Panitia</option>
                                         <option value="admin">Admin</option>
                                         <option value="super_admin">Super Admin</option>
@@ -170,7 +170,7 @@ export default function KelolaUser() {
                             </div>
                             <div className="flex gap-2 justify-end p-6 border-t bg-gray-50 rounded-b-xl">
                                 <button type="button" onClick={closeModal} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Simpan</button>
+                                <button type="submit" className="px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg transition">Simpan</button>
                             </div>
                         </form>
                     </div>
@@ -189,15 +189,15 @@ export default function KelolaUser() {
                             <div className="p-6 space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                                    <input type="text" value={form.nama || ''} onChange={e => setForm({ ...form, nama: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="text" value={form.nama || ''} onChange={e => setForm({ ...form, nama: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                                    <input type="text" value={form.username || ''} onChange={e => setForm({ ...form, username: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="text" value={form.username || ''} onChange={e => setForm({ ...form, username: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                                    <select value={form.role || 'panitia'} onChange={e => setForm({ ...form, role: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                                    <select value={form.role || 'panitia'} onChange={e => setForm({ ...form, role: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none">
                                         <option value="panitia">Panitia</option>
                                         <option value="admin">Admin</option>
                                         <option value="super_admin">Super Admin</option>
@@ -206,7 +206,7 @@ export default function KelolaUser() {
                             </div>
                             <div className="flex gap-2 justify-end p-6 border-t bg-gray-50 rounded-b-xl">
                                 <button type="button" onClick={closeModal} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Update</button>
+                                <button type="submit" className="px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg transition">Update</button>
                             </div>
                         </form>
                     </div>
@@ -226,7 +226,7 @@ export default function KelolaUser() {
                                 <p className="text-sm text-gray-600">Reset password untuk <strong>{selected?.nama}</strong></p>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
-                                    <input type="password" value={form.new_password || ''} onChange={e => setForm({ ...form, new_password: e.target.value })} required minLength={6} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input type="password" value={form.new_password || ''} onChange={e => setForm({ ...form, new_password: e.target.value })} required minLength={6} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                     <p className="text-xs text-gray-500 mt-1">Minimal 6 karakter</p>
                                 </div>
                             </div>

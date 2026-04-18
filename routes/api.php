@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PendaftaranController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ActivityLogController;
-use App\Http\Controllers\Api\BeasiswaController;
+
 use App\Http\Controllers\Api\BiayaController;
 use App\Http\Controllers\Api\KontakController;
 use App\Http\Controllers\Api\PengaturanController;
@@ -30,7 +30,7 @@ Route::get('wilayah', [WilayahController::class, 'index']);
 Route::get('pengaturan/public', [PengaturanController::class, 'publicSettings']);
 
 // Beasiswa & Biaya (read-only publik)
-Route::get('beasiswa', [BeasiswaController::class, 'index']);
+
 Route::get('biaya', [BiayaController::class, 'index']);
 Route::get('kontak', [KontakController::class, 'index']);
 
@@ -75,10 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('pendaftaran/{id}/notify-berkas', [PendaftaranController::class, 'notifyBerkas']);
     Route::post('pendaftaran/{id}/notify-welcome', [PendaftaranController::class, 'notifyWelcome']);
 
-    // Beasiswa CRUD
-    Route::post('beasiswa', [BeasiswaController::class, 'store']);
-    Route::put('beasiswa/{id}', [BeasiswaController::class, 'update']);
-    Route::delete('beasiswa/{id}', [BeasiswaController::class, 'destroy']);
+
 
     // Biaya CRUD
     Route::post('biaya', [BiayaController::class, 'store']);

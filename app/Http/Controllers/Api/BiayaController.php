@@ -28,7 +28,7 @@ class BiayaController extends Controller
         ]);
 
         $biaya = Biaya::create([
-            ...$request->only(['kategori', 'nama_item', 'biaya_pondok', 'biaya_smp', 'biaya_ma']),
+            ...$request->only(['kategori', 'nama_item', 'biaya']),
             'urutan' => Biaya::where('kategori', $request->kategori)->max('urutan') + 1,
         ]);
 
@@ -38,7 +38,7 @@ class BiayaController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $biaya = Biaya::findOrFail($id);
-        $biaya->update($request->only(['nama_item', 'biaya_pondok', 'biaya_smp', 'biaya_ma', 'urutan']));
+        $biaya->update($request->only(['nama_item', 'biaya', 'urutan']));
         return response()->json(['success' => true, 'data' => $biaya]);
     }
 

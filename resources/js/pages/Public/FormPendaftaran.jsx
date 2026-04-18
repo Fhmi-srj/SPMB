@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
-const inputCls = "w-full py-3 px-4 border border-gray-200 rounded-xl text-sm outline-none transition-all uppercase focus:border-[#E67E22] focus:shadow-[0_0_0_3px_rgba(230,126,34,0.1)]";
+const inputCls = "w-full py-3 px-4 border border-gray-200 rounded-xl text-sm outline-none transition-all uppercase focus:border-[#1B7A3D] focus:shadow-[0_0_0_3px_rgba(230,126,34,0.1)]";
 const selectCls = inputCls + " bg-white";
 
 export default function FormPendaftaran() {
@@ -11,7 +11,7 @@ export default function FormPendaftaran() {
     const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({});
     const [files, setFiles] = useState({});
-    const [showPw, setShowPw] = useState({ pw: false, confirm: false });
+
 
     // Region data
     const [provinsi, setProvinsi] = useState([]);
@@ -32,11 +32,10 @@ export default function FormPendaftaran() {
         fetch('/api/wilayah?type=provinsi').then(r => r.json()).then(d => setProvinsi(d || [])).catch(() => { });
     }, []);
 
-    // Save draft (Fix #18: exclude password from localStorage)
+    // Save draft
     useEffect(() => {
         if (Object.keys(form).length > 0) {
-            const { password, password_confirm, ...safeDraft } = form;
-            localStorage.setItem('pendaftaran_draft', JSON.stringify(safeDraft));
+            localStorage.setItem('pendaftaran_draft', JSON.stringify(form));
         }
     }, [form]);
 
@@ -70,9 +69,8 @@ export default function FormPendaftaran() {
         const errors = [];
         if (s === 1) {
             if (!form.nama?.trim()) errors.push('Nama Lengkap harus diisi');
-            if (!form.lembaga) errors.push('Lembaga yang Dituju harus diisi');
+            if (!form.lembaga) errors.push('Lembaga harus dipilih');
             if (!form.jenis_kelamin) errors.push('Jenis Kelamin harus diisi');
-            if (!form.status_mukim) errors.push('Status Mukim harus diisi');
             if (!form.provinsi) errors.push('Provinsi harus diisi');
             if (!form.kota_kab) errors.push('Kota/Kabupaten harus diisi');
             if (!form.kecamatan) errors.push('Kecamatan harus diisi');
@@ -81,9 +79,6 @@ export default function FormPendaftaran() {
         if (s === 2) {
             if (!form.no_hp_wali?.trim()) errors.push('No. HP WhatsApp Wali harus diisi');
             else if (form.no_hp_wali.length < 9) errors.push('No. HP minimal 9 digit');
-            if (!form.password?.trim()) errors.push('Password harus diisi');
-            else if (form.password.length < 6) errors.push('Password minimal 6 karakter');
-            if (form.password !== form.password_confirm) errors.push('Konfirmasi Password tidak cocok');
         }
         return errors;
     };
@@ -136,11 +131,11 @@ export default function FormPendaftaran() {
                             <p class="text-sm"><i class="fas fa-user text-green-600 mr-2"></i><strong>${form.nama}</strong> telah terdaftar</p>
                             <p class="text-sm mt-1"><i class="fas fa-ticket-alt text-green-600 mr-2"></i>No. Registrasi: <strong class="text-green-700">${data.data?.no_registrasi || '-'}</strong></p>
                         </div>
-                        <div class="bg-orange-50 rounded-lg p-3">
-                            <p class="text-xs text-gray-600"><i class="fas fa-info-circle text-orange-500 mr-1"></i>Login dengan No. HP <strong class="text-orange-600">${form.no_hp_wali}</strong> dan password Anda.</p>
+                        <div class="bg-green-50 rounded-lg p-3">
+                            <p class="text-xs text-gray-600"><i class="fas fa-info-circle text-green-500 mr-1"></i>Simpan nomor registrasi Anda untuk mengecek status pendaftaran.</p>
                         </div>
                     </div>`,
-                    confirmButtonColor: '#E67E22', confirmButtonText: 'Kembali ke Beranda'
+                    confirmButtonColor: '#1B7A3D', confirmButtonText: 'Kembali ke Beranda'
                 }).then(() => nav('/'));
             } else {
                 Swal.fire('Error', data.message || 'Gagal mengirim pendaftaran', 'error');
@@ -158,7 +153,7 @@ export default function FormPendaftaran() {
                     <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i className="fas fa-times-circle text-red-500 text-4xl"></i></div>
                     <h2 className="text-xl font-bold text-gray-800 mb-2">Pendaftaran Ditutup</h2>
                     <p className="text-gray-500 text-sm mb-6">Maaf, pendaftaran saat ini sedang ditutup.</p>
-                    <Link to="/" className="block w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-xl transition">Kembali ke Beranda</Link>
+                    <Link to="/" className="block w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-xl transition">Kembali ke Beranda</Link>
                 </div>
             </div>
         );
@@ -167,9 +162,9 @@ export default function FormPendaftaran() {
     return (
         <div className="bg-gray-50 min-h-screen" style={{ fontFamily: "'Inter', sans-serif" }}>
             {/* Sticky Topbar */}
-            <header className="sticky top-0 z-50 text-white shadow-md" style={{ background: 'linear-gradient(135deg, #E67E22 0%, #F39C12 100%)' }}>
+            <header className="sticky top-0 z-50 text-white shadow-md" style={{ background: 'linear-gradient(135deg, #1B7A3D 0%, #27AE60 100%)' }}>
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-                    <div><h1 className="font-bold text-lg">PPDB {tahunAjaran}</h1><p className="text-sm text-white/70 hidden sm:block">PP Mambaul Huda Pajomblangan</p></div>
+                    <div><h1 className="font-bold text-lg">PPDB {tahunAjaran}</h1><p className="text-sm text-white/70 hidden sm:block">PP Nurul Huda An-Najah Banin Banat</p></div>
                     <Link to="/" className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm transition flex items-center gap-2"><i className="fas fa-home"></i><span className="hidden sm:inline">Home</span></Link>
                 </div>
                 <div className="border-t border-white/10">
@@ -183,7 +178,7 @@ export default function FormPendaftaran() {
                                 {[1, 2, 3].map(s => (
                                     <React.Fragment key={s}>
                                         {s > 1 && <div className="w-4 h-0.5 bg-white/30"></div>}
-                                        <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${step === s ? 'bg-white text-[#E67E22]' : step > s ? 'bg-green-400 text-white' : 'bg-white/30 text-white/70'}`}>{s}</span>
+                                        <span className={`w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center ${step === s ? 'bg-white text-[#1B7A3D]' : step > s ? 'bg-green-400 text-white' : 'bg-white/30 text-white/70'}`}>{s}</span>
                                     </React.Fragment>
                                 ))}
                             </div>
@@ -198,17 +193,19 @@ export default function FormPendaftaran() {
                     {step === 1 && (
                         <div>
                             <div className="bg-white rounded-2xl shadow-sm p-6 mb-4">
-                                <h2 className="text-lg font-bold text-gray-800 mb-1">Data Calon Siswa</h2>
-                                <p className="text-sm text-gray-500 mb-6">Lengkapi data diri calon siswa dengan benar</p>
+                                <h2 className="text-lg font-bold text-gray-800 mb-1">Data Calon Santri</h2>
+                                <p className="text-sm text-gray-500 mb-6">Lengkapi data diri calon santri dengan benar</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap <span className="text-red-500">*</span></label>
                                         <input type="text" value={form.nama || ''} onChange={e => set('nama', e.target.value)} className={inputCls} placeholder="Masukkan nama lengkap" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Lembaga yang Dituju <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Lembaga <span className="text-red-500">*</span></label>
                                         <select value={form.lembaga || ''} onChange={e => set('lembaga', e.target.value)} className={selectCls}>
-                                            <option value="">Pilih Lembaga</option><option value="SMP NU BP">SMP NU BP</option><option value="MA ALHIKAM">MA ALHIKAM</option>
+                                            <option value="">Pilih</option>
+                                            <option value="Simbang">Simbang</option>
+                                            <option value="Non-Simbang">Non-Simbang</option>
                                         </select>
                                     </div>
                                     <div>
@@ -277,15 +274,6 @@ export default function FormPendaftaran() {
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Asal Sekolah</label>
                                         <input type="text" value={form.asal_sekolah || ''} onChange={e => set('asal_sekolah', e.target.value)} className={inputCls} placeholder="Nama sekolah sebelumnya" />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Status Mukim <span className="text-red-500">*</span></label>
-                                        <select value={form.status_mukim || ''} onChange={e => set('status_mukim', e.target.value)} className={selectCls}>
-                                            <option value="">Pilih Status</option>
-                                            <option value="PONDOK PP MAMBAUL HUDA">Pondok PP Mambaul Huda</option>
-                                            <option value="PONDOK SELAIN PP MAMBAUL HUDA">Pondok Selain PP Mambaul Huda</option>
-                                            <option value="TIDAK PONDOK">Tidak Pondok</option>
-                                        </select>
-                                    </div>
                                 </div>
                             </div>
 
@@ -312,7 +300,7 @@ export default function FormPendaftaran() {
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Upload Sertifikat</label>
-                                        <div className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${files.file_sertifikat ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-[#E67E22] hover:bg-orange-50/20'}`}
+                                        <div className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${files.file_sertifikat ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-[#1B7A3D] hover:bg-orange-50/20'}`}
                                             onClick={() => document.getElementById('file_sertifikat').click()}>
                                             <i className={`fas ${files.file_sertifikat ? 'fa-check-circle text-green-500' : 'fa-cloud-upload-alt text-gray-400'} text-3xl mb-2`}></i>
                                             <p className="text-sm text-gray-500">{files.file_sertifikat?.name || 'Klik untuk upload sertifikat (JPG, PNG, PDF, max 5MB)'}</p>
@@ -336,7 +324,7 @@ export default function FormPendaftaran() {
                                 </div>
                             </div>
 
-                            <button type="button" onClick={() => nextStep(1)} className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-xl transition hover:-translate-y-0.5 hover:shadow-lg">
+                            <button type="button" onClick={() => nextStep(1)} className="w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-xl transition hover:-translate-y-0.5 hover:shadow-lg">
                                 Lanjutkan <i className="fas fa-arrow-right ml-2"></i>
                             </button>
                         </div>
@@ -401,36 +389,13 @@ export default function FormPendaftaran() {
                                         <span className="bg-gray-100 border border-r-0 border-gray-300 px-3 py-2 rounded-l-xl text-gray-600 text-sm font-medium">+62</span>
                                         <input type="tel" value={form.no_hp_wali || ''} onChange={e => set('no_hp_wali', e.target.value.replace(/\D/g, ''))} className={inputCls + " rounded-l-none flex-1"} placeholder="8xxxxxxxxxx" style={{ textTransform: 'none' }} />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Contoh: 812345678 (tanpa 0 di depan). Nomor ini akan menjadi username untuk login.</p>
+                                    <p className="text-xs text-gray-500 mt-1">Contoh: 812345678 (tanpa 0 di depan)</p>
                                 </div>
-                            </div>
-
-                            {/* Buat Akun */}
-                            <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border-2 border-[#E67E22]/20">
-                                <h3 className="text-md font-bold text-gray-800 mb-1"><i className="fas fa-user-lock text-[#E67E22] mr-2"></i>Buat Akun</h3>
-                                <p className="text-sm text-gray-500 mb-4">Buat password untuk mengakses portal pendaftar</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <input type={showPw.pw ? 'text' : 'password'} value={form.password || ''} onChange={e => set('password', e.target.value)} className={inputCls + " pr-10"} placeholder="Minimal 6 karakter" style={{ textTransform: 'none' }} />
-                                            <button type="button" onClick={() => setShowPw(p => ({ ...p, pw: !p.pw }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i className={`fas ${showPw.pw ? 'fa-eye-slash' : 'fa-eye'}`}></i></button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password <span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <input type={showPw.confirm ? 'text' : 'password'} value={form.password_confirm || ''} onChange={e => set('password_confirm', e.target.value)} className={inputCls + " pr-10"} placeholder="Ulangi password" style={{ textTransform: 'none' }} />
-                                            <button type="button" onClick={() => setShowPw(p => ({ ...p, confirm: !p.confirm }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i className={`fas ${showPw.confirm ? 'fa-eye-slash' : 'fa-eye'}`}></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-3"><i className="fas fa-info-circle mr-1"></i>Setelah mendaftar, Anda dapat login menggunakan No. HP dan password ini untuk melihat/mengedit data pendaftaran.</p>
                             </div>
 
                             <div className="flex gap-3">
                                 <button type="button" onClick={() => prevStep(2)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition"><i className="fas fa-arrow-left mr-2"></i> Kembali</button>
-                                <button type="button" onClick={() => nextStep(2)} className="flex-1 bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-xl transition">Lanjutkan <i className="fas fa-arrow-right ml-2"></i></button>
+                                <button type="button" onClick={() => nextStep(2)} className="flex-1 bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-xl transition">Lanjutkan <i className="fas fa-arrow-right ml-2"></i></button>
                             </div>
                         </div>
                     )}
@@ -443,9 +408,9 @@ export default function FormPendaftaran() {
                                 <p className="text-sm text-gray-500 mb-6">Periksa kembali data sebelum mengirim</p>
                                 <div className="border border-gray-200 rounded-lg overflow-hidden">
                                     {[
-                                        ['Nama', form.nama], ['Lembaga', form.lembaga], ['Jenis Kelamin', form.jenis_kelamin === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN'],
+                                        ['Nama', form.nama], ['Jenis Kelamin', form.jenis_kelamin === 'L' ? 'LAKI-LAKI' : 'PEREMPUAN'],
                                         ['Alamat', [form.kelurahan_desa, form.kecamatan, form.kota_kab, form.provinsi].filter(Boolean).join(', ') || '-'],
-                                        ['Status Mukim', form.status_mukim], ['Nama Ayah', form.nama_ayah], ['Nama Ibu', form.nama_ibu], ['No. HP Wali', form.no_hp_wali],
+                                        ['Nama Ayah', form.nama_ayah], ['Nama Ibu', form.nama_ibu], ['No. HP Wali', form.no_hp_wali],
                                     ].map(([label, val], i) => (
                                         <div key={i} className={`flex justify-between p-3 ${i % 2 === 0 ? 'bg-gray-50' : ''}`}>
                                             <span className="text-sm text-gray-500">{label}</span>

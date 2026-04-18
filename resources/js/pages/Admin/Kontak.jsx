@@ -14,9 +14,17 @@ export default function Kontak() {
     const [form, setForm] = useState({ lembaga: '', nama: '', no_whatsapp: '', link_wa: '' });
     const [saving, setSaving] = useState(false);
 
+    const getHeaders = (isJson = false) => {
+        const xsrfToken = document.cookie.split('; ').find(row => row.startsWith('XSRF-TOKEN='))?.split('=')[1];
+        const headers = { Authorization: `Bearer ${token}`, Accept: 'application/json' };
+        if (xsrfToken) headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
+        if (isJson) headers['Content-Type'] = 'application/json';
+        return headers;
+    };
+
     const fetch_ = useCallback(async () => {
         setLoading(true);
-        const res = await fetch('/api/kontak', { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch('/api/kontak', { headers: getHeaders() });
         const d = await res.json();
         if (d.success) setData(d.data);
         setLoading(false);
@@ -30,50 +38,27 @@ export default function Kontak() {
 
     const handleAdd = async (e) => {
         e.preventDefault(); setSaving(true);
-        const res = await fetch('/api/kontak', { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+        const res = await fetch('/api/kontak', { method: 'POST', headers: getHeaders(true), body: JSON.stringify(form) });
         const d = await res.json(); setSaving(false);
         if (d.success) { setShowAdd(false); Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Kontak berhasil ditambahkan!', timer: 1500, showConfirmButton: false }); fetch_(); }
     };
 
     const handleEdit = async (e) => {
         e.preventDefault(); setSaving(true);
-        const res = await fetch(`/api/kontak/${editing.id}`, { method: 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+        const res = await fetch(`/api/kontak/${editing.id}`, { method: 'PUT', headers: getHeaders(true), body: JSON.stringify(form) });
         const d = await res.json(); setSaving(false);
         if (d.success) { setShowEdit(false); Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Kontak berhasil diupdate!', timer: 1500, showConfirmButton: false }); fetch_(); }
     };
 
     const handleDelete = async (e) => {
         e.preventDefault(); setSaving(true);
-        await fetch(`/api/kontak/${deleting.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        await fetch(`/api/kontak/${deleting.id}`, { method: 'DELETE', headers: getHeaders() });
         setSaving(false); setShowDelete(false);
         Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Kontak berhasil dihapus!', timer: 1500, showConfirmButton: false });
         fetch_();
     };
 
-    const FormFields = () => (
-        <>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Lembaga</label>
-                <input type="text" value={form.lembaga} onChange={e => setForm(f => ({ ...f, lembaga: e.target.value }))} required placeholder="SMP/MA/PONPES"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nama</label>
-                <input type="text" value={form.nama} onChange={e => setForm(f => ({ ...f, nama: e.target.value }))} required placeholder="Nama kontak"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">No WhatsApp</label>
-                <input type="text" value={form.no_whatsapp} onChange={e => setForm(f => ({ ...f, no_whatsapp: e.target.value }))} required placeholder="08xxxxxxxxxx"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Link WA (opsional)</label>
-                <input type="url" value={form.link_wa} onChange={e => setForm(f => ({ ...f, link_wa: e.target.value }))} placeholder="https://wa.link/xxx"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-        </>
-    );
+
 
     return (
         <div>
@@ -82,13 +67,13 @@ export default function Kontak() {
                     <h2 className="text-2xl font-bold text-gray-800">Kelola Kontak</h2>
                     <p className="text-gray-500 text-sm">Atur kontak WhatsApp per lembaga</p>
                 </div>
-                <button onClick={openAdd} className="bg-[#E67E22] hover:bg-[#D35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                <button onClick={openAdd} className="bg-[#1B7A3D] hover:bg-[#145C2E] text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                     <i className="fas fa-plus mr-2"></i>Tambah Kontak
                 </button>
             </div>
 
             {loading ? (
-                <div className="flex items-center justify-center h-32"><div className="w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full animate-spin"></div></div>
+                <div className="flex items-center justify-center h-32"><div className="w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full animate-spin"></div></div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {data.map(row => (
@@ -102,7 +87,7 @@ export default function Kontak() {
                                     <button onClick={() => openDelete(row)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash"></i></button>
                                 </div>
                             </div>
-                            <span className="px-2 py-1 bg-[#E67E22]/10 text-[#E67E22] rounded-full text-xs font-medium">{row.lembaga}</span>
+                            <span className="px-2 py-1 bg-[#1B7A3D]/10 text-[#1B7A3D] rounded-full text-xs font-medium">{row.lembaga}</span>
                             <h3 className="font-semibold text-gray-800 mt-2">{row.nama}</h3>
                             <p className="text-gray-500 text-sm">{row.no_whatsapp}</p>
                             {row.link_wa && (
@@ -125,10 +110,31 @@ export default function Kontak() {
                             <button onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleAdd}>
-                            <div className="p-4 space-y-4"><FormFields /></div>
+                            <div className="p-4 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Lembaga</label>
+                                    <input type="text" value={form.lembaga} onChange={e => setForm(f => ({ ...f, lembaga: e.target.value }))} required placeholder="SMP/MA/PONPES"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nama</label>
+                                    <input type="text" value={form.nama} onChange={e => setForm(f => ({ ...f, nama: e.target.value }))} required placeholder="Nama kontak"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">No WhatsApp</label>
+                                    <input type="text" value={form.no_whatsapp} onChange={e => setForm(f => ({ ...f, no_whatsapp: e.target.value }))} required placeholder="08xxxxxxxxxx"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Link WA (opsional)</label>
+                                    <input type="url" value={form.link_wa} onChange={e => setForm(f => ({ ...f, link_wa: e.target.value }))} placeholder="https://wa.link/xxx"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                            </div>
                             <div className="flex gap-3 p-4 border-t bg-gray-50">
                                 <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
+                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
                             </div>
                         </form>
                     </div>
@@ -144,10 +150,31 @@ export default function Kontak() {
                             <button onClick={() => setShowEdit(false)} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleEdit}>
-                            <div className="p-4 space-y-4"><FormFields /></div>
+                            <div className="p-4 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Lembaga</label>
+                                    <input type="text" value={form.lembaga} onChange={e => setForm(f => ({ ...f, lembaga: e.target.value }))} required placeholder="SMP/MA/PONPES"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nama</label>
+                                    <input type="text" value={form.nama} onChange={e => setForm(f => ({ ...f, nama: e.target.value }))} required placeholder="Nama kontak"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">No WhatsApp</label>
+                                    <input type="text" value={form.no_whatsapp} onChange={e => setForm(f => ({ ...f, no_whatsapp: e.target.value }))} required placeholder="08xxxxxxxxxx"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Link WA (opsional)</label>
+                                    <input type="url" value={form.link_wa} onChange={e => setForm(f => ({ ...f, link_wa: e.target.value }))} placeholder="https://wa.link/xxx"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
+                                </div>
+                            </div>
                             <div className="flex gap-3 p-4 border-t bg-gray-50">
                                 <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
+                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#1B7A3D] hover:bg-[#145C2E] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
                             </div>
                         </form>
                     </div>

@@ -59,7 +59,7 @@ export default function Profil() {
         return <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${color}`}>{label}</span>;
     };
 
-    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full"></div></div>;
+    if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#1B7A3D] border-t-transparent rounded-full"></div></div>;
 
     return (
         <div>
@@ -71,8 +71,8 @@ export default function Profil() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Profile Card */}
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <div className="bg-[#E67E22]/5 px-4 py-3 border-b border-gray-100">
-                        <h3 className="font-semibold text-[#E67E22]"><i className="fas fa-user mr-2"></i>Informasi Profil</h3>
+                    <div className="bg-[#1B7A3D]/5 px-4 py-3 border-b border-gray-100">
+                        <h3 className="font-semibold text-[#1B7A3D]"><i className="fas fa-user mr-2"></i>Informasi Profil</h3>
                     </div>
                     <form onSubmit={handleUpdateProfile} className="p-4 space-y-4">
                         <div>
@@ -82,14 +82,14 @@ export default function Profil() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
                             <input type="text" value={profile.nama || ''} onChange={e => setProfile({ ...profile, nama: e.target.value })} required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
                             <input type="text" value={profile.username || ''} onChange={e => setProfile({ ...profile, username: e.target.value })} required
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                         </div>
-                        <button type="submit" className="w-full bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold py-2 rounded-lg transition">
+                        <button type="submit" className="w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-2 rounded-lg transition">
                             <i className="fas fa-save mr-2"></i>Simpan Perubahan
                         </button>
                     </form>
@@ -105,7 +105,7 @@ export default function Profil() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Password Saat Ini</label>
                             <div className="relative">
                                 <input type={showPw.current ? 'text' : 'password'} value={pwForm.current_password} onChange={e => setPwForm({ ...pwForm, current_password: e.target.value })} required
-                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 <button type="button" onClick={() => togglePw('current')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <i className={`fas ${showPw.current ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                                 </button>
@@ -115,7 +115,7 @@ export default function Profil() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
                             <div className="relative">
                                 <input type={showPw.new ? 'text' : 'password'} value={pwForm.new_password} onChange={e => setPwForm({ ...pwForm, new_password: e.target.value })} required minLength={6}
-                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 <button type="button" onClick={() => togglePw('new')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <i className={`fas ${showPw.new ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                                 </button>
@@ -126,7 +126,7 @@ export default function Profil() {
                             <label className="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password Baru</label>
                             <div className="relative">
                                 <input type={showPw.confirm ? 'text' : 'password'} value={pwForm.confirm_password} onChange={e => setPwForm({ ...pwForm, confirm_password: e.target.value })} required
-                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none" />
                                 <button type="button" onClick={() => togglePw('confirm')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                                     <i className={`fas ${showPw.confirm ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                                 </button>

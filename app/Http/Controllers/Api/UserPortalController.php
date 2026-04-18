@@ -155,7 +155,7 @@ class UserPortalController extends Controller
         $allowedFields = [
             'nama', 'nik', 'nisn', 'no_kk', 'tempat_lahir', 'tanggal_lahir',
             'jenis_kelamin', 'provinsi', 'kota_kab', 'kecamatan', 'kelurahan_desa',
-            'alamat', 'lembaga', 'status_mukim', 'asal_sekolah', 'pip_pkh',
+            'alamat', 'asal_sekolah', 'pip_pkh',
             'sumber_info', 'jumlah_saudara',
             'nama_ayah', 'nik_ayah', 'tempat_lahir_ayah', 'tanggal_lahir_ayah',
             'pekerjaan_ayah', 'penghasilan_ayah',
@@ -246,11 +246,7 @@ class UserPortalController extends Controller
         $peserta = $user;
         $id = $peserta->id;
 
-        $lembagaCol = ($peserta->lembaga === 'SMP NU BP') ? 'biaya_smp' : 'biaya_ma';
-        $isPondok = $peserta->status_mukim === 'PONDOK PP MAMBAUL HUDA';
-
-        $biayaSekolah = Biaya::sum($lembagaCol);
-        $biayaPondok = $isPondok ? Biaya::sum('biaya_pondok') : 0;
+        $totalBiaya = Biaya::sum('biaya');
 
         $perlengkapanTotal = \DB::table('perlengkapan_pesanan')
             ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
@@ -262,19 +258,15 @@ class UserPortalController extends Controller
             ->where('status', 'approved')
             ->sum('nominal');
 
-        $totalTagihan = $biayaSekolah + $biayaPondok + $perlengkapanTotal;
+        $totalTagihan = $totalBiaya + $perlengkapanTotal;
 
         return response()->json([
             'success'            => true,
             'total_tagihan'      => $totalTagihan,
             'total_dibayar'      => $totalPaid,
             'sisa_kekurangan'    => $totalTagihan - $totalPaid,
-            'biaya_pondok'       => $biayaPondok,
-            'biaya_sekolah'      => $biayaSekolah,
+            'biaya_pendaftaran'  => $totalBiaya,
             'biaya_perlengkapan' => $perlengkapanTotal,
-            'lembaga'            => $peserta->lembaga,
-            'status_mukim'       => $peserta->status_mukim,
-            'is_pondok'          => $isPondok,
         ]);
     }
 }
