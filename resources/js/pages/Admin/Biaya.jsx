@@ -4,6 +4,42 @@ import Swal from 'sweetalert2';
 
 const fmt = (n) => n > 0 ? 'Rp' + Number(n).toLocaleString('id-ID') : '-';
 
+// ModalWrapper defined OUTSIDE so React doesn't recreate it on parent re-renders
+function ModalWrapper({ show, onClose, title, children }) {
+    if (!show) return null;
+    return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl max-w-md w-full">
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h3 className="font-semibold text-gray-800">{title}</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
+                </div>
+                {children}
+            </div>
+        </div>
+    );
+}
+
+// DeleteModal defined OUTSIDE so React doesn't recreate it on parent re-renders
+function DeleteModal({ show, onClose, onSubmit, name, saving }) {
+    if (!show) return null;
+    return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i className="fas fa-trash-alt text-red-500 text-2xl"></i>
+                </div>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">Hapus Item?</h3>
+                <p className="text-gray-500 text-sm mb-6">Yakin ingin menghapus <strong>{name}</strong>?</p>
+                <form onSubmit={onSubmit} className="flex gap-3">
+                    <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
+                    <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Hapus</button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
 export default function Biaya() {
     const { token } = useAuth();
     const [biayaList, setBiayaList] = useState([]);
@@ -27,58 +63,113 @@ export default function Biaya() {
 
     const fetchAll = useCallback(async () => {
         setLoading(true);
-        const [biayaRes, perlRes] = await Promise.all([
-            fetch('/api/biaya', { headers: { Authorization: `Bearer ${token}` } }),
-            fetch('/api/perlengkapan/items', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
-        ]);
-        const biayaD = await biayaRes.json();
-        if (biayaD.success) {
-            const all = [...(biayaD.data?.pendaftaran || []), ...(biayaD.data?.daftar_ulang || [])];
-            all.sort((a, b) => {
-                if (a.kategori === b.kategori) return (a.urutan || 0) - (b.urutan || 0);
-                return a.kategori === 'PENDAFTARAN' ? -1 : 1;
-            });
-            setBiayaList(all);
+        try {
+            const [biayaRes, perlRes] = await Promise.all([
+                fetch('/api/biaya', { headers: { Authorization: `Bearer ${token}` } }),
+                fetch('/api/perlengkapan/items', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
+            ]);
+            const biayaD = await biayaRes.json();
+            if (biayaD.success) {
+                const all = [...(biayaD.data?.pendaftaran || []), ...(biayaD.data?.daftar_ulang || [])];
+                all.sort((a, b) => {
+                    if (a.kategori === b.kategori) return (a.urutan || 0) - (b.urutan || 0);
+                    return a.kategori === 'PENDAFTARAN' ? -1 : 1;
+                });
+                setBiayaList(all);
+            }
+            if (perlRes) {
+                const perlD = await perlRes.json();
+                if (perlD.success) setPerlengkapanList(perlD.data || []);
+            }
+        } catch (err) {
+            console.error('fetchAll error:', err);
+        } finally {
+            setLoading(false);
         }
-        if (perlRes) {
-            const perlD = await perlRes.json();
-            if (perlD.success) setPerlengkapanList(perlD.data || []);
-        }
-        setLoading(false);
     }, [token]);
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
 
     // Biaya CRUD
     const handleBiayaSubmit = async (e, isEdit) => {
-        e.preventDefault(); setSaving(true);
-        const url = isEdit ? `/api/biaya/${editing.id}` : '/api/biaya';
-        const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-        const d = await res.json(); setSaving(false);
-        if (d.success) { isEdit ? setShowEdit(false) : setShowAdd(false); Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false }); fetchAll(); }
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const url = isEdit ? `/api/biaya/${editing.id}` : '/api/biaya';
+            const res = await fetch(url, {
+                method: isEdit ? 'PUT' : 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(form),
+            });
+            const d = await res.json();
+            if (d.success) {
+                isEdit ? setShowEdit(false) : setShowAdd(false);
+                Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false });
+                fetchAll();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: d.message || 'Gagal menyimpan data.', confirmButtonColor: '#1B7A3D' });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.', confirmButtonColor: '#1B7A3D' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleBiayaDelete = async (e) => {
-        e.preventDefault(); setSaving(true);
-        await fetch(`/api/biaya/${deleting.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-        setSaving(false); setShowDelete(false);
-        Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false }); fetchAll();
+        e.preventDefault();
+        setSaving(true);
+        try {
+            await fetch(`/api/biaya/${deleting.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            setShowDelete(false);
+            Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false });
+            fetchAll();
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal menghapus.', confirmButtonColor: '#1B7A3D' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     // Perlengkapan CRUD
     const handlePerlSubmit = async (e, isEdit) => {
-        e.preventDefault(); setSaving(true);
-        const url = isEdit ? `/api/perlengkapan/items/${editingP.id}` : '/api/perlengkapan/items';
-        const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(formP) });
-        const d = await res.json(); setSaving(false);
-        if (d.success) { isEdit ? setShowEditP(false) : setShowAddP(false); Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false }); fetchAll(); }
+        e.preventDefault();
+        setSaving(true);
+        try {
+            const url = isEdit ? `/api/perlengkapan/items/${editingP.id}` : '/api/perlengkapan/items';
+            const res = await fetch(url, {
+                method: isEdit ? 'PUT' : 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify(formP),
+            });
+            const d = await res.json();
+            if (d.success) {
+                isEdit ? setShowEditP(false) : setShowAddP(false);
+                Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false });
+                fetchAll();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: d.message || 'Gagal menyimpan.', confirmButtonColor: '#1B7A3D' });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.', confirmButtonColor: '#1B7A3D' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handlePerlDelete = async (e) => {
-        e.preventDefault(); setSaving(true);
-        await fetch(`/api/perlengkapan/items/${deletingP.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-        setSaving(false); setShowDeleteP(false);
-        Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false }); fetchAll();
+        e.preventDefault();
+        setSaving(true);
+        try {
+            await fetch(`/api/perlengkapan/items/${deletingP.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+            setShowDeleteP(false);
+            Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false });
+            fetchAll();
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal menghapus.', confirmButtonColor: '#1B7A3D' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     // Totals
@@ -115,35 +206,6 @@ export default function Biaya() {
             return items;
         }).flat();
     };
-
-    // Modal helper
-    const ModalWrapper = ({ show, onClose, title, children }) => show ? (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl max-w-md w-full">
-                <div className="flex items-center justify-between p-4 border-b">
-                    <h3 className="font-semibold text-gray-800">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
-                </div>
-                {children}
-            </div>
-        </div>
-    ) : null;
-
-    const DeleteModal = ({ show, onClose, onSubmit, name }) => show ? (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i className="fas fa-trash-alt text-red-500 text-2xl"></i>
-                </div>
-                <h3 className="font-bold text-lg text-gray-800 mb-2">Hapus Item?</h3>
-                <p className="text-gray-500 text-sm mb-6">Yakin ingin menghapus <strong>{name}</strong>?</p>
-                <form onSubmit={onSubmit} className="flex gap-3">
-                    <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                    <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Hapus</button>
-                </form>
-            </div>
-        </div>
-    ) : null;
 
     const inputCls = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none";
 
@@ -292,7 +354,7 @@ export default function Biaya() {
                 </form>
             </ModalWrapper>
 
-            <DeleteModal show={showDelete} onClose={() => setShowDelete(false)} onSubmit={handleBiayaDelete} name={deleting?.nama_item} />
+            <DeleteModal show={showDelete} onClose={() => setShowDelete(false)} onSubmit={handleBiayaDelete} name={deleting?.nama_item} saving={saving} />
 
             {/* Perlengkapan Add Modal */}
             <ModalWrapper show={showAddP} onClose={() => setShowAddP(false)} title="Tambah Perlengkapan">
@@ -330,7 +392,7 @@ export default function Biaya() {
                 </form>
             </ModalWrapper>
 
-            <DeleteModal show={showDeleteP} onClose={() => setShowDeleteP(false)} onSubmit={handlePerlDelete} name={deletingP?.nama_item} />
+            <DeleteModal show={showDeleteP} onClose={() => setShowDeleteP(false)} onSubmit={handlePerlDelete} name={deletingP?.nama_item} saving={saving} />
         </div>
     );
 }
