@@ -183,7 +183,7 @@ export default function Beranda() {
                             opacity: heroVisible ? 1 : 0,
                             transition: 'all 1s ease 0.6s',
                         }}>
-                        Yayasan Al Mukarromah · Simbang Kulon, Buaran, Pekalongan
+                        Simbang Kulon, Buaran, Pekalongan
                     </p>
 
                     {/* Divider */}
@@ -201,7 +201,7 @@ export default function Beranda() {
                             opacity: heroVisible ? 1 : 0,
                             transition: 'all 1s ease 0.7s',
                         }}>
-                        Mencetak generasi Qur'ani yang berakhlaqul karimah, unggul dalam ilmu agama dan pengetahuan umum
+                        Mencetak generasi Santri yang berakhlaqul karimah, unggul dalam ilmu agama dan pengetahuan umum
                     </p>
 
                     {/* CTA Buttons */}

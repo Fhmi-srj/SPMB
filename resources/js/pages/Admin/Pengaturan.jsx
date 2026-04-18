@@ -10,33 +10,48 @@ export default function Pengaturan() {
 
     const fetch_ = useCallback(async () => {
         setLoading(true);
-        const res = await fetch('/api/pengaturan', { headers: { Authorization: `Bearer ${token}` } });
-        const d = await res.json();
-        if (d.success) setSettings(d.data);
-        setLoading(false);
+        try {
+            const res = await fetch('/api/pengaturan', { headers: { Authorization: `Bearer ${token}` } });
+            const d = await res.json();
+            if (d.success) setSettings(d.data);
+        } catch (err) {
+            console.error('Gagal memuat pengaturan:', err);
+        } finally {
+            setLoading(false);
+        }
     }, [token]);
 
     useEffect(() => { fetch_(); }, [fetch_]);
 
     const handleSave = async () => {
         setSaving(true);
-        const res = await fetch('/api/pengaturan/bulk', {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ settings }),
-        });
-        const d = await res.json();
-        setSaving(false);
-        Swal.fire({ icon: d.success ? 'success' : 'error', title: d.success ? 'Berhasil' : 'Gagal', text: d.success ? 'Pengaturan berhasil disimpan!' : d.message, confirmButtonColor: '#1B7A3D', timer: 1500, showConfirmButton: false });
+        try {
+            const res = await fetch('/api/pengaturan/bulk', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ settings }),
+            });
+            const d = await res.json();
+            Swal.fire({ icon: d.success ? 'success' : 'error', title: d.success ? 'Berhasil' : 'Gagal', text: d.success ? 'Pengaturan berhasil disimpan!' : d.message, confirmButtonColor: '#1B7A3D', timer: 1500, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan. Silakan coba lagi.', confirmButtonColor: '#1B7A3D' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const inputCls = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1B7A3D] focus:border-transparent outline-none";
     const dateInputCls = "w-full px-2 py-1 border border-gray-300 rounded text-sm";
 
-    if (loading) return <div className="flex justify-center items-center h-48"><div className="w-10 h-10 border-4 border-[#1B7A3D] border-t-transparent rounded-full animate-spin"></div></div>;
-
     return (
-        <div>
+        <div className="relative">
+            {/* Loading overlay - doesn't unmount children */}
+            {loading && (
+                <div className="absolute inset-0 bg-white/70 z-20 flex justify-center items-center rounded-xl">
+                    <div className="w-10 h-10 border-4 border-[#1B7A3D] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            )}
+
             <div className="mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">Pengaturan</h2>
                 <p className="text-gray-500 text-sm">Atur konfigurasi website</p>
@@ -131,10 +146,12 @@ export default function Pengaturan() {
                 </div>
 
                 <button type="submit" disabled={saving}
-                    className="w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-lg transition disabled:opacity-70">
-                    <i className="fas fa-save mr-2"></i>{saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+                    className="w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-lg transition disabled:opacity-70 flex items-center justify-center gap-2">
+                    {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                    <i className="fas fa-save"></i>{saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
                 </button>
             </form>
         </div>
     );
 }
+
