@@ -125,7 +125,7 @@ export default function Beranda() {
             </nav>
 
             {/* ── HERO SECTION (Full Screen) ── */}
-            <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[100dvh] flex flex-col justify-center overflow-hidden">
                 {/* Background Image */}
                 <div className="absolute inset-0">
                     <img src="/images/hero-bg.png" alt="Pondok Pesantren"
@@ -140,7 +140,7 @@ export default function Beranda() {
                 </div>
 
                 {/* Hero Content */}
-                <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-28 pb-24 sm:pt-0 sm:pb-0 my-auto"
                     style={{
                         opacity: heroVisible ? 1 : 0,
                         transform: heroVisible ? 'translateY(0)' : 'translateY(40px)',
