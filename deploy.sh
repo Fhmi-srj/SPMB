@@ -17,7 +17,7 @@ fi
 # Pull latest dari GitHub
 echo "📥 Pulling dari GitHub..."
 git fetch origin
-git reset --hard origin/main
+git reset --hard origin/Nurul-Huda
 echo "✅ Pull selesai"
 
 # Restore config hosting
