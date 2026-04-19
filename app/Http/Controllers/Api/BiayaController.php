@@ -25,11 +25,14 @@ class BiayaController extends Controller
         $request->validate([
             'kategori'  => 'required|in:PENDAFTARAN,DAFTAR_ULANG',
             'nama_item' => 'required|string|max:100',
+            'biaya'     => 'nullable|numeric',
         ]);
 
         $biaya = Biaya::create([
-            ...$request->only(['kategori', 'nama_item', 'biaya']),
-            'urutan' => Biaya::where('kategori', $request->kategori)->max('urutan') + 1,
+            'kategori'  => $request->kategori,
+            'nama_item' => $request->nama_item,
+            'biaya'     => $request->biaya ?? 0,
+            'urutan'    => Biaya::where('kategori', $request->kategori)->max('urutan') + 1,
         ]);
 
         return response()->json(['success' => true, 'data' => $biaya], 201);
@@ -38,7 +41,12 @@ class BiayaController extends Controller
     public function update(Request $request, $id): JsonResponse
     {
         $biaya = Biaya::findOrFail($id);
-        $biaya->update($request->only(['nama_item', 'biaya', 'urutan']));
+        $biaya->update([
+            'kategori'  => $request->kategori,
+            'nama_item' => $request->nama_item,
+            'biaya'     => $request->biaya ?? 0,
+            'urutan'    => $request->urutan,
+        ]);
         return response()->json(['success' => true, 'data' => $biaya]);
     }
 

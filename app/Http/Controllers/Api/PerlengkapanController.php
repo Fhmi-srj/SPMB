@@ -21,11 +21,15 @@ class PerlengkapanController extends Controller
     {
         $request->validate([
             'nama_item' => 'required|string|max:100',
-            'nominal'   => 'required|integer|min:0',
+            'nominal'   => 'nullable|integer|min:0',
             'urutan'    => 'nullable|integer',
         ]);
 
-        $item = PerlengkapanItem::create($request->only(['nama_item', 'nominal', 'urutan']));
+        $item = PerlengkapanItem::create([
+            'nama_item' => $request->nama_item,
+            'nominal'   => $request->nominal ?? 0,
+            'urutan'    => $request->urutan,
+        ]);
         return response()->json(['message' => 'Item berhasil ditambahkan', 'data' => $item], 201);
     }
 
@@ -33,13 +37,18 @@ class PerlengkapanController extends Controller
     {
         $request->validate([
             'nama_item' => 'required|string|max:100',
-            'nominal'   => 'required|integer|min:0',
+            'nominal'   => 'nullable|integer|min:0',
             'urutan'    => 'nullable|integer',
             'aktif'     => 'nullable|boolean',
         ]);
 
         $item = PerlengkapanItem::findOrFail($id);
-        $item->update($request->only(['nama_item', 'nominal', 'urutan', 'aktif']));
+        $item->update([
+            'nama_item' => $request->nama_item,
+            'nominal'   => $request->nominal ?? 0,
+            'urutan'    => $request->urutan,
+            'aktif'     => $request->aktif,
+        ]);
         return response()->json(['message' => 'Item berhasil diupdate', 'data' => $item]);
     }
 

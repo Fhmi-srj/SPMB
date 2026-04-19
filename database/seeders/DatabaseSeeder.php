@@ -6,7 +6,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Pengaturan;
-use App\Models\Beasiswa;
 use App\Models\Biaya;
 use App\Models\Kontak;
 use App\Models\PerlengkapanItem;
@@ -29,31 +28,21 @@ class DatabaseSeeder extends Seeder
         // ─── Pengaturan Default ──────────────────────────────────────────
         $defaults = [
             'status_pendaftaran' => '1',
-            'tahun_ajaran'       => '2025/2026',
-            'gelombang_1_start'  => '2025-01-01',
-            'gelombang_1_end'    => '2025-03-31',
-            'gelombang_2_start'  => '2025-04-01',
-            'gelombang_2_end'    => '2025-06-30',
+            'tahun_ajaran'       => '2026/2027',
+            'gelombang_1_start'  => '2026-01-01',
+            'gelombang_1_end'    => '2026-03-31',
+            'gelombang_2_start'  => '2026-04-01',
+            'gelombang_2_end'    => '2026-06-30',
             'link_grup_wa'       => '',
-            'link_pdf_brosur'    => '',
-            'link_pdf_biaya'     => '',
-            'link_pdf_syarat'    => '',
+            'link_pdf_brosur'    => 'https://drive.google.com/file/d/19oTO4BfuGDAKNmn6WCGFAZn96-daCdjM/view?usp=sharing',
+            'link_pdf_biaya'     => 'https://drive.google.com/file/d/1ZfzjkZdVG0jyV1woj0zgahKJX-o8-pKW/view?usp=sharing',
+            'link_pdf_syarat'    => 'https://drive.google.com/file/d/1vbwof-2w_v2wzvosNYTzyE74EJqR0cEQ/view?usp=sharing',
+            'link_beasiswa'      => 'https://s.id/BeasiswaMAHAKAM',
+            'wa_otomatis'        => '1',
         ];
 
         foreach ($defaults as $kunci => $nilai) {
-            Pengaturan::firstOrCreate(['kunci' => $kunci], ['nilai' => $nilai]);
-        }
-
-        // ─── Beasiswa ──────────────────────────────────────────────────────
-        $beasiswaData = [
-            ['jenis' => 'Beasiswa Yatim/Piatu', 'kategori' => 'Sosial', 'syarat' => 'Memiliki surat kematian orang tua yang dilegalisir', 'benefit' => 'Bebas SPP 100%', 'urutan' => 1],
-            ['jenis' => 'Beasiswa Hafidz', 'kategori' => 'Tahfidz', 'syarat' => 'Hafal minimal 5 Juz Al-Qur\'an yang dibuktikan dengan ujian', 'benefit' => 'Bebas SPP + Bebas Uang Gedung', 'urutan' => 2],
-            ['jenis' => 'Beasiswa Prestasi Akademik', 'kategori' => 'Akademik', 'syarat' => 'Nilai rata-rata rapor ≥ 85 dan peringkat 3 besar di sekolah asal', 'benefit' => 'Diskon SPP 50%', 'urutan' => 3],
-            ['jenis' => 'Beasiswa Dhuafa', 'kategori' => 'Sosial', 'syarat' => 'Memiliki KIP/PKH dan surat keterangan tidak mampu dari desa/kelurahan', 'benefit' => 'Keringanan biaya 30-70%', 'urutan' => 4],
-        ];
-
-        foreach ($beasiswaData as $b) {
-            Beasiswa::firstOrCreate(['jenis' => $b['jenis']], $b);
+            Pengaturan::updateOrCreate(['kunci' => $kunci], ['nilai' => $nilai]);
         }
 
         // ─── Biaya Pendaftaran ─────────────────────────────────────────────

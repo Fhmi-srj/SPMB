@@ -304,7 +304,7 @@ export default function Pendaftaran() {
                                             </span>
                                         </td>
                                         <td className="px-3 py-2.5 text-xs text-gray-600">{row.nisn || '-'}</td>
-                                        <td className="px-3 py-2.5 text-xs text-gray-600">{row.tempat_lahir || ''}{row.tempat_lahir && row.tanggal_lahir ? ', ' : ''}{row.tanggal_lahir || '-'}</td>
+                                        <td className="px-3 py-2.5 text-xs text-gray-600">{row.tempat_lahir || ''}{row.tempat_lahir && row.tanggal_lahir ? ', ' : ''}{row.tanggal_lahir ? row.tanggal_lahir.split('-').reverse().join('-') : '-'}</td>
                                         <td className="px-3 py-2.5 text-xs text-gray-600 text-center">{row.jumlah_saudara ?? '-'}</td>
                                         <td className="px-3 py-2.5 text-xs text-gray-600 font-mono">{row.no_kk || '-'}</td>
                                         <td className="px-3 py-2.5 text-xs text-gray-600 font-mono">{row.nik || '-'}</td>
@@ -386,7 +386,7 @@ export default function Pendaftaran() {
                         <DetailRow label="NISN" value={selected.nisn} />
                         <DetailRow label="NIK" value={selected.nik} />
                         <DetailRow label="JK" value={selected.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} />
-                        <DetailRow label="TTL" value={`${selected.tempat_lahir ?? ''}, ${selected.tanggal_lahir ?? ''}`} />
+                        <DetailRow label="TTL" value={`${selected.tempat_lahir ?? ''}, ${selected.tanggal_lahir ? selected.tanggal_lahir.split('-').reverse().join('-') : ''}`} />
                         <DetailRow label="Alamat" value={selected.alamat} />
                         <DetailRow label="Kota/Kab" value={selected.kota_kab} />
                         <DetailRow label="Asal Sekolah" value={selected.asal_sekolah} />

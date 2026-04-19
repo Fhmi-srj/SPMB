@@ -59,8 +59,8 @@ export default function AdminLayout({ children }) {
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex fixed inset-y-0 left-0 z-50 w-64 bg-[#1B7A3D] text-white flex-col h-screen">
                 <div className="p-4 border-b border-white/10">
-                    <h1 className="font-bold text-lg">Admin PSB</h1>
-                    <p className="text-xs text-white/60">Nurul Huda An-Najah</p>
+                    <h1 className="font-bold text-lg leading-tight">PSB Nurul Huda</h1>
+                    <p className="text-xs text-white/60">An Najah Banin Banat</p>
                 </div>
 
                 <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
@@ -118,7 +118,7 @@ export default function AdminLayout({ children }) {
             <div className="md:ml-64 flex flex-col min-h-screen pb-20 md:pb-0">
                 {/* Mobile Header */}
                 <div className="md:hidden bg-[#1B7A3D] text-white p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-40">
-                    <span className="font-bold">Admin PSB</span>
+                    <span className="font-bold text-sm">PSB Nurul Huda An Najah</span>
                     <button onClick={handleLogout} className="text-xl"><i className="fas fa-sign-out-alt"></i></button>
                 </div>
 

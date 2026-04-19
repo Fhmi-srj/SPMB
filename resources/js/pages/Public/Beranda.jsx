@@ -98,11 +98,11 @@ export default function Beranda() {
                             <div>
                                 <h1 className="text-sm sm:text-base font-bold transition-colors duration-300"
                                     style={{ color: scrolled ? C.primary : '#fff' }}>
-                                    PP Nurul Huda An-Najah
+                                    PSB Nurul Huda An Najah
                                 </h1>
                                 <p className="text-[10px] sm:text-xs transition-colors duration-300"
                                     style={{ color: scrolled ? '#6B7280' : 'rgba(255,255,255,0.8)' }}>
-                                    Simbang Kulon, Buaran
+                                    Banin Banat - Simbang Kulon
                                 </p>
                             </div>
                         </div>
@@ -173,7 +173,7 @@ export default function Beranda() {
                                 opacity: heroVisible ? 1 : 0,
                                 transition: 'all 1s ease 0.5s',
                             }}>
-                            Nurul Huda An-Najah
+                            Nurul Huda An Najah
                         </h1>
                     </div>
 
@@ -183,7 +183,7 @@ export default function Beranda() {
                             opacity: heroVisible ? 1 : 0,
                             transition: 'all 1s ease 0.6s',
                         }}>
-                        Simbang Kulon, Buaran, Pekalongan
+                        Banin Banat - Simbang Kulon, Buaran, Pekalongan
                     </p>
 
                     {/* Divider */}
@@ -311,7 +311,7 @@ export default function Beranda() {
                             Informasi <span style={{ color: C.primary }}>Pendaftaran</span>
                         </h2>
                         <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-                            Semua yang perlu kamu ketahui tentang pendaftaran santri baru PP Nurul Huda An-Najah
+                            Semua yang perlu kamu ketahui tentang pendaftaran santri baru PSB Nurul Huda An Najah Banin Banat
                         </p>
                     </div>
 
@@ -401,7 +401,7 @@ export default function Beranda() {
                             Lokasi <span style={{ color: C.primary }}>Kami</span>
                         </h2>
                         <p className="text-gray-500 text-sm sm:text-base max-w-xl mx-auto">
-                            PP Nurul Huda An-Najah Banin Banat, Simbang Kulon, Buaran, Pekalongan
+                            PSB Nurul Huda An Najah Banin Banat, Simbang Kulon, Buaran, Pekalongan
                         </p>
                     </div>
                     <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl ring-1 ring-gray-200">
@@ -421,8 +421,8 @@ export default function Beranda() {
                             <div className="flex items-center gap-3 mb-5">
                                 <img src="/images/logo-pondok.png" alt="Logo" className="w-10 h-10 object-contain" />
                                 <div>
-                                    <h3 className="text-base font-bold text-white">PP Nurul Huda An-Najah</h3>
-                                    <p className="text-xs text-white/50">Penerimaan Santri Baru</p>
+                                    <h3 className="text-base font-bold text-white">PSB Nurul Huda An Najah</h3>
+                                    <p className="text-xs text-white/50">Banin Banat - Simbang Kulon</p>
                                 </div>
                             </div>
                             <p className="text-xs text-white/60 leading-relaxed mb-4">
@@ -476,7 +476,7 @@ export default function Beranda() {
                 <div className="border-t border-white/10">
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-2">
                         <p className="text-xs text-white/40">© {new Date().getFullYear()} Yayasan Al Mukarromah. All rights reserved.</p>
-                        <p className="text-xs text-white/40">PSB PP Nurul Huda An-Najah</p>
+                        <p className="text-xs text-white/40">PSB Nurul Huda An Najah Banin Banat</p>
                     </div>
                 </div>
             </footer>

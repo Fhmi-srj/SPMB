@@ -136,7 +136,21 @@ export default function Pengaturan() {
 
                 {/* Grup WhatsApp */}
                 <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fab fa-whatsapp mr-2 text-green-600"></i>Grup WhatsApp</h3>
+                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fab fa-whatsapp mr-2 text-green-600"></i>WhatsApp Automasi</h3>
+                    
+                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+                        <div>
+                            <p className="font-medium text-gray-700">Layanan WhatsApp Otomatis</p>
+                            <p className="text-sm text-gray-500">Kirim notifikasi otomatis saat pendaftaran atau status berubah (MPWA)</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" checked={settings.wa_otomatis === '1'}
+                                onChange={e => setSettings(s => ({ ...s, wa_otomatis: e.target.checked ? '1' : '0' }))}
+                                className="sr-only peer" />
+                            <div className="w-12 h-6 bg-gray-300 rounded-full peer peer-checked:bg-green-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6"></div>
+                        </label>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Link Grup WA Pendaftar</label>
                         <input type="url" value={settings.link_grup_wa ?? ''} onChange={e => setSettings(s => ({ ...s, link_grup_wa: e.target.value }))}

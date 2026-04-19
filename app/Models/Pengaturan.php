@@ -12,4 +12,12 @@ class Pengaturan extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     protected $fillable = ['kunci', 'nilai', 'keterangan'];
+
+    /**
+     * Cek apakah layanan WA otomatis diaktifkan.
+     */
+    public static function isWaOtomatisEnabled(): bool
+    {
+        return self::where('kunci', 'wa_otomatis')->value('nilai') === '1';
+    }
 }

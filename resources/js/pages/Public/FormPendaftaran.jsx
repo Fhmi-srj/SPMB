@@ -39,7 +39,10 @@ export default function FormPendaftaran() {
         }
     }, [form]);
 
-    const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+    const set = (k, v) => setForm(p => ({ 
+        ...p, 
+        [k]: typeof v === 'string' ? v.toUpperCase() : v 
+    }));
     const setFile = (k, f) => setFiles(p => ({ ...p, [k]: f }));
 
     const loadKota = async (provName) => {

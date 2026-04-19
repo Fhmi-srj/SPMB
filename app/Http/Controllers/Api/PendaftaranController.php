@@ -166,6 +166,14 @@ class PendaftaranController extends Controller
             ];
 
             $data = $request->only($allowedFields);
+
+            // Uppercase all string fields except specific ones (Fix #22)
+            foreach ($data as $key => $value) {
+                if (is_string($value) && !in_array($key, ['password', 'file_kk', 'file_ktp_ortu', 'file_akta', 'file_ijazah', 'file_sertifikat'])) {
+                    $data[$key] = strtoupper($value);
+                }
+            }
+
             $data['password'] = Hash::make($request->password ?? \Str::random(12));
             $data['no_registrasi'] = $noReg;
             $data['status'] = 'pending';
@@ -182,7 +190,7 @@ class PendaftaranController extends Controller
                 $file = $request->file($field);
                 $folder = $field === 'file_sertifikat' ? 'sertifikat' : 'dokumen';
                 $filename = $pendaftaran->id . '_' . $field . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs("public/uploads/{$folder}", $filename);
+                $file->storeAs("uploads/{$folder}", $filename, 'public');
                 $pendaftaran->$field = $filename;
                 $hasUpload = true;
             }
@@ -223,6 +231,13 @@ class PendaftaranController extends Controller
         ];
         $data = $request->only($allowedFields);
 
+        // Uppercase all string fields except specific ones (Fix #22)
+        foreach ($data as $key => $value) {
+            if (is_string($value) && !in_array($key, ['password', 'catatan_admin'])) {
+                $data[$key] = strtoupper($value);
+            }
+        }
+
         if ($request->filled('catatan_admin')) {
             $data['catatan_updated_at'] = now();
         }
@@ -253,11 +268,11 @@ class PendaftaranController extends Controller
         $fileFields = ['file_kk', 'file_ktp_ortu', 'file_akta', 'file_ijazah'];
         foreach ($fileFields as $field) {
             if ($pendaftaran->$field) {
-                Storage::delete('public/uploads/dokumen/' . $pendaftaran->$field);
+                \Storage::disk('public')->delete('uploads/dokumen/' . $pendaftaran->$field);
             }
         }
         if ($pendaftaran->file_sertifikat) {
-            Storage::delete('public/uploads/sertifikat/' . $pendaftaran->file_sertifikat);
+            \Storage::disk('public')->delete('uploads/sertifikat/' . $pendaftaran->file_sertifikat);
         }
 
         $pendaftaran->delete();
@@ -284,11 +299,11 @@ class PendaftaranController extends Controller
                 $file = $request->file($field);
                 $folder = $field === 'file_sertifikat' ? 'sertifikat' : 'dokumen';
                 $filename = $id . '_' . $field . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs("public/uploads/{$folder}", $filename);
+                $file->storeAs("uploads/{$folder}", $filename, 'public');
 
                 // Hapus file lama
                 if ($pendaftaran->$field) {
-                    Storage::delete("public/uploads/{$folder}/" . $pendaftaran->$field);
+                    \Storage::disk('public')->delete("uploads/{$folder}/" . $pendaftaran->$field);
                 }
 
                 $pendaftaran->$field = $filename;
@@ -451,7 +466,7 @@ class PendaftaranController extends Controller
         $apiKey = config('services.mpwa.api_key');
         $sender = config('services.mpwa.sender');
 
-        if (!$url) return;
+        if (!$url || !Pengaturan::isWaOtomatisEnabled()) return;
 
         // Normalize phone number
         $phone = preg_replace('/^0/', '62', preg_replace('/\D/', '', $phone));

@@ -14,8 +14,6 @@ use App\Http\Controllers\Api\PerlengkapanController;
 use App\Http\Controllers\Api\PosKeuanganController;
 use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\ProfilController;
-use App\Http\Controllers\Api\UserPortalController;
-use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\WilayahController;
 
 // =============================================
@@ -39,18 +37,7 @@ Route::post('pendaftaran', [PendaftaranController::class, 'store']);
 Route::post('pendaftaran/cek-status', [PendaftaranController::class, 'cekStatus']);
 Route::get('cek-status', [PendaftaranController::class, 'searchPublic']);
 
-// User Portal (pendaftar) - Public
-Route::post('user/login', [UserPortalController::class, 'login']);
-Route::post('user/forgot-password', [PasswordResetController::class, 'requestReset']);
-Route::get('user/validate-token', [PasswordResetController::class, 'validateToken']);
-Route::post('user/reset-password', [PasswordResetController::class, 'resetPassword']);
 
-// User Portal - Protected (simple auth via user_id)
-Route::post('user/dashboard', [UserPortalController::class, 'dashboard']);
-Route::post('user/update-field', [UserPortalController::class, 'updateField']);
-Route::post('user/upload-file', [UserPortalController::class, 'uploadFile']);
-Route::post('user/change-password', [UserPortalController::class, 'changePassword']);
-Route::get('user/tagihan', [UserPortalController::class, 'getTagihan']);
 
 // =============================================
 // Protected Routes (auth:sanctum - Admin)

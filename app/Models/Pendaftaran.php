@@ -25,9 +25,9 @@ class Pendaftaran extends Model
     protected $hidden = ['password', 'reset_token'];
 
     protected $casts = [
-        'tanggal_lahir' => 'date',
-        'tanggal_lahir_ayah' => 'date',
-        'tanggal_lahir_ibu' => 'date',
+        'tanggal_lahir' => 'date:Y-m-d',
+        'tanggal_lahir_ayah' => 'date:Y-m-d',
+        'tanggal_lahir_ibu' => 'date:Y-m-d',
         'reset_token_expires' => 'datetime',
         'catatan_updated_at' => 'datetime',
     ];

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('activity_log', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
+            $table->foreignId('admin_id')->nullable()->constrained('users')->onDelete('set null');
             $table->string('action', 50);
             $table->text('description')->nullable();
             $table->string('ip_address', 45)->nullable();
