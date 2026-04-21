@@ -173,7 +173,7 @@ export default function Biaya() {
     };
 
     // Totals
-    const totals = biayaList.reduce((t, b) => t + (b.biaya || 0), 0);
+    const totals = biayaList.reduce((t, b) => t + Number(b.biaya || 0), 0);
 
     // Render table rows with category headers
     const renderBiayaRows = () => {

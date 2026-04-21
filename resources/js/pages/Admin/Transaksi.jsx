@@ -4,7 +4,7 @@ import Swal from 'sweetalert2';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API = '/api';
-const fmt = (n) => 'Rp ' + (n || 0).toLocaleString('id-ID');
+const fmt = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
 
 export default function Transaksi() {
     const { token, user } = useAuth();
