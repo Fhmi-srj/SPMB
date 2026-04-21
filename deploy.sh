@@ -1,45 +1,56 @@
 #!/bin/bash
-# =============================================
-# Deploy Script - SPMB
-# Jalankan di terminal hosting cPanel:
-#   cd ~/daftar.mambaulhuda.ponpes.id
-#   bash deploy.sh
-# =============================================
+# ==============================================================================
+# Deploy Script - SPMB (Laravel 11 + React)
+# Optimized for cPanel/Shared Hosting with Local Build Workflow
+#
+# Instructions:
+# 1. Ensure you have run 'npm run build' locally before pushing to GitHub.
+# 2. Run this script in your server terminal:
+#    bash deploy.sh
+# ==============================================================================
 
-echo "🚀 Mulai deploy SPMB..."
+echo "🚀 Starting Deployment for SPMB..."
 
-# Backup config hosting sebelum pull
-if [ -f api/config.php ]; then
-    cp api/config.php api/config.php.bak
-    echo "✅ Backup config.php"
-fi
-
-# Pull latest dari GitHub
-echo "📥 Pulling dari GitHub..."
+# 1. Pull the latest code from GitHub
+echo "📥 Pulling latest changes from GitHub (branch: Nurul-Huda)..."
 git fetch origin
 git reset --hard origin/Nurul-Huda
-echo "✅ Pull selesai"
+echo "✅ Pull complete."
 
-# Restore config hosting
-if [ -f api/config.php.bak ]; then
-    cp api/config.php.bak api/config.php
-    rm api/config.php.bak
-    echo "✅ Config.php hosting di-restore"
-    
-    # Ensure functions.php is included in hosting config
-    if ! grep -q "functions.php" api/config.php; then
-        # Add require_once before the closing ?>
-        sed -i 's|?>|// Load shared functions (auth, CSRF, helpers, RBAC)\nrequire_once __DIR__ . "/functions.php";\n?>|' api/config.php
-        echo "✅ functions.php di-inject ke config hosting"
-    fi
+# 2. Install PHP Dependencies
+echo "📦 Installing PHP dependencies..."
+composer install --no-dev --optimize-autoloader
+echo "✅ Composer dependencies installed."
+
+
+# 3. Clear/Setup Caches
+echo "⚡ Optimizing Laravel..."
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan optimize
+echo "✅ Laravel optimized."
+
+# 4. Set Permissions
+echo "🔐 Setting permissions..."
+# cPanel standard: 755 for directories, 644 for files
+find . -type d -exec chmod 755 {} \;
+find . -type f -exec chmod 644 {} \;
+
+# Ensure storage and bootstrap/cache are writable
+chmod -R 775 storage
+chmod -R 775 bootstrap/cache
+echo "✅ Permissions set."
+
+# 5. Check for Storage Link
+if [ ! -L public/storage ]; then
+    echo "🔗 Creating storage link..."
+    php artisan storage:link
+    echo "✅ Storage link created."
 fi
-
-# Set permission
-find . -type d -exec chmod 0755 {} \;
-find . -type f -exec chmod 0644 {} \;
-chmod 0755 deploy.sh
 
 echo ""
 echo "========================================="
-echo "✅ Deploy selesai!"
+echo "✅ Deployment Successful!"
 echo "========================================="
+echo "URL: https://psb.nurulhudaannajah.com"

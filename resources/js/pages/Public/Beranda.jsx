@@ -106,7 +106,7 @@ export default function Beranda() {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-1 sm:gap-5">
+                        <div className="flex items-center gap-1 sm:gap-2">
                             <a href="#info" className="hidden sm:flex items-center gap-1.5 text-xs font-medium py-2 px-3 rounded-lg transition-all"
                                 style={{ color: scrolled ? C.primary : '#fff' }}>
                                 Informasi
@@ -118,6 +118,16 @@ export default function Beranda() {
                             <a href="#lokasi" className="hidden sm:flex items-center gap-1.5 text-xs font-medium py-2 px-3 rounded-lg transition-all"
                                 style={{ color: scrolled ? C.primary : '#fff' }}>
                                 Lokasi
+                            </a>
+                            <a href="#hubungi" className="flex items-center gap-1.5 text-xs font-bold py-2 px-4 rounded-xl transition-all"
+                                style={{ 
+                                    background: scrolled ? C.gradient : 'rgba(255,255,255,0.2)',
+                                    color: '#fff',
+                                    backdropFilter: 'blur(8px)',
+                                    border: scrolled ? 'none' : '1px solid rgba(255,255,255,0.3)'
+                                }}>
+                                <i className="fas fa-phone-alt"></i>
+                                Hubungi
                             </a>
                         </div>
                     </div>
@@ -389,7 +399,7 @@ export default function Beranda() {
                 </div>
             </section>
 
-            {/* ── LOKASI ── */}
+                  {/* ── LOKASI ── */}
             <section id="lokasi" className="py-16 sm:py-24">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-10 sm:mb-14">
@@ -411,6 +421,55 @@ export default function Beranda() {
                     </div>
                 </div>
             </section>
+
+            {/* ── HUBUNGI KAMI ── */}
+            <section id="hubungi" className="relative z-20 py-10 sm:py-16 overflow-hidden" style={{ background: '#F8FBFF' }}>
+                <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                    <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-blue-50 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -translate-y-1/2 translate-x-1/2 opacity-50 blur-3xl"></div>
+                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+                            <div>
+                                <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-4">Butuh Bantuan Pendaftaran?</h3>
+                                <p className="text-gray-500 text-sm sm:text-base max-w-md">Panitia kami siap membantu Anda menjawab pertanyaan seputar proses PSB.</p>
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-4">
+                                {kontak.map(k => (
+                                    <a key={k.id} href={k.link_wa || `https://wa.me/${(k.no_whatsapp || '').replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg transition-all hover:-translate-y-1">
+                                        <i className="fab fa-whatsapp text-xl"></i>
+                                        <div className="text-left">
+                                            <p className="text-[10px] opacity-80 uppercase leading-none mb-1">WhatsApp</p>
+                                            <p className="text-sm leading-none">{k.nama}</p>
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ── FLOATING WHATSAPP ── */}
+            <div className="fixed bottom-6 right-6 z-[60] group flex flex-col items-end gap-3 pointer-events-none">
+                {kontak.length > 0 && (
+                    <div className="hidden group-hover:flex flex-col gap-2 mb-2 pointer-events-auto">
+                        {kontak.map(k => (
+                            <a key={k.id} href={k.link_wa || `https://wa.me/${(k.no_whatsapp || '').replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                                className="flex items-center gap-3 bg-white shadow-xl rounded-full py-2 px-4 border border-gray-100 hover:bg-gray-50 transition-all animate-[fadeIn_0.3s_ease]">
+                                <span className="text-xs font-bold text-gray-700">{k.nama}</span>
+                                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white text-xs shadow-md"><i className="fab fa-whatsapp"></i></div>
+                            </a>
+                        ))}
+                    </div>
+                )}
+                {kontak.length > 0 && (
+                    <a href={kontak[0].link_wa || `https://wa.me/${(kontak[0].no_whatsapp || '').replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
+                        className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-500 flex items-center justify-center text-white shadow-[0_10px_30px_rgba(34,197,94,0.4)] transition-all hover:scale-110 active:scale-95 pointer-events-auto animate-[pulse_2s_infinite]">
+                        <i className="fab fa-whatsapp text-3xl"></i>
+                    </a>
+                )}
+            </div>
+
 
             {/* ── FOOTER ── */}
             <footer style={{ background: C.gradientDark }}>
@@ -531,7 +590,7 @@ export default function Beranda() {
                             </table>
                             <div className="mt-4 border rounded-xl p-3 text-xs" style={{ background: '#F0FFF4', borderColor: '#A7F3D0', color: '#065F46' }}>
                                 <p className="font-semibold mb-2"><i className="fas fa-info-circle mr-1"></i> Keterangan:</p>
-                                <ul className="list-disc pl-5 space-y-1"><li>Infaq Bulanan Pondok Rp600.000/Bulan (Makan 3x, Asrama, Madrasah Diniyah, Laundry)</li></ul>
+                                <ul className="list-disc pl-5 space-y-1"><li>Infaq Bulanan Pondok Rp400.000/Bulan (Makan 2x & Syahriah Pondok)</li></ul>
                                 <p className="font-bold mt-3">Total Biaya PSB: {fmt(totals)}</p>
                             </div>
                         </div>
@@ -557,7 +616,7 @@ export default function Beranda() {
                             </div>
                             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3">
                                 <div className="font-semibold text-sm mb-2 flex items-center gap-2" style={{ color: C.primary }}><i className="fas fa-star"></i> Program Unggulan</div>
-                                <p className="text-xs text-gray-600">Tahfidz Qur'an & Qiroatul Kutub. Target 6 tahun khatam 30 Juz / menguasai kitab kuning.</p>
+                                <p className="text-xs text-gray-600">Tahfidz {"Qur'an"} &amp; Qiroatul Kutub. Target 6 tahun khatam 30 Juz / menguasai kitab kuning.</p>
                             </div>
                             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-3">
                                 <div className="font-semibold text-sm mb-2 flex items-center gap-2" style={{ color: C.primary }}><i className="fas fa-calendar-alt"></i> Waktu Pendaftaran</div>
@@ -580,7 +639,7 @@ export default function Beranda() {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex justify-center items-center p-4" onClick={e => e.target === e.currentTarget && setModal(null)}>
                     <div className="bg-white rounded-2xl max-w-[650px] w-full max-h-[90vh] overflow-hidden flex flex-col animate-[modalIn_0.3s_ease]">
                         <div className="flex items-center justify-between px-6 py-5 text-white flex-shrink-0" style={{ background: C.gradient }}>
-                            <div className="flex items-center gap-3"><i className="fas fa-file-alt text-xl"></i><div><h4 className="font-bold text-lg">Syarat & Berkas</h4><p className="text-xs opacity-80">Berkas Pendaftaran</p></div></div>
+                            <div className="flex items-center gap-3"><i className="fas fa-file-alt text-xl"></i><div><h4 className="font-bold text-lg">Syarat &amp; Berkas</h4><p className="text-xs opacity-80">Berkas Pendaftaran</p></div></div>
                             <button onClick={() => setModal(null)} className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition"><i className="fas fa-times"></i></button>
                         </div>
                         <div className="p-6 overflow-y-auto flex-1">
@@ -621,6 +680,8 @@ export default function Beranda() {
 
             <style>{`
                 @keyframes modalIn { from { opacity:0; transform:scale(0.95) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
+                @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 html { scroll-behavior: smooth; }
             `}</style>
         </div>

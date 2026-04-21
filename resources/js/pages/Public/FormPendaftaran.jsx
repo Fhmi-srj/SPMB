@@ -72,7 +72,6 @@ export default function FormPendaftaran() {
         const errors = [];
         if (s === 1) {
             if (!form.nama?.trim()) errors.push('Nama Lengkap harus diisi');
-            if (!form.lembaga) errors.push('Lembaga harus dipilih');
             if (!form.jenis_kelamin) errors.push('Jenis Kelamin harus diisi');
             if (!form.provinsi) errors.push('Provinsi harus diisi');
             if (!form.kota_kab) errors.push('Kota/Kabupaten harus diisi');
@@ -204,7 +203,7 @@ export default function FormPendaftaran() {
                                         <input type="text" value={form.nama || ''} onChange={e => set('nama', e.target.value)} className={inputCls} placeholder="Masukkan nama lengkap" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Lembaga <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Lembaga</label>
                                         <select value={form.lembaga || ''} onChange={e => set('lembaga', e.target.value)} className={selectCls}>
                                             <option value="">Pilih</option>
                                             <option value="Simbang">Simbang</option>
