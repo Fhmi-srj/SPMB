@@ -422,32 +422,6 @@ export default function Beranda() {
                 </div>
             </section>
 
-            {/* ── HUBUNGI KAMI ── */}
-            <section id="hubungi" className="relative z-20 py-10 sm:py-16 overflow-hidden" style={{ background: '#F8FBFF' }}>
-                <div className="max-w-6xl mx-auto px-4 sm:px-6">
-                    <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-2xl border border-blue-50 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-50 rounded-full -translate-y-1/2 translate-x-1/2 opacity-50 blur-3xl"></div>
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
-                            <div>
-                                <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-800 mb-4">Butuh Bantuan Pendaftaran?</h3>
-                                <p className="text-gray-500 text-sm sm:text-base max-w-md">Panitia kami siap membantu Anda menjawab pertanyaan seputar proses PSB.</p>
-                            </div>
-                            <div className="flex flex-wrap justify-center gap-4">
-                                {kontak.map(k => (
-                                    <a key={k.id} href={k.link_wa || `https://wa.me/${(k.no_whatsapp || '').replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg transition-all hover:-translate-y-1">
-                                        <i className="fab fa-whatsapp text-xl"></i>
-                                        <div className="text-left">
-                                            <p className="text-[10px] opacity-80 uppercase leading-none mb-1">WhatsApp</p>
-                                            <p className="text-sm leading-none">{k.nama}</p>
-                                        </div>
-                                    </a>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             {/* ── FLOATING WHATSAPP ── */}
             <div className="fixed bottom-6 right-6 z-[60] group flex flex-col items-end gap-3 pointer-events-none">
@@ -472,7 +446,7 @@ export default function Beranda() {
 
 
             {/* ── FOOTER ── */}
-            <footer style={{ background: C.gradientDark }}>
+            <footer id="hubungi" style={{ background: C.gradientDark }}>
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                         {/* Col 1 */}
