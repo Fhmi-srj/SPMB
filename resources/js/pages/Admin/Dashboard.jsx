@@ -148,10 +148,10 @@ export default function Dashboard() {
                         <table className="w-full">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pemasukan</th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pengeluaran</th>
-                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Sisa</th>
+                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Kategori</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Pemasukan</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Pengeluaran</th>
+                                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Sisa</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -159,10 +159,10 @@ export default function Dashboard() {
                                     const sisa = (v.pemasukan || 0) - (v.pengeluaran || 0);
                                     return (
                                         <tr key={k} className="hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-sm font-medium text-gray-800">{k}</td>
-                                            <td className="px-4 py-3 text-sm text-right text-gray-600">{fmt(v.pemasukan)}</td>
-                                            <td className="px-4 py-3 text-sm text-right text-gray-600">{fmt(v.pengeluaran)}</td>
-                                            <td className={`px-4 py-3 text-sm text-right font-semibold ${sisa >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(sisa)}</td>
+                                            <td className="px-4 py-3 text-sm font-medium text-gray-800 whitespace-nowrap">{k}</td>
+                                            <td className="px-4 py-3 text-sm text-right text-gray-600 whitespace-nowrap">{fmt(v.pemasukan)}</td>
+                                            <td className="px-4 py-3 text-sm text-right text-gray-600 whitespace-nowrap">{fmt(v.pengeluaran)}</td>
+                                            <td className={`px-4 py-3 text-sm text-right font-semibold whitespace-nowrap ${sisa >= 0 ? 'text-green-600' : 'text-red-600'}`}>{fmt(sisa)}</td>
                                         </tr>
                                     );
                                 })}
