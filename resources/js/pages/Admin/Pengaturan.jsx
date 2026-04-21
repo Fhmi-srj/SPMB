@@ -159,6 +159,41 @@ export default function Pengaturan() {
                     </div>
                 </div>
 
+                {/* Sosial Media */}
+                <div className="bg-white rounded-xl shadow-sm p-4">
+                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-share-alt mr-2 text-[#1B7A3D]"></i>Sosial Media</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                <i className="fab fa-facebook-f text-blue-600"></i> Facebook
+                            </label>
+                            <input type="url" value={settings.link_facebook ?? ''} onChange={e => setSettings(s => ({ ...s, link_facebook: e.target.value }))}
+                                placeholder="https://facebook.com/..." className={inputCls} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                <i className="fab fa-instagram text-pink-600"></i> Instagram
+                            </label>
+                            <input type="url" value={settings.link_instagram ?? ''} onChange={e => setSettings(s => ({ ...s, link_instagram: e.target.value }))}
+                                placeholder="https://instagram.com/..." className={inputCls} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                <i className="fab fa-tiktok text-black"></i> TikTok
+                            </label>
+                            <input type="url" value={settings.link_tiktok ?? ''} onChange={e => setSettings(s => ({ ...s, link_tiktok: e.target.value }))}
+                                placeholder="https://tiktok.com/@..." className={inputCls} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                <i className="fab fa-youtube text-red-600"></i> YouTube
+                            </label>
+                            <input type="url" value={settings.link_youtube ?? ''} onChange={e => setSettings(s => ({ ...s, link_youtube: e.target.value }))}
+                                placeholder="https://youtube.com/@..." className={inputCls} />
+                        </div>
+                    </div>
+                </div>
+
                 <button type="submit" disabled={saving}
                     className="w-full bg-[#1B7A3D] hover:bg-[#145C2E] text-white font-semibold py-3 rounded-lg transition disabled:opacity-70 flex items-center justify-center gap-2">
                     {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}

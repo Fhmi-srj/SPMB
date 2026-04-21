@@ -23,6 +23,7 @@ class PengaturanController extends Controller
             'link_pdf_brosur', 'link_pdf_syarat', 'link_beasiswa',
             'gelombang_1_start', 'gelombang_1_end',
             'gelombang_2_start', 'gelombang_2_end', 'link_grup_wa',
+            'link_facebook', 'link_instagram', 'link_tiktok', 'link_youtube',
         ];
 
         $settings = Pengaturan::whereIn('kunci', $publicKeys)

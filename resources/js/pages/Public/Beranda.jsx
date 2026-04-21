@@ -517,10 +517,10 @@ export default function Beranda() {
                             </p>
                             <div className="flex gap-2">
                                 {[
-                                    { icon: 'fa-facebook-f', url: 'https://www.facebook.com/share/14Vs1VguYb1/' },
-                                    { icon: 'fa-instagram', url: 'https://www.instagram.com/ppmambaulhuda/' },
-                                    { icon: 'fa-tiktok', url: 'https://www.tiktok.com/@ppmambaulhuda' },
-                                    { icon: 'fa-youtube', url: 'https://youtube.com/@ppmambaulhuda' },
+                                    { icon: 'fa-facebook-f', url: settings.link_facebook || 'https://www.facebook.com/share/14Vs1VguYb1/' },
+                                    { icon: 'fa-instagram', url: settings.link_instagram || 'https://www.instagram.com/ppmambaulhuda/' },
+                                    { icon: 'fa-tiktok', url: settings.link_tiktok || 'https://www.tiktok.com/@ppmambaulhuda' },
+                                    { icon: 'fa-youtube', url: settings.link_youtube || 'https://youtube.com/@ppmambaulhuda' },
                                 ].map((s, i) => (
                                     <a key={i} href={s.url} target="_blank" rel="noopener noreferrer"
                                         className="w-9 h-9 bg-white/10 hover:bg-white/25 text-white rounded-xl flex items-center justify-center transition-all hover:-translate-y-1 border border-white/10">
