@@ -47,11 +47,9 @@ npm run build
 echo "🗄️ 5. Menjalankan migrasi database..."
 php artisan migrate --force
 
-echo "🧹 6. Membersihkan dan memperbarui cache aplikasi..."
+echo "🧹 6. Membersihkan cache aplikasi..."
 php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+
 
 echo "🔒 7. Mengatur hak akses file..."
 find . -type d -exec chmod 0755 {} \;
