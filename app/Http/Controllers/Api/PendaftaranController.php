@@ -43,7 +43,16 @@ class PendaftaranController extends Controller
             $query->where('jenis_kelamin', $request->jenis_kelamin);
         }
 
-        $query->orderBy('no_registrasi', 'asc');
+        $sortBy = $request->query('sort_by', 'no_registrasi');
+        $sortDir = $request->query('sort_dir', 'asc');
+        $allowedSort = ['no_registrasi', 'nama', 'lembaga', 'no_hp_wali', 'status', 'created_at'];
+        if (!in_array($sortBy, $allowedSort)) {
+            $sortBy = 'no_registrasi';
+        }
+        if (!in_array($sortDir, ['asc', 'desc'])) {
+            $sortDir = 'asc';
+        }
+        $query->orderBy($sortBy, $sortDir);
 
         $perPage = (int)($request->per_page ?? 20);
         $data = $query->paginate($perPage);
@@ -136,6 +145,15 @@ class PendaftaranController extends Controller
             'status_mukim' => 'required|in:PONDOK PP MAMBAUL HUDA,PONDOK SELAIN PP MAMBAUL HUDA,TIDAK PONDOK',
             'no_hp_wali' => 'required|string|max:20|unique:pendaftaran,no_hp_wali',
             'password' => 'required|string|min:6',
+        ], [
+            'nama.required' => 'Nama lengkap wajib diisi.',
+            'lembaga.required' => 'Lembaga wajib dipilih.',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
+            'status_mukim.required' => 'Status mukim wajib dipilih.',
+            'no_hp_wali.required' => 'Nomor HP Wali wajib diisi.',
+            'no_hp_wali.unique' => 'Nomor HP Wali ini sudah terdaftar dalam sistem. Silakan gunakan nomor lain atau login menggunakan akun yang sudah ada.',
+            'password.required' => 'Password wajib diisi.',
+            'password.min' => 'Password minimal terdiri dari 6 karakter.',
         ]);
 
         // Cek apakah pendaftaran terbuka
@@ -185,7 +203,7 @@ class PendaftaranController extends Controller
                 $file = $request->file($field);
                 $folder = $field === 'file_sertifikat' ? 'sertifikat' : 'dokumen';
                 $filename = $pendaftaran->id . '_' . $field . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs("public/uploads/{$folder}", $filename);
+                $file->storeAs("uploads/{$folder}", $filename, 'public');
                 $pendaftaran->$field = $filename;
                 $hasUpload = true;
             }
@@ -209,11 +227,22 @@ class PendaftaranController extends Controller
     {
         $pendaftaran = Pendaftaran::findOrFail($id);
 
-        // Whitelist only allowed fields for admin update (Fix #15)
-        $allowedFields = ['status', 'catatan_admin'];
+        $request->validate([
+            'nama' => 'sometimes|required|string|max:100',
+            'no_hp_wali' => 'sometimes|required|string|max:20|unique:pendaftaran,no_hp_wali,' . $id,
+        ], [
+            'no_hp_wali.unique' => 'Nomor HP Wali ini sudah terdaftar pada siswa lain.',
+        ]);
+
+        $allowedFields = [
+            'nama', 'lembaga', 'nisn', 'nik', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
+            'jumlah_saudara', 'no_kk', 'alamat', 'provinsi', 'kota_kab', 'kecamatan', 'kelurahan_desa',
+            'asal_sekolah', 'status_mukim', 'nama_ayah', 'pekerjaan_ayah', 'penghasilan_ayah',
+            'nama_ibu', 'pekerjaan_ibu', 'penghasilan_ibu', 'no_hp_wali', 'status', 'catatan_admin'
+        ];
         $data = $request->only($allowedFields);
 
-        if ($request->filled('catatan_admin')) {
+        if ($request->has('catatan_admin')) {
             $data['catatan_updated_at'] = now();
         }
 
@@ -243,11 +272,11 @@ class PendaftaranController extends Controller
         $fileFields = ['file_kk', 'file_ktp_ortu', 'file_akta', 'file_ijazah'];
         foreach ($fileFields as $field) {
             if ($pendaftaran->$field) {
-                Storage::delete('public/uploads/dokumen/' . $pendaftaran->$field);
+                Storage::disk('public')->delete('uploads/dokumen/' . $pendaftaran->$field);
             }
         }
         if ($pendaftaran->file_sertifikat) {
-            Storage::delete('public/uploads/sertifikat/' . $pendaftaran->file_sertifikat);
+            Storage::disk('public')->delete('uploads/sertifikat/' . $pendaftaran->file_sertifikat);
         }
 
         $pendaftaran->delete();
@@ -274,11 +303,11 @@ class PendaftaranController extends Controller
                 $file = $request->file($field);
                 $folder = $field === 'file_sertifikat' ? 'sertifikat' : 'dokumen';
                 $filename = $id . '_' . $field . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs("public/uploads/{$folder}", $filename);
+                $file->storeAs("uploads/{$folder}", $filename, 'public');
 
                 // Hapus file lama
                 if ($pendaftaran->$field) {
-                    Storage::delete("public/uploads/{$folder}/" . $pendaftaran->$field);
+                    Storage::disk('public')->delete("uploads/{$folder}/" . $pendaftaran->$field);
                 }
 
                 $pendaftaran->$field = $filename;
@@ -292,6 +321,7 @@ class PendaftaranController extends Controller
             'success' => true,
             'message' => 'File berhasil diupload.',
             'updated' => $updated,
+            'data' => $pendaftaran,
         ]);
     }
 

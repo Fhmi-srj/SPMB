@@ -29,7 +29,7 @@ class TransaksiController extends Controller
     {
         $query = TransaksiPemasukan::query()
             ->join('pendaftaran', 'transaksi_pemasukan.pendaftaran_id', '=', 'pendaftaran.id')
-            ->leftJoin('users as u_input', 'transaksi_pemasukan.input_by', '=', 'u_input.id')
+            ->leftJoin('admin as u_input', 'transaksi_pemasukan.input_by', '=', 'u_input.id')
             ->select('transaksi_pemasukan.*', 'pendaftaran.nama', 'pendaftaran.lembaga', 'pendaftaran.no_registrasi', 'u_input.nama as input_nama');
 
         // Filter periode
@@ -168,13 +168,14 @@ class TransaksiController extends Controller
     {
         $data = TransaksiPemasukan::findOrFail($id);
         $user = auth()->user();
+        $catatan = $request->catatan ?? $request->catatan_approval ?? '';
         $data->update([
             'status'            => 'rejected',
             'approved_by'       => $user->id,
             'approved_at'       => now(),
-            'catatan_approval'  => $request->catatan ?? '',
+            'catatan_approval'  => $catatan,
         ]);
-        $this->logTransaksi('REJECT', 'PEMASUKAN', "Tolak pemasukan {$data->invoice}" . ($request->catatan ? ": {$request->catatan}" : ''));
+        $this->logTransaksi('REJECT', 'PEMASUKAN', "Tolak pemasukan {$data->invoice}" . ($catatan ? ": {$catatan}" : ''));
         return response()->json(['message' => 'Pemasukan ditolak']);
     }
 
@@ -183,7 +184,7 @@ class TransaksiController extends Controller
     public function indexPengeluaran(Request $request)
     {
         $query = TransaksiPengeluaran::query()
-            ->leftJoin('users as u_input', 'transaksi_pengeluaran.input_by', '=', 'u_input.id')
+            ->leftJoin('admin as u_input', 'transaksi_pengeluaran.input_by', '=', 'u_input.id')
             ->select('transaksi_pengeluaran.*', 'u_input.nama as input_nama');
 
         if ($request->periode && $request->periode !== 'semua') {
@@ -300,13 +301,14 @@ class TransaksiController extends Controller
     {
         $data = TransaksiPengeluaran::findOrFail($id);
         $user = auth()->user();
+        $catatan = $request->catatan ?? $request->catatan_approval ?? '';
         $data->update([
             'status'            => 'rejected',
             'approved_by'       => $user->id,
             'approved_at'       => now(),
-            'catatan_approval'  => $request->catatan ?? '',
+            'catatan_approval'  => $catatan,
         ]);
-        $this->logTransaksi('REJECT', 'PENGELUARAN', "Tolak pengeluaran {$data->invoice}" . ($request->catatan ? ": {$request->catatan}" : ''));
+        $this->logTransaksi('REJECT', 'PENGELUARAN', "Tolak pengeluaran {$data->invoice}" . ($catatan ? ": {$catatan}" : ''));
         return response()->json(['message' => 'Pengeluaran ditolak']);
     }
 

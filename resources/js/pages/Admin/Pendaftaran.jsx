@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
 
@@ -25,15 +26,7 @@ function Modal({ show, onClose, children, title }) {
     );
 }
 
-function DetailRow({ label, value }) {
-    if (!value && value !== 0) return null;
-    return (
-        <div className="grid grid-cols-3 gap-2 py-1.5 border-b border-gray-50">
-            <span className="text-xs text-gray-500">{label}</span>
-            <span className="col-span-2 text-sm font-medium text-gray-800">{value}</span>
-        </div>
-    );
-}
+
 
 export default function Pendaftaran() {
     const { token } = useAuth();
@@ -43,27 +36,35 @@ export default function Pendaftaran() {
     const [filters, setFilters] = useState({ search: '', lembaga: '', status: '', page: 1 });
     const [searchInput, setSearchInput] = useState('');
     const [selected, setSelected] = useState(null);
-    const [showDetail, setShowDetail] = useState(false);
+
     const [showEdit, setShowEdit] = useState(false);
     const [editForm, setEditForm] = useState({});
     const [saving, setSaving] = useState(false);
+    const [sort, setSort] = useState({ column: 'no_registrasi', direction: 'asc' });
     const searchTimer = React.useRef(null);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams({ ...filters, per_page: 15 }).toString();
-            const res = await fetch(`/api/pendaftaran?${params}`, {
-                headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+            const res = await axios.get('/api/pendaftaran', {
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    ...filters,
+                    sort_by: sort.column,
+                    sort_dir: sort.direction,
+                    per_page: 15
+                }
             });
-            const d = await res.json();
-            if (d.success) { setData(d.data); setMeta(d.meta); }
+            if (res.data.success) {
+                setData(res.data.data);
+                setMeta(res.data.meta);
+            }
         } catch (err) {
             console.error('fetchData error:', err);
         } finally {
             setLoading(false);
         }
-    }, [token, filters]);
+    }, [token, filters, sort]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -81,34 +82,160 @@ export default function Pendaftaran() {
         }, 300);
     };
 
-    const openDetail = (row) => { setSelected(row); setShowDetail(true); };
+    const handleSort = (column) => {
+        setSort(prev => {
+            const isSame = prev.column === column;
+            const direction = isSame && prev.direction === 'asc' ? 'desc' : 'asc';
+            return { column, direction };
+        });
+        setFilters(f => ({ ...f, page: 1 }));
+    };
+
+    const renderHeader = (label, column) => {
+        const isSorted = sort.column === column;
+        return (
+            <th 
+                className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 transition select-none"
+                onClick={() => handleSort(column)}
+            >
+                <div className="flex items-center gap-1.5">
+                    <span>{label}</span>
+                    <span className="text-gray-400 text-[10px]">
+                        {!isSorted ? (
+                            <i className="fas fa-sort"></i>
+                        ) : sort.direction === 'asc' ? (
+                            <i className="fas fa-sort-up text-[#E67E22] text-xs"></i>
+                        ) : (
+                            <i className="fas fa-sort-down text-[#E67E22] text-xs"></i>
+                        )}
+                    </span>
+                </div>
+            </th>
+        );
+    };
+
+
+
+    const setEdit = (k, v) => setEditForm(prev => ({ ...prev, [k]: v }));
+
     const openEdit = (row) => {
         setSelected(row);
-        setEditForm({ status: row.status, catatan_admin: row.catatan_admin ?? '' });
+        let tglLahir = '';
+        if (row.tanggal_lahir) {
+            tglLahir = row.tanggal_lahir.substring(0, 10);
+        }
+        let tglLahirAyah = '';
+        if (row.tanggal_lahir_ayah) {
+            tglLahirAyah = row.tanggal_lahir_ayah.substring(0, 10);
+        }
+        let tglLahirIbu = '';
+        if (row.tanggal_lahir_ibu) {
+            tglLahirIbu = row.tanggal_lahir_ibu.substring(0, 10);
+        }
+        setEditForm({
+            ...row,
+            tanggal_lahir: tglLahir,
+            tanggal_lahir_ayah: tglLahirAyah,
+            tanggal_lahir_ibu: tglLahirIbu,
+            catatan_admin: row.catatan_admin ?? ''
+        });
         setShowEdit(true);
     };
 
     const handleSaveEdit = async () => {
         setSaving(true);
         try {
-            const res = await fetch(`/api/pendaftaran/${selected.id}`, {
-                method: 'PUT',
-                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Accept: 'application/json' },
-                body: JSON.stringify(editForm),
+            const res = await axios.put(`/api/pendaftaran/${selected.id}`, editForm, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            const d = await res.json();
-            if (d.success) {
+            if (res.data.success) {
                 setShowEdit(false);
                 Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data diperbarui.', confirmButtonColor: '#E67E22', timer: 1500, showConfirmButton: false });
                 fetchData();
             } else {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: d.message || 'Gagal memperbarui data.', confirmButtonColor: '#E67E22' });
+                Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message || 'Gagal memperbarui data.', confirmButtonColor: '#E67E22' });
             }
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
+            Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
         } finally {
             setSaving(false);
         }
+    };
+
+    const handleUploadFile = async (e, field) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append(field, file);
+
+        Swal.fire({
+            title: 'Mengunggah Berkas...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const res = await axios.post(`/api/pendaftaran/${selected.id}/upload-dokumen`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            if (res.data.success) {
+                const updatedData = res.data.data;
+                setSelected(updatedData);
+                setEditForm(prev => ({
+                    ...prev,
+                    file_kk: updatedData.file_kk,
+                    file_ktp_ortu: updatedData.file_ktp_ortu,
+                    file_akta: updatedData.file_akta,
+                    file_ijazah: updatedData.file_ijazah,
+                    file_sertifikat: updatedData.file_sertifikat,
+                }));
+                Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Berkas berhasil diperbarui.', timer: 1500, showConfirmButton: false });
+                fetchData();
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || 'Gagal mengunggah berkas.', confirmButtonColor: '#E67E22' });
+        }
+    };
+
+    const renderEditDocInput = (label, field, currentFilename, folder = 'dokumen') => {
+        return (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2 border-b border-gray-100 last:border-0">
+                <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-gray-700">{label}</span>
+                    {currentFilename ? (
+                        <a 
+                            href={`/storage/uploads/${folder}/${currentFilename}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="text-xs text-blue-600 hover:text-blue-800 font-medium mt-1 inline-flex items-center gap-1 transition"
+                        >
+                            <i className="fas fa-file-alt"></i> Lihat berkas saat ini
+                        </a>
+                    ) : (
+                        <span className="text-xs text-red-500 font-medium italic mt-1 flex items-center gap-1">
+                            <i className="fas fa-times-circle"></i> Belum diunggah
+                        </span>
+                    )}
+                </div>
+                <div className="flex items-center">
+                    <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg text-xs font-medium transition border border-gray-300 inline-flex items-center gap-1">
+                        <i className="fas fa-upload"></i>
+                        <span>{currentFilename ? 'Ganti File' : 'Pilih File'}</span>
+                        <input 
+                            type="file" 
+                            onChange={e => handleUploadFile(e, field)} 
+                            className="hidden" 
+                            accept=".jpg,.jpeg,.png,.pdf" 
+                        />
+                    </label>
+                </div>
+            </div>
+        );
     };
 
     const handleDelete = async (row) => {
@@ -124,43 +251,39 @@ export default function Pendaftaran() {
         if (!conf.isConfirmed) return;
 
         try {
-            const res = await fetch(`/api/pendaftaran/${row.id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+            const res = await axios.delete(`/api/pendaftaran/${row.id}`, {
+                headers: { Authorization: `Bearer ${token}` }
             });
-            const d = await res.json();
-            if (d.success) {
+            if (res.data.success) {
                 Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1500, showConfirmButton: false });
                 fetchData();
             } else {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: d.message || 'Gagal menghapus.', confirmButtonColor: '#E67E22' });
+                Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message || 'Gagal menghapus.', confirmButtonColor: '#E67E22' });
             }
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
+            Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
         }
     };
 
     const handleNotifBerkas = async (row) => {
-        const res = await fetch(`/api/pendaftaran/${row.id}/notify-berkas`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-        });
-        const d = await res.json();
-        Swal.fire({ icon: d.success ? 'success' : 'warning', title: d.success ? 'Terkirim' : 'Info', text: d.message, confirmButtonColor: '#E67E22' });
+        try {
+            const res = await axios.post(`/api/pendaftaran/${row.id}/notify-berkas`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            Swal.fire({ icon: res.data.success ? 'success' : 'warning', title: res.data.success ? 'Terkirim' : 'Info', text: res.data.message, confirmButtonColor: '#E67E22' });
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
+        }
     };
 
     const handleExport = async () => {
         try {
-            const params = new URLSearchParams({ lembaga: filters.lembaga, status: filters.status }).toString();
-            const res = await fetch(`/api/pendaftaran/export/excel?${params}`, {
+            const res = await axios.get('/api/pendaftaran/export/excel', {
                 headers: { Authorization: `Bearer ${token}` },
+                params: { lembaga: filters.lembaga, status: filters.status },
+                responseType: 'blob'
             });
-            if (!res.ok) {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal mengexport data.', confirmButtonColor: '#E67E22' });
-                return;
-            }
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
+            const url = URL.createObjectURL(res.data);
             const a = document.createElement('a');
             a.href = url;
             a.download = `data-pendaftar-${Date.now()}.xlsx`;
@@ -234,12 +357,12 @@ export default function Pendaftaran() {
                         <table className="w-full text-sm">
                             <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
                                 <tr>
-                                    <th className="px-4 py-3 text-left">No. Reg</th>
-                                    <th className="px-4 py-3 text-left">Nama</th>
-                                    <th className="px-4 py-3 text-left">Lembaga</th>
-                                    <th className="px-4 py-3 text-left">No. HP</th>
-                                    <th className="px-4 py-3 text-left">Status</th>
-                                    <th className="px-4 py-3 text-left">Tanggal</th>
+                                    {renderHeader('No. Reg', 'no_registrasi')}
+                                    {renderHeader('Nama', 'nama')}
+                                    {renderHeader('Lembaga', 'lembaga')}
+                                    {renderHeader('No. HP', 'no_hp_wali')}
+                                    {renderHeader('Status', 'status')}
+                                    {renderHeader('Tanggal', 'created_at')}
                                     <th className="px-4 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -256,7 +379,20 @@ export default function Pendaftaran() {
                                         <td className="px-4 py-3">
                                             <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-xs">{row.lembaga}</span>
                                         </td>
-                                        <td className="px-4 py-3 text-gray-600">{row.no_hp_wali}</td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-gray-600">{row.no_hp_wali}</span>
+                                                <a 
+                                                    href={`https://wa.me/${row.no_hp_wali.replace(/\D/g, '').replace(/^0/, '62')}`} 
+                                                    target="_blank" 
+                                                    rel="noreferrer" 
+                                                    className="text-green-500 hover:text-green-700 transition"
+                                                    title="Hubungi via WhatsApp"
+                                                >
+                                                    <i className="fab fa-whatsapp text-sm"></i>
+                                                </a>
+                                            </div>
+                                        </td>
                                         <td className="px-4 py-3">
                                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[row.status]}`}>
                                                 {STATUS_LABELS[row.status] ?? row.status}
@@ -265,7 +401,6 @@ export default function Pendaftaran() {
                                         <td className="px-4 py-3 text-gray-500 text-xs">{row.created_at ? new Date(row.created_at).toLocaleDateString('id') : '-'}</td>
                                         <td className="px-4 py-3">
                                             <div className="flex items-center justify-center gap-1">
-                                                <button onClick={() => openDetail(row)} title="Detail" className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition"><i className="fas fa-eye text-xs"></i></button>
                                                 <button onClick={() => openEdit(row)} title="Edit" className="p-1.5 text-[#E67E22] hover:bg-orange-100 rounded-lg transition"><i className="fas fa-edit text-xs"></i></button>
                                                 <button onClick={() => handleNotifBerkas(row)} title="Kirim WA Berkas" className="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition"><i className="fab fa-whatsapp text-xs"></i></button>
                                                 <button onClick={() => handleDelete(row)} title="Hapus" className="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash text-xs"></i></button>
@@ -298,69 +433,154 @@ export default function Pendaftaran() {
                 )}
             </div>
 
-            {/* Detail Modal */}
-            <Modal show={showDetail} onClose={() => setShowDetail(false)} title="Detail Pendaftaran">
-                {selected && (
-                    <div className="space-y-1">
-                        <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Data Siswa</p>
-                        <DetailRow label="No. Registrasi" value={selected.no_registrasi} />
-                        <DetailRow label="Nama" value={selected.nama} />
-                        <DetailRow label="Lembaga" value={selected.lembaga} />
-                        <DetailRow label="NISN" value={selected.nisn} />
-                        <DetailRow label="NIK" value={selected.nik} />
-                        <DetailRow label="JK" value={selected.jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan'} />
-                        <DetailRow label="TTL" value={`${selected.tempat_lahir ?? ''}, ${selected.tanggal_lahir ?? ''}`} />
-                        <DetailRow label="Alamat" value={selected.alamat} />
-                        <DetailRow label="Kota/Kab" value={selected.kota_kab} />
-                        <DetailRow label="Asal Sekolah" value={selected.asal_sekolah} />
-                        <DetailRow label="Status Mukim" value={selected.status_mukim} />
 
-                        <p className="text-xs font-semibold text-gray-500 mt-4 mb-2 uppercase tracking-wide">Data Orang Tua</p>
-                        <DetailRow label="Nama Ayah" value={selected.nama_ayah} />
-                        <DetailRow label="Pekerjaan Ayah" value={selected.pekerjaan_ayah} />
-                        <DetailRow label="Nama Ibu" value={selected.nama_ibu} />
-                        <DetailRow label="Pekerjaan Ibu" value={selected.pekerjaan_ibu} />
-                        <DetailRow label="No. HP Wali" value={selected.no_hp_wali} />
-
-                        <p className="text-xs font-semibold text-gray-500 mt-4 mb-2 uppercase tracking-wide">Status Admin</p>
-                        <DetailRow label="Status" value={STATUS_LABELS[selected.status]} />
-                        <DetailRow label="Catatan" value={selected.catatan_admin} />
-                    </div>
-                )}
-            </Modal>
 
             {/* Edit Modal */}
-            <Modal show={showEdit} onClose={() => setShowEdit(false)} title="Update Status Pendaftar">
+            <Modal show={showEdit} onClose={() => setShowEdit(false)} title="Edit Data Pendaftaran">
                 {selected && (
-                    <div className="space-y-4">
+                    <div className="space-y-4 text-left">
+                        {/* Data Siswa */}
                         <div>
-                            <p className="text-sm font-medium text-gray-700 mb-1">Nama: <span className="font-bold">{selected.nama}</span></p>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Data Calon Siswa</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Nama Lengkap *</label>
+                                    <input type="text" value={editForm.nama || ''} onChange={e => setEdit('nama', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" required />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Lembaga *</label>
+                                    <select value={editForm.lembaga || ''} onChange={e => setEdit('lembaga', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" required>
+                                        <option value="SMP NU BP">SMP NU BP</option>
+                                        <option value="MA ALHIKAM">MA ALHIKAM</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">NISN</label>
+                                    <input type="text" value={editForm.nisn || ''} onChange={e => setEdit('nisn', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">NIK</label>
+                                    <input type="text" value={editForm.nik || ''} onChange={e => setEdit('nik', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Jenis Kelamin *</label>
+                                    <select value={editForm.jenis_kelamin || ''} onChange={e => setEdit('jenis_kelamin', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" required>
+                                        <option value="L">Laki-laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Tempat Lahir</label>
+                                    <input type="text" value={editForm.tempat_lahir || ''} onChange={e => setEdit('tempat_lahir', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Tanggal Lahir</label>
+                                    <input type="date" value={editForm.tanggal_lahir || ''} onChange={e => setEdit('tanggal_lahir', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Asal Sekolah</label>
+                                    <input type="text" value={editForm.asal_sekolah || ''} onChange={e => setEdit('asal_sekolah', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Status Mukim *</label>
+                                    <select value={editForm.status_mukim || ''} onChange={e => setEdit('status_mukim', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" required>
+                                        <option value="PONDOK PP MAMBAUL HUDA">Pondok PP Mambaul Huda</option>
+                                        <option value="PONDOK SELAIN PP MAMBAUL HUDA">Pondok Selain PP Mambaul Huda</option>
+                                        <option value="TIDAK PONDOK">Tidak Pondok</option>
+                                    </select>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Alamat Lengkap</label>
+                                    <textarea rows={2} value={editForm.alamat || ''} onChange={e => setEdit('alamat', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white resize-none" />
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Status</label>
-                            <select value={editForm.status} onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))}
-                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white">
-                                <option value="pending">Pending</option>
-                                <option value="verified">Terverifikasi</option>
-                                <option value="rejected">Ditolak</option>
-                            </select>
+
+                        {/* Data Orang Tua */}
+                        <div className="pt-2 border-t">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Data Orang Tua / Wali</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Nama Ayah</label>
+                                    <input type="text" value={editForm.nama_ayah || ''} onChange={e => setEdit('nama_ayah', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Pekerjaan Ayah</label>
+                                    <input type="text" value={editForm.pekerjaan_ayah || ''} onChange={e => setEdit('pekerjaan_ayah', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Nama Ibu</label>
+                                    <input type="text" value={editForm.nama_ibu || ''} onChange={e => setEdit('nama_ibu', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Pekerjaan Ibu</label>
+                                    <input type="text" value={editForm.pekerjaan_ibu || ''} onChange={e => setEdit('pekerjaan_ibu', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">No. HP Wali *</label>
+                                    <input type="text" value={editForm.no_hp_wali || ''} onChange={e => setEdit('no_hp_wali', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" required />
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">Catatan Admin</label>
-                            <textarea rows={4} value={editForm.catatan_admin}
-                                onChange={e => setEditForm(f => ({ ...f, catatan_admin: e.target.value }))}
-                                placeholder="Catatan untuk pendaftar..."
-                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none resize-none"
-                            />
+
+                        {/* Status Admin */}
+                        <div className="pt-2 border-t">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Status Verifikasi</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Status Pendaftaran *</label>
+                                    <select value={editForm.status || ''} onChange={e => setEdit('status', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" required>
+                                        <option value="pending">Pending</option>
+                                        <option value="verified">Terverifikasi</option>
+                                        <option value="rejected">Ditolak</option>
+                                    </select>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Catatan Admin</label>
+                                    <textarea rows={3} value={editForm.catatan_admin || ''} onChange={e => setEdit('catatan_admin', e.target.value)}
+                                        placeholder="Catatan untuk pendaftar..."
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white resize-none" />
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex gap-3 pt-2">
-                            <button onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm hover:bg-gray-50 transition">
+
+                        {/* Kelengkapan Berkas */}
+                        <div className="pt-2 border-t">
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Kelengkapan Berkas</h4>
+                            <div className="bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-1">
+                                {renderEditDocInput('Kartu Keluarga (KK)', 'file_kk', editForm.file_kk)}
+                                {renderEditDocInput('KTP Orang Tua', 'file_ktp_ortu', editForm.file_ktp_ortu)}
+                                {renderEditDocInput('Akta Kelahiran', 'file_akta', editForm.file_akta)}
+                                {renderEditDocInput('Ijazah / SKL', 'file_ijazah', editForm.file_ijazah)}
+                                {renderEditDocInput('Sertifikat Prestasi', 'file_sertifikat', editForm.file_sertifikat, 'sertifikat')}
+                            </div>
+                        </div>
+
+                        {/* Tombol Aksi */}
+                        <div className="flex gap-3 pt-4 border-t">
+                            <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition">
                                 Batal
                             </button>
-                            <button onClick={handleSaveEdit} disabled={saving}
-                                className="flex-1 px-4 py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                            <button type="button" onClick={handleSaveEdit} disabled={saving}
+                                className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold transition disabled:opacity-70 flex items-center justify-center gap-2 shadow-md">
                                 {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-                                {saving ? 'Menyimpan...' : 'Simpan'}
+                                {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
                             </button>
                         </div>
                     </div>

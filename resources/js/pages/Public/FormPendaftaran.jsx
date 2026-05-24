@@ -143,7 +143,26 @@ export default function FormPendaftaran() {
                     confirmButtonColor: '#E67E22', confirmButtonText: 'Kembali ke Beranda'
                 }).then(() => nav('/'));
             } else {
-                Swal.fire('Error', data.message || 'Gagal mengirim pendaftaran', 'error');
+                let errorHtml = data.message || 'Gagal mengirim pendaftaran';
+                if (data.errors) {
+                    const messages = Object.values(data.errors).flat();
+                    errorHtml = '<ul class="text-left text-sm space-y-1">' + messages.map(m => {
+                        let msg = m;
+                        if (m === 'validation.unique') {
+                            msg = 'Nomor HP Wali sudah terdaftar dalam sistem. Silakan gunakan nomor lain.';
+                        }
+                        return `<li>• ${msg}</li>`;
+                    }).join('') + '</ul>';
+                } else if (data.message === 'validation.unique') {
+                    errorHtml = 'Nomor HP Wali sudah terdaftar dalam sistem. Silakan gunakan nomor lain.';
+                }
+                
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Pendaftaran Gagal',
+                    html: errorHtml,
+                    confirmButtonColor: '#E67E22'
+                });
             }
         } catch { Swal.fire('Error', 'Terjadi kesalahan jaringan', 'error'); }
         finally { setLoading(false); }
@@ -312,12 +331,39 @@ export default function FormPendaftaran() {
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Upload Sertifikat</label>
-                                        <div className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all ${files.file_sertifikat ? 'border-green-400 bg-green-50' : 'border-gray-200 hover:border-[#E67E22] hover:bg-orange-50/20'}`}
-                                            onClick={() => document.getElementById('file_sertifikat').click()}>
-                                            <i className={`fas ${files.file_sertifikat ? 'fa-check-circle text-green-500' : 'fa-cloud-upload-alt text-gray-400'} text-3xl mb-2`}></i>
-                                            <p className="text-sm text-gray-500">{files.file_sertifikat?.name || 'Klik untuk upload sertifikat (JPG, PNG, PDF, max 5MB)'}</p>
-                                            <input type="file" id="file_sertifikat" className="hidden" accept=".jpg,.jpeg,.png,.pdf" onChange={e => setFile('file_sertifikat', e.target.files[0])} />
-                                        </div>
+                                        {!files.file_sertifikat ? (
+                                            <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center cursor-pointer transition-all hover:border-[#E67E22] hover:bg-orange-50/20"
+                                                onClick={() => document.getElementById('file_sertifikat').click()}>
+                                                <i className="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
+                                                <p className="text-sm text-gray-500">Klik untuk upload sertifikat (JPG, PNG, PDF, max 5MB)</p>
+                                                <input type="file" id="file_sertifikat" className="hidden" accept=".jpg,.jpeg,.png,.pdf" onChange={e => { if (e.target.files[0]) setFile('file_sertifikat', e.target.files[0]); }} />
+                                            </div>
+                                        ) : (
+                                            <div className="border-2 border-green-300 bg-green-50/30 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                                    {files.file_sertifikat.type && files.file_sertifikat.type.startsWith('image/') ? (
+                                                        <img src={URL.createObjectURL(files.file_sertifikat)} alt="Sertifikat Preview" className="w-16 h-16 object-cover rounded-lg border border-green-200 bg-white" />
+                                                    ) : (
+                                                        <div className="w-16 h-16 bg-white rounded-lg border border-green-200 flex items-center justify-center text-red-500 text-2xl"><i className="fas fa-file-pdf"></i></div>
+                                                    )}
+                                                    <div className="overflow-hidden flex-1 sm:flex-initial text-left">
+                                                        <p className="text-xs text-gray-500 font-medium">Sertifikat Terpilih:</p>
+                                                        <p className="text-sm font-semibold text-gray-800 truncate max-w-[200px] sm:max-w-[300px]">{files.file_sertifikat.name}</p>
+                                                        <p className="text-xs text-gray-400">{(files.file_sertifikat.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                                    <button type="button" onClick={() => window.open(URL.createObjectURL(files.file_sertifikat), '_blank')}
+                                                        className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+                                                        <i className="fas fa-eye text-sm"></i> Lihat
+                                                    </button>
+                                                    <button type="button" onClick={() => setFile('file_sertifikat', null)}
+                                                        className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-semibold flex items-center gap-1 transition">
+                                                        <i className="fas fa-trash text-sm"></i> Ganti
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -386,9 +432,77 @@ export default function FormPendaftaran() {
                                 <h3 className="text-md font-bold text-gray-800 mb-1">Upload Dokumen</h3>
                                 <p className="text-sm text-gray-500 mb-4">Upload dokumen dalam format PDF atau Gambar (JPG, PNG, max 2MB)</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {[['file_kk', 'Kartu Keluarga (KK)'], ['file_ktp_ortu', 'KTP Orang Tua'], ['file_akta', 'Akta Kelahiran'], ['file_ijazah', 'Ijazah (Opsional)']].map(([key, label]) => (
-                                        <div key={key}><label className="block text-sm font-medium text-gray-700 mb-2">{label}</label><input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(key, e.target.files[0])} className={inputCls + " text-sm"} style={{ textTransform: 'none' }} /></div>
-                                    ))}
+                                    {[['file_kk', 'Kartu Keluarga (KK)', true], ['file_ktp_ortu', 'KTP Orang Tua', true], ['file_akta', 'Akta Kelahiran', true], ['file_ijazah', 'Ijazah (Opsional)', false]].map(([key, label, required]) => {
+                                        const file = files[key];
+                                        return (
+                                            <div key={key} className="flex flex-col">
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    {label} {required && <span className="text-red-500">*</span>}
+                                                </label>
+                                                {!file ? (
+                                                    <div className="relative">
+                                                        <input
+                                                            type="file"
+                                                            id={`input_${key}`}
+                                                            accept=".pdf,.jpg,.jpeg,.png"
+                                                            onChange={e => { if (e.target.files[0]) setFile(key, e.target.files[0]); }}
+                                                            className="hidden"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => document.getElementById(`input_${key}`).click()}
+                                                            className="w-full text-left py-3 px-4 border-2 border-dashed border-gray-200 hover:border-[#E67E22] hover:bg-orange-50/10 rounded-xl text-sm transition flex items-center justify-between text-gray-500"
+                                                        >
+                                                            <span>Pilih file...</span>
+                                                            <i className="fas fa-upload text-gray-400"></i>
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="border border-green-200 bg-green-50/20 rounded-xl p-3 flex items-center justify-between gap-3">
+                                                        <div className="flex items-center gap-3 overflow-hidden w-full">
+                                                            {file.type && file.type.startsWith('image/') ? (
+                                                                <img
+                                                                    src={URL.createObjectURL(file)}
+                                                                    alt="Preview"
+                                                                    className="w-12 h-12 object-cover rounded-lg border border-green-200 bg-white flex-shrink-0"
+                                                                />
+                                                            ) : (
+                                                                <div className="w-12 h-12 bg-white rounded-lg border border-green-200 flex items-center justify-center text-red-500 text-xl flex-shrink-0">
+                                                                    <i className="fas fa-file-pdf"></i>
+                                                                </div>
+                                                            )}
+                                                            <div className="overflow-hidden text-left">
+                                                                <p className="text-xs font-semibold text-gray-800 truncate max-w-[120px] sm:max-w-[180px]">
+                                                                    {file.name}
+                                                                </p>
+                                                                <p className="text-[10px] text-gray-400">
+                                                                    {(file.size / (1024 * 1024)).toFixed(2)} MB
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => window.open(URL.createObjectURL(file), '_blank')}
+                                                                className="w-8 h-8 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center transition"
+                                                                title="Lihat File"
+                                                            >
+                                                                <i className="fas fa-eye text-xs"></i>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setFile(key, null)}
+                                                                className="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg flex items-center justify-center transition"
+                                                                title="Hapus File"
+                                                            >
+                                                                <i className="fas fa-trash text-xs"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
 

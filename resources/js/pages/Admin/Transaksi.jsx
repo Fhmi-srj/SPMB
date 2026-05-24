@@ -4,7 +4,13 @@ import Swal from 'sweetalert2';
 import { useAuth } from '../../contexts/AuthContext';
 
 const API = '/api';
-const fmt = (n) => 'Rp ' + (n || 0).toLocaleString('id-ID');
+const fmt = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const formatNumberString = (val) => {
+    if (val === undefined || val === null) return '';
+    const clean = val.toString().replace(/\D/g, '');
+    if (!clean) return '';
+    return parseInt(clean, 10).toLocaleString('id-ID');
+};
 
 export default function Transaksi() {
     const { token, user } = useAuth();
@@ -114,12 +120,12 @@ export default function Transaksi() {
     };
 
     const openEditPemasukan = (row) => {
-        setForm({ id: row.id, pendaftaran_id: row.pendaftaran_id, tanggal: row.tanggal, nominal: row.nominal, jenis_pembayaran: row.jenis_pembayaran, keterangan: row.keterangan || '' });
+        setForm({ id: row.id, pendaftaran_id: row.pendaftaran_id, tanggal: row.tanggal ? row.tanggal.substring(0, 10) : '', nominal: row.nominal, jenis_pembayaran: row.jenis_pembayaran, keterangan: row.keterangan || '' });
         setSearchPeserta(row.nama || '');
         setShowModal('edit_pemasukan');
     };
     const openEditPengeluaran = (row) => {
-        setForm({ id: row.id, tanggal: row.tanggal, nominal: row.nominal, kategori: row.kategori, keterangan: row.keterangan || '' });
+        setForm({ id: row.id, tanggal: row.tanggal ? row.tanggal.substring(0, 10) : '', nominal: row.nominal, kategori: row.kategori, keterangan: row.keterangan || '' });
         setShowModal('edit_pengeluaran');
     };
 
@@ -326,6 +332,12 @@ export default function Transaksi() {
                             <h3 className="text-xl font-bold text-gray-800">{showModal === 'edit_pemasukan' ? 'Edit Pemasukan' : 'Tambah Pemasukan'}</h3>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6">
+                            {showModal === 'edit_pemasukan' && (
+                                <div className="mb-4">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Peserta</label>
+                                    <input type="text" value={searchPeserta} disabled className="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-500 outline-none" />
+                                </div>
+                            )}
                             {showModal === 'pemasukan' && (
                                 <>
                                     <div className="mb-4">
@@ -365,7 +377,17 @@ export default function Transaksi() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
-                                    <input type="number" value={form.nominal || ''} onChange={e => setForm({ ...form, nominal: e.target.value })} required placeholder="Masukkan nominal" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input
+                                        type="text"
+                                        value={formatNumberString(form.nominal)}
+                                        onChange={e => {
+                                            const clean = e.target.value.replace(/\D/g, '');
+                                            setForm({ ...form, nominal: clean });
+                                        }}
+                                        required
+                                        placeholder="Masukkan nominal"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"
+                                    />
                                 </div>
                             </div>
                             <div className="mb-4">
@@ -404,7 +426,17 @@ export default function Transaksi() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
-                                    <input type="number" value={form.nominal || ''} onChange={e => setForm({ ...form, nominal: e.target.value })} required placeholder="Masukkan nominal" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <input
+                                        type="text"
+                                        value={formatNumberString(form.nominal)}
+                                        onChange={e => {
+                                            const clean = e.target.value.replace(/\D/g, '');
+                                            setForm({ ...form, nominal: clean });
+                                        }}
+                                        required
+                                        placeholder="Masukkan nominal"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"
+                                    />
                                 </div>
                             </div>
                             <div className="mb-4">
