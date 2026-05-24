@@ -6,7 +6,9 @@
 #   bash deploy.sh
 # =============================================
 
-echo "🚀 Mulai deploy SPMB..."
+echo "=========================================="
+echo "🚀 MEMULAI DEPLOYMENT SPMB"
+echo "=========================================="
 
 # Backup config hosting sebelum pull
 if [ -f api/config.php ]; then
@@ -14,8 +16,7 @@ if [ -f api/config.php ]; then
     echo "✅ Backup config.php"
 fi
 
-# Pull latest dari GitHub
-echo "📥 Pulling dari GitHub..."
+echo "📥 1. Menarik pembaruan terbaru dari GitHub..."
 git fetch origin
 git reset --hard origin/main
 echo "✅ Pull selesai"
@@ -34,12 +35,30 @@ if [ -f api/config.php.bak ]; then
     fi
 fi
 
-# Set permission
+echo "📦 2. Menginstall dependensi PHP (Composer)..."
+composer install --no-interaction --prefer-dist --optimize-autoloader
+
+echo "📦 3. Menginstall dependensi Node.js (NPM)..."
+npm install
+
+echo "🛠️ 4. Membangun aset frontend (Vite)..."
+npm run build
+
+echo "🗄️ 5. Menjalankan migrasi database..."
+php artisan migrate --force
+
+echo "🧹 6. Membersihkan dan memperbarui cache aplikasi..."
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+echo "🔒 7. Mengatur hak akses file..."
 find . -type d -exec chmod 0755 {} \;
 find . -type f -exec chmod 0644 {} \;
 chmod 0755 deploy.sh
 
-echo ""
-echo "========================================="
-echo "✅ Deploy selesai!"
-echo "========================================="
+echo "=========================================="
+echo "✅ DEPLOYMENT SELESAI DENGAN SUKSES!"
+echo "=========================================="
+
