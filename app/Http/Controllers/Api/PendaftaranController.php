@@ -128,14 +128,20 @@ class PendaftaranController extends Controller
     public function store(Request $request): JsonResponse
     {
         // Normalize no_hp_wali before validation (Fix #16)
-        if ($request->has('no_hp_wali')) {
+        if ($request->filled('no_hp_wali')) {
             $phone = preg_replace('/[^0-9]/', '', $request->no_hp_wali);
-            if (str_starts_with($phone, '62')) {
-                $phone = '0' . substr($phone, 2);
-            } elseif (!str_starts_with($phone, '0')) {
-                $phone = '0' . $phone;
+            if (!empty($phone)) {
+                if (str_starts_with($phone, '62')) {
+                    $phone = '0' . substr($phone, 2);
+                } elseif (!str_starts_with($phone, '0')) {
+                    $phone = '0' . $phone;
+                }
+                $request->merge(['no_hp_wali' => $phone]);
+            } else {
+                $request->merge(['no_hp_wali' => null]);
             }
-            $request->merge(['no_hp_wali' => $phone]);
+        } else {
+            $request->merge(['no_hp_wali' => null]);
         }
 
         $request->validate([
@@ -143,16 +149,16 @@ class PendaftaranController extends Controller
             'lembaga' => 'required|in:SMP NU BP,MA ALHIKAM',
             'jenis_kelamin' => 'required|in:L,P',
             'status_mukim' => 'required|in:PONDOK PP MAMBAUL HUDA,PONDOK SELAIN PP MAMBAUL HUDA,TIDAK PONDOK',
-            'no_hp_wali' => 'required|string|max:20|unique:pendaftaran,no_hp_wali',
-            'password' => 'required|string|min:6',
+            'no_hp_wali' => 'nullable|required_with:password|string|max:20|unique:pendaftaran,no_hp_wali',
+            'password' => 'nullable|required_with:no_hp_wali|string|min:6',
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
             'lembaga.required' => 'Lembaga wajib dipilih.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
             'status_mukim.required' => 'Status mukim wajib dipilih.',
-            'no_hp_wali.required' => 'Nomor HP Wali wajib diisi.',
+            'no_hp_wali.required_with' => 'Nomor HP Wali wajib diisi jika Anda membuat akun.',
             'no_hp_wali.unique' => 'Nomor HP Wali ini sudah terdaftar dalam sistem. Silakan gunakan nomor lain atau login menggunakan akun yang sudah ada.',
-            'password.required' => 'Password wajib diisi.',
+            'password.required_with' => 'Password wajib diisi jika Anda memasukkan nomor HP.',
             'password.min' => 'Password minimal terdiri dari 6 karakter.',
         ]);
 
@@ -188,7 +194,7 @@ class PendaftaranController extends Controller
             ];
 
             $data = $request->only($allowedFields);
-            $data['password'] = Hash::make($request->password);
+            $data['password'] = $request->password ? Hash::make($request->password) : null;
             $data['no_registrasi'] = $noReg;
             $data['status'] = 'pending';
 

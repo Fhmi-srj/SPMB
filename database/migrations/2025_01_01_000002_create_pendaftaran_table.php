@@ -51,7 +51,7 @@ return new class extends Migration
             $table->string('penghasilan_ibu', 20)->nullable();
 
             // Kontak & Auth
-            $table->string('no_hp_wali', 20)->unique();
+            $table->string('no_hp_wali', 20)->nullable()->unique();
             $table->string('password', 255)->nullable();
             $table->string('reset_token', 64)->nullable();
             $table->dateTime('reset_token_expires')->nullable();

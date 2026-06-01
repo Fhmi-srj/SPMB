@@ -8,19 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
+        Schema::create('admin', function (Blueprint $table) {
             $table->id();
             $table->string('username', 50)->unique();
             $table->string('password');
             $table->string('nama', 100)->nullable();
             $table->enum('role', ['super_admin', 'admin', 'panitia'])->default('panitia');
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('admin');
     }
 };

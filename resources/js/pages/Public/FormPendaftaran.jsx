@@ -21,6 +21,62 @@ export default function FormPendaftaran() {
 
     const [settings, setSettings] = useState({});
 
+    // Autocomplete region search
+    const [searchQuery, setSearchQuery] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [isManualMode, setIsManualMode] = useState(false);
+    const [buatAkun, setBuatAkun] = useState(false);
+    const autocompleteRef = useRef(null);
+
+    // Click outside autocomplete dropdown to close it
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (autocompleteRef.current && !autocompleteRef.current.contains(event.target)) {
+                setSuggestions([]);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Debounced region search from API
+    useEffect(() => {
+        if (!searchQuery || searchQuery.trim().length < 3) {
+            setSuggestions([]);
+            return;
+        }
+
+        setSearchLoading(true);
+        const delayDebounceFn = setTimeout(() => {
+            fetch(`https://kodepos.now.sh/search?q=${encodeURIComponent(searchQuery)}`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.statusCode === 200 && d.data) {
+                        setSuggestions(d.data || []);
+                    } else {
+                        setSuggestions([]);
+                    }
+                    setSearchLoading(false);
+                })
+                .catch(() => {
+                    setSuggestions([]);
+                    setSearchLoading(false);
+                });
+        }, 400);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery]);
+
+    const selectSuggestion = (item) => {
+        set('provinsi', item.province.toUpperCase());
+        set('kota_kab', item.regency.toUpperCase());
+        set('kecamatan', item.district.toUpperCase());
+        set('kelurahan_desa', item.village.toUpperCase());
+        setSearchQuery('');
+        setSuggestions([]);
+    };
+
     useEffect(() => {
         fetch('/api/pengaturan/public').then(r => r.json()).then(d => { if (d.success) setSettings(d.data); }).catch(() => { });
         // Load draft
@@ -79,11 +135,17 @@ export default function FormPendaftaran() {
             if (!form.kelurahan_desa) errors.push('Kelurahan/Desa harus diisi');
         }
         if (s === 2) {
-            if (!form.no_hp_wali?.trim()) errors.push('No. HP WhatsApp Wali harus diisi');
-            else if (form.no_hp_wali.length < 9) errors.push('No. HP minimal 9 digit');
-            if (!form.password?.trim()) errors.push('Password harus diisi');
-            else if (form.password.length < 6) errors.push('Password minimal 6 karakter');
-            if (form.password !== form.password_confirm) errors.push('Konfirmasi Password tidak cocok');
+            if (buatAkun) {
+                if (!form.no_hp_wali?.trim()) errors.push('No. HP WhatsApp Wali harus diisi untuk membuat akun');
+                else if (form.no_hp_wali.length < 9) errors.push('No. HP minimal 9 digit');
+                if (!form.password?.trim()) errors.push('Password harus diisi');
+                else if (form.password.length < 6) errors.push('Password minimal 6 karakter');
+                if (form.password !== form.password_confirm) errors.push('Konfirmasi Password tidak cocok');
+            } else {
+                if (form.no_hp_wali?.trim() && form.no_hp_wali.length < 9) {
+                    errors.push('No. HP WhatsApp Wali minimal 9 digit jika diisi');
+                }
+            }
         }
         return errors;
     };
@@ -260,34 +322,147 @@ export default function FormPendaftaran() {
                                         <label className="block text-sm font-medium text-gray-700 mb-2">NIK</label>
                                         <input type="text" value={form.nik || ''} onChange={e => set('nik', e.target.value)} className={inputCls} placeholder="16 digit NIK" />
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Provinsi <span className="text-red-500">*</span></label>
-                                        <select value={form.provinsi || ''} onChange={e => { set('provinsi', e.target.value); set('kota_kab', ''); set('kecamatan', ''); set('kelurahan_desa', ''); setKota([]); setKecamatan([]); setKelurahan([]); if (e.target.value) loadKota(e.target.value); }} className={selectCls}>
-                                            <option value="">-- Pilih Provinsi --</option>
-                                            {provinsi.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div style={{ opacity: form.provinsi ? 1 : 0.5, transition: 'opacity 0.3s' }}>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Kota/Kabupaten <span className="text-red-500">*</span></label>
-                                        <select value={form.kota_kab || ''} onChange={e => { set('kota_kab', e.target.value); set('kecamatan', ''); set('kelurahan_desa', ''); setKecamatan([]); setKelurahan([]); if (e.target.value) loadKecamatan(e.target.value); }} className={selectCls} disabled={!form.provinsi}>
-                                            <option value="">{form.provinsi ? '-- Pilih Kota/Kabupaten --' : '⬆ Pilih Provinsi terlebih dahulu'}</option>
-                                            {kota.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div style={{ opacity: form.kota_kab ? 1 : 0.5, transition: 'opacity 0.3s' }}>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Kecamatan <span className="text-red-500">*</span></label>
-                                        <select value={form.kecamatan || ''} onChange={e => { set('kecamatan', e.target.value); set('kelurahan_desa', ''); setKelurahan([]); if (e.target.value) loadKelurahan(e.target.value); }} className={selectCls} disabled={!form.kota_kab}>
-                                            <option value="">{form.kota_kab ? '-- Pilih Kecamatan --' : '⬆ Pilih Kota/Kabupaten terlebih dahulu'}</option>
-                                            {kecamatan.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div style={{ opacity: form.kecamatan ? 1 : 0.5, transition: 'opacity 0.3s' }}>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Kelurahan/Desa <span className="text-red-500">*</span></label>
-                                        <select value={form.kelurahan_desa || ''} onChange={e => set('kelurahan_desa', e.target.value)} className={selectCls} disabled={!form.kecamatan}>
-                                            <option value="">{form.kecamatan ? '-- Pilih Kelurahan/Desa --' : '⬆ Pilih Kecamatan terlebih dahulu'}</option>
-                                            {kelurahan.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
-                                        </select>
-                                    </div>
+                                    {/* Region Fields (Autocomplete or Manual Cascading Selects) */}
+                                    {!isManualMode ? (
+                                        <div className="md:col-span-2" ref={autocompleteRef}>
+                                            {form.provinsi && form.kota_kab && form.kecamatan && form.kelurahan_desa ? (
+                                                /* Selected Region Card */
+                                                <div className="bg-orange-50/50 border border-[#E67E22]/30 rounded-xl p-4 flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 bg-[#E67E22]/10 text-[#E67E22] rounded-full flex items-center justify-center flex-shrink-0">
+                                                            <i className="fas fa-map-marker-alt text-lg"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs text-gray-500 font-medium text-left">Wilayah Terpilih:</p>
+                                                            <p className="text-sm font-bold text-gray-800 uppercase text-left">
+                                                                DESA {form.kelurahan_desa}, KEC. {form.kecamatan}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 uppercase text-left">
+                                                                {form.kota_kab}, PROV. {form.provinsi}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            set('provinsi', '');
+                                                            set('kota_kab', '');
+                                                            set('kecamatan', '');
+                                                            set('kelurahan_desa', '');
+                                                        }}
+                                                        className="px-3 py-1.5 bg-white hover:bg-orange-50 text-[#E67E22] border border-[#E67E22]/20 hover:border-[#E67E22] rounded-lg text-xs font-semibold transition"
+                                                    >
+                                                        <i className="fas fa-edit mr-1"></i> Ubah
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                /* Search Input Box */
+                                                <div className="relative">
+                                                    <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Cari Kelurahan / Desa / Kecamatan <span className="text-red-500">*</span></label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="text"
+                                                            value={searchQuery}
+                                                            onChange={e => setSearchQuery(e.target.value)}
+                                                            className={inputCls}
+                                                            placeholder="Ketik nama desa atau kecamatan (misal: Pajomblangan)..."
+                                                            style={{ textTransform: 'none' }}
+                                                        />
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                                            {searchLoading ? (
+                                                                <i className="fas fa-spinner fa-spin text-[#E67E22]"></i>
+                                                            ) : (
+                                                                <i className="fas fa-search"></i>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Suggestions Dropdown */}
+                                                    {suggestions.length > 0 && (
+                                                        <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto divide-y divide-gray-100">
+                                                            {suggestions.map((item, idx) => (
+                                                                <div
+                                                                    key={idx}
+                                                                    onClick={() => selectSuggestion(item)}
+                                                                    className="px-4 py-3 hover:bg-orange-50/50 cursor-pointer transition text-left flex items-start gap-3"
+                                                                >
+                                                                    <i className="fas fa-map-pin text-[#E67E22] mt-1 text-sm flex-shrink-0"></i>
+                                                                    <div>
+                                                                        <p className="text-sm font-bold text-gray-800 uppercase">
+                                                                            DESA {item.village}, KEC. {item.district}
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500 uppercase">
+                                                                            {item.regency}, PROV. {item.province} {item.code ? `(${item.code})` : ''}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {searchQuery.trim().length >= 3 && suggestions.length === 0 && !searchLoading && (
+                                                        <div className="absolute z-50 left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-4 text-center text-sm text-gray-500">
+                                                            Tidak ditemukan hasil untuk "{searchQuery}". Coba ketik dengan benar atau <button type="button" onClick={() => setIsManualMode(true)} className="text-[#E67E22] font-semibold underline">input secara manual</button>.
+                                                        </div>
+                                                    )}
+                                                    
+                                                    <p className="text-xs text-gray-500 mt-2 text-left">
+                                                        * Cukup ketik nama desa/kelurahan atau kecamatan. Contoh: <strong className="text-gray-700">pajomblangan</strong> atau <strong className="text-gray-700">kedungwuni</strong>. Atau <button type="button" onClick={() => setIsManualMode(true)} className="text-[#E67E22] font-semibold underline hover:text-[#D35400]">Input secara manual</button> jika ada kendala.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        /* Manual Mode: Original 4 Cascading Dropdowns */
+                                        <>
+                                            <div className="md:col-span-2 flex justify-between items-center mb-1">
+                                                <span className="text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-md border border-orange-100 flex items-center gap-1.5">
+                                                    <i className="fas fa-keyboard"></i> Mode Input Manual
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsManualMode(false);
+                                                        set('provinsi', '');
+                                                        set('kota_kab', '');
+                                                        set('kecamatan', '');
+                                                        set('kelurahan_desa', '');
+                                                    }}
+                                                    className="text-xs text-[#E67E22] hover:text-[#D35400] font-semibold underline flex items-center gap-1"
+                                                >
+                                                    <i className="fas fa-search text-[10px]"></i> Kembali ke pencarian otomatis
+                                                </button>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Provinsi <span className="text-red-500">*</span></label>
+                                                <select value={form.provinsi || ''} onChange={e => { set('provinsi', e.target.value); set('kota_kab', ''); set('kecamatan', ''); set('kelurahan_desa', ''); setKota([]); setKecamatan([]); setKelurahan([]); if (e.target.value) loadKota(e.target.value); }} className={selectCls}>
+                                                    <option value="">-- Pilih Provinsi --</option>
+                                                    {provinsi.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <div style={{ opacity: form.provinsi ? 1 : 0.5, transition: 'opacity 0.3s' }}>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Kota/Kabupaten <span className="text-red-500">*</span></label>
+                                                <select value={form.kota_kab || ''} onChange={e => { set('kota_kab', e.target.value); set('kecamatan', ''); set('kelurahan_desa', ''); setKecamatan([]); setKelurahan([]); if (e.target.value) loadKecamatan(e.target.value); }} className={selectCls} disabled={!form.provinsi}>
+                                                    <option value="">{form.provinsi ? '-- Pilih Kota/Kabupaten --' : '⬆ Pilih Provinsi terlebih dahulu'}</option>
+                                                    {kota.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <div style={{ opacity: form.kota_kab ? 1 : 0.5, transition: 'opacity 0.3s' }}>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Kecamatan <span className="text-red-500">*</span></label>
+                                                <select value={form.kecamatan || ''} onChange={e => { set('kecamatan', e.target.value); set('kelurahan_desa', ''); setKelurahan([]); if (e.target.value) loadKelurahan(e.target.value); }} className={selectCls} disabled={!form.kota_kab}>
+                                                    <option value="">{form.kota_kab ? '-- Pilih Kecamatan --' : '⬆ Pilih Kota/Kabupaten terlebih dahulu'}</option>
+                                                    {kecamatan.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <div style={{ opacity: form.kecamatan ? 1 : 0.5, transition: 'opacity 0.3s' }}>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2 text-left">Kelurahan/Desa <span className="text-red-500">*</span></label>
+                                                <select value={form.kelurahan_desa || ''} onChange={e => set('kelurahan_desa', e.target.value)} className={selectCls} disabled={!form.kecamatan}>
+                                                    <option value="">{form.kecamatan ? '-- Pilih Kelurahan/Desa --' : '⬆ Pilih Kecamatan terlebih dahulu'}</option>
+                                                    {kelurahan.map(k => <option key={k.id} value={k.name}>{k.name}</option>)}
+                                                </select>
+                                            </div>
+                                        </>
+                                    )}
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Detail Alamat</label>
                                         <textarea value={form.alamat || ''} onChange={e => set('alamat', e.target.value)} className={inputCls} rows={2} placeholder="RT/RW, Nama Jalan, Nomor Rumah, dll" />
@@ -432,7 +607,7 @@ export default function FormPendaftaran() {
                                 <h3 className="text-md font-bold text-gray-800 mb-1">Upload Dokumen</h3>
                                 <p className="text-sm text-gray-500 mb-4">Upload dokumen dalam format PDF atau Gambar (JPG, PNG, max 2MB)</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {[['file_kk', 'Kartu Keluarga (KK)', true], ['file_ktp_ortu', 'KTP Orang Tua', true], ['file_akta', 'Akta Kelahiran', true], ['file_ijazah', 'Ijazah (Opsional)', false]].map(([key, label, required]) => {
+                                    {[['file_kk', 'Kartu Keluarga (KK) (Opsional)', false], ['file_ktp_ortu', 'KTP Orang Tua (Opsional)', false], ['file_akta', 'Akta Kelahiran (Opsional)', false], ['file_ijazah', 'Ijazah (Opsional)', false]].map(([key, label, required]) => {
                                         const file = files[key];
                                         return (
                                             <div key={key} className="flex flex-col">
@@ -508,38 +683,79 @@ export default function FormPendaftaran() {
 
                             {/* Kontak Wali */}
                             <div className="bg-white rounded-2xl shadow-sm p-6 mb-4">
-                                <h3 className="text-md font-bold text-gray-800 mb-4">Kontak Wali</h3>
+                                <h3 className="text-md font-bold text-gray-800 mb-4 text-left">Kontak Wali</h3>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">No. HP WhatsApp Wali <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2 text-left">No. HP WhatsApp Wali <span className="text-gray-400 font-normal">(Opsional)</span></label>
                                     <div className="flex">
                                         <span className="bg-gray-100 border border-r-0 border-gray-300 px-3 py-2 rounded-l-xl text-gray-600 text-sm font-medium">+62</span>
                                         <input type="tel" value={form.no_hp_wali || ''} onChange={e => set('no_hp_wali', e.target.value.replace(/\D/g, ''))} className={inputCls + " rounded-l-none flex-1"} placeholder="8xxxxxxxxxx" style={{ textTransform: 'none' }} />
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-1">Contoh: 812345678 (tanpa 0 di depan). Nomor ini akan menjadi username untuk login.</p>
+                                    <p className="text-xs text-gray-500 mt-1 text-left">Contoh: 812345678 (tanpa 0 di depan). Nomor ini akan menjadi username jika Anda memilih untuk membuat akun login.</p>
                                 </div>
                             </div>
 
                             {/* Buat Akun */}
-                            <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border-2 border-[#E67E22]/20">
-                                <h3 className="text-md font-bold text-gray-800 mb-1"><i className="fas fa-user-lock text-[#E67E22] mr-2"></i>Buat Akun</h3>
-                                <p className="text-sm text-gray-500 mb-4">Buat password untuk mengakses portal pendaftar</p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <input type={showPw.pw ? 'text' : 'password'} value={form.password || ''} onChange={e => set('password', e.target.value)} className={inputCls + " pr-10"} placeholder="Minimal 6 karakter" style={{ textTransform: 'none' }} />
-                                            <button type="button" onClick={() => setShowPw(p => ({ ...p, pw: !p.pw }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i className={`fas ${showPw.pw ? 'fa-eye-slash' : 'fa-eye'}`}></i></button>
-                                        </div>
+                            <div className="bg-white rounded-2xl shadow-sm p-6 mb-4 border-2 border-dashed border-gray-200">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div className="text-left">
+                                        <h3 className="text-md font-bold text-gray-800 flex items-center gap-2">
+                                            <i className="fas fa-user-lock text-[#E67E22]"></i>
+                                            Buat Akun Portal <span className="text-gray-400 font-normal text-xs">(Opsional)</span>
+                                        </h3>
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            Aktifkan jika Anda ingin masuk kembali ke sistem untuk mengedit atau memantau data pendaftaran nanti.
+                                        </p>
                                     </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password <span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <input type={showPw.confirm ? 'text' : 'password'} value={form.password_confirm || ''} onChange={e => set('password_confirm', e.target.value)} className={inputCls + " pr-10"} placeholder="Ulangi password" style={{ textTransform: 'none' }} />
-                                            <button type="button" onClick={() => setShowPw(p => ({ ...p, confirm: !p.confirm }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i className={`fas ${showPw.confirm ? 'fa-eye-slash' : 'fa-eye'}`}></i></button>
-                                        </div>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const nextVal = !buatAkun;
+                                            setBuatAkun(nextVal);
+                                            if (!nextVal) {
+                                                set('password', '');
+                                                set('password_confirm', '');
+                                            }
+                                        }}
+                                        className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex-shrink-0 border ${
+                                            buatAkun
+                                                ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'
+                                                : 'bg-orange-50 text-[#E67E22] border-orange-200 hover:bg-orange-100'
+                                        }`}
+                                    >
+                                        {buatAkun ? (
+                                            <><i className="fas fa-times mr-1"></i> Batal Buat Akun</>
+                                        ) : (
+                                            <><i className="fas fa-plus mr-1"></i> Buat Akun</>
+                                        )}
+                                    </button>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-3"><i className="fas fa-info-circle mr-1"></i>Setelah mendaftar, Anda dapat login menggunakan No. HP dan password ini untuk melihat/mengedit data pendaftaran.</p>
+
+                                {buatAkun && (
+                                    <div className="mt-6 pt-6 border-t border-gray-100 text-left">
+                                        <div className="bg-orange-50 border border-orange-200/50 rounded-xl p-3.5 mb-4 flex items-start gap-2.5">
+                                            <i className="fas fa-info-circle text-[#E67E22] mt-0.5 text-sm flex-shrink-0"></i>
+                                            <p className="text-xs text-orange-700">
+                                                * Bila membuat akun, kolom <strong>No. HP WhatsApp Wali</strong> di atas wajib diisi sebagai identitas masuk (username) Anda.
+                                            </p>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Password <span className="text-red-500">*</span></label>
+                                                <div className="relative">
+                                                    <input type={showPw.pw ? 'text' : 'password'} value={form.password || ''} onChange={e => set('password', e.target.value)} className={inputCls + " pr-10"} placeholder="Minimal 6 karakter" style={{ textTransform: 'none' }} />
+                                                    <button type="button" onClick={() => setShowPw(p => ({ ...p, pw: !p.pw }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i className={`fas ${showPw.pw ? 'fa-eye-slash' : 'fa-eye'}`}></i></button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password <span className="text-red-500">*</span></label>
+                                                <div className="relative">
+                                                    <input type={showPw.confirm ? 'text' : 'password'} value={form.password_confirm || ''} onChange={e => set('password_confirm', e.target.value)} className={inputCls + " pr-10"} placeholder="Ulangi password" style={{ textTransform: 'none' }} />
+                                                    <button type="button" onClick={() => setShowPw(p => ({ ...p, confirm: !p.confirm }))} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><i className={`fas ${showPw.confirm ? 'fa-eye-slash' : 'fa-eye'}`}></i></button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex gap-3">

@@ -114,9 +114,9 @@ class UserPortalController extends Controller
 
         // Document completion
         $documents = [
-            'file_kk'        => ['label' => 'Kartu Keluarga', 'required' => true],
-            'file_ktp_ortu'  => ['label' => 'KTP Orang Tua', 'required' => true],
-            'file_akta'      => ['label' => 'Akta Kelahiran', 'required' => true],
+            'file_kk'        => ['label' => 'Kartu Keluarga', 'required' => false],
+            'file_ktp_ortu'  => ['label' => 'KTP Orang Tua', 'required' => false],
+            'file_akta'      => ['label' => 'Akta Kelahiran', 'required' => false],
             'file_ijazah'    => ['label' => 'Ijazah', 'required' => false],
             'file_sertifikat'=> ['label' => 'Sertifikat', 'required' => false],
         ];

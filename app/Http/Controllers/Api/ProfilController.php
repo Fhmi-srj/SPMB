@@ -25,7 +25,7 @@ class ProfilController extends Controller
 
         $request->validate([
             'nama'     => 'required|string|max:100',
-            'username' => 'required|string|max:50|unique:users,username,' . $user->id,
+            'username' => 'required|string|max:50|unique:admin,username,' . $user->id,
         ]);
 
         $user->update($request->only(['nama', 'username']));
