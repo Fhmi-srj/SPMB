@@ -129,91 +129,117 @@ export default function AdminLayout({ children }) {
             </div>
 
             {/* Mobile Bottom Navigation */}
-            <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-                <div className="flex items-end justify-around px-2 pt-2 pb-3">
-                    <NavLink to="/admin/dashboard" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/dashboard') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
-                        <i className="fas fa-home text-xl"></i>
-                        <span className="text-xs font-medium">Dashboard</span>
-                    </NavLink>
-                    <NavLink to="/admin/pendaftaran" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/pendaftaran') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
-                        <i className="fas fa-users text-xl"></i>
-                        <span className="text-xs font-medium">Pendaftar</span>
-                    </NavLink>
-                    <button onClick={() => setDropupOpen(!dropupOpen)} className="flex flex-col items-center -mt-6 relative">
-                        <div className="w-14 h-14 bg-[#E67E22] rounded-full flex items-center justify-center shadow-lg hover:bg-[#d35400] transition">
-                            <i className={`fas ${dropupOpen ? 'fa-times' : 'fa-plus'} text-white text-2xl`}></i>
+            <nav className="md:hidden fixed bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md border border-gray-100/80 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] z-50">
+                <div className="flex items-center justify-around px-2 py-1.5">
+                    <NavLink to="/admin/dashboard" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-300 ${isActive('/admin/dashboard') ? 'text-[#E67E22] scale-105 font-semibold' : 'text-gray-400 hover:text-gray-600'}`}>
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 ${isActive('/admin/dashboard') ? 'bg-[#E67E22]/10' : ''}`}>
+                            <i className="fas fa-home text-lg"></i>
                         </div>
-                        <span className="text-xs font-medium text-gray-500 mt-1">Menu</span>
+                        <span className="text-[10px] font-semibold tracking-wide">Home</span>
+                    </NavLink>
+                    <NavLink to="/admin/pendaftaran" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-300 ${isActive('/admin/pendaftaran') ? 'text-[#E67E22] scale-105 font-semibold' : 'text-gray-400 hover:text-gray-600'}`}>
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 ${isActive('/admin/pendaftaran') ? 'bg-[#E67E22]/10' : ''}`}>
+                            <i className="fas fa-users text-lg"></i>
+                        </div>
+                        <span className="text-[10px] font-semibold tracking-wide">Pendaftar</span>
+                    </NavLink>
+                    <button onClick={() => setDropupOpen(!dropupOpen)} className="flex flex-col items-center -mt-6 relative z-50 select-none">
+                        <div className={`w-12 h-12 bg-gradient-to-tr ${dropupOpen ? 'from-red-500 to-rose-600 shadow-[0_4px_12px_rgba(239,68,68,0.3)]' : 'from-[#E67E22] to-[#FF9F43] shadow-[0_4px_12px_rgba(230,126,34,0.3)]'} rounded-full flex items-center justify-center transition-all duration-300 transform ${dropupOpen ? 'rotate-45' : ''}`}>
+                            <i className="fas fa-plus text-white text-xl"></i>
+                        </div>
+                        <span className="text-[10px] font-semibold text-gray-500 mt-1">Menu</span>
                     </button>
                     {isAdminRole ? (
-                        <NavLink to="/admin/transaksi" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/transaksi') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
-                            <i className="fas fa-money-bill-wave text-xl"></i>
-                            <span className="text-xs font-medium">Transaksi</span>
+                        <NavLink to="/admin/transaksi" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-300 ${isActive('/admin/transaksi') ? 'text-[#E67E22] scale-105 font-semibold' : 'text-gray-400 hover:text-gray-600'}`}>
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 ${isActive('/admin/transaksi') ? 'bg-[#E67E22]/10' : ''}`}>
+                                <i className="fas fa-money-bill-wave text-lg"></i>
+                            </div>
+                            <span className="text-[10px] font-semibold tracking-wide">Transaksi</span>
                         </NavLink>
                     ) : (
-                        <NavLink to="/admin/beasiswa" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/beasiswa') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
-                            <i className="fas fa-graduation-cap text-xl"></i>
-                            <span className="text-xs font-medium">Beasiswa</span>
+                        <NavLink to="/admin/beasiswa" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-300 ${isActive('/admin/beasiswa') ? 'text-[#E67E22] scale-105 font-semibold' : 'text-gray-400 hover:text-gray-600'}`}>
+                            <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 ${isActive('/admin/beasiswa') ? 'bg-[#E67E22]/10' : ''}`}>
+                                <i className="fas fa-graduation-cap text-lg"></i>
+                            </div>
+                            <span className="text-[10px] font-semibold tracking-wide">Beasiswa</span>
                         </NavLink>
                     )}
-                    <NavLink to="/admin/pengaturan" className={`flex flex-col items-center gap-1 px-3 py-2 ${isActive('/admin/pengaturan') ? 'text-[#E67E22]' : 'text-gray-500'} transition`}>
-                        <i className="fas fa-cog text-xl"></i>
-                        <span className="text-xs font-medium">Pengaturan</span>
+                    <NavLink to="/admin/pengaturan" className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-all duration-300 ${isActive('/admin/pengaturan') ? 'text-[#E67E22] scale-105 font-semibold' : 'text-gray-400 hover:text-gray-600'}`}>
+                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-colors duration-300 ${isActive('/admin/pengaturan') ? 'bg-[#E67E22]/10' : ''}`}>
+                            <i className="fas fa-cog text-lg"></i>
+                        </div>
+                        <span className="text-[10px] font-semibold tracking-wide">Setting</span>
                     </NavLink>
                 </div>
             </nav>
 
             {/* Dropup Overlay */}
-            {dropupOpen && <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setDropupOpen(false)}></div>}
+            {dropupOpen && <div className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={() => setDropupOpen(false)}></div>}
 
             {/* Dropup Menu */}
             {dropupOpen && (
-                <div className="md:hidden fixed bottom-20 left-4 right-4 bg-white rounded-2xl shadow-2xl z-50">
+                <div className="md:hidden fixed bottom-24 left-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-gray-100 z-50 overflow-hidden">
                     <div className="p-4">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-gray-800">Menu Lainnya</h3>
-                            <button onClick={() => setDropupOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <i className="fas fa-times text-xl"></i>
-                            </button>
+                        <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
+                            <h3 className="font-bold text-gray-800 text-sm tracking-wide">Pintasan Menu</h3>
+                            <span className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Akses Cepat</span>
                         </div>
-                        <div className="grid grid-cols-3 gap-3">
+                        <div className="grid grid-cols-3 gap-2">
                             {isAdminRole && (
                                 <>
-                                    <NavLink to="/admin/biaya" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                        <i className="fas fa-money-bill text-2xl"></i>
-                                        <span className="text-xs font-medium text-center">Biaya</span>
+                                    <NavLink to="/admin/biaya" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm">
+                                            <i className="fas fa-money-bill text-lg"></i>
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Biaya</span>
                                     </NavLink>
-                                    <NavLink to="/admin/perlengkapan" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                        <i className="fas fa-box text-2xl"></i>
-                                        <span className="text-xs font-medium text-center">Perlengkapan</span>
+                                    <NavLink to="/admin/perlengkapan" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-sm">
+                                            <i className="fas fa-box text-lg"></i>
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Perlengkapan</span>
                                     </NavLink>
-                                    <NavLink to="/admin/pos-keuangan" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                        <i className="fas fa-chart-pie text-2xl"></i>
-                                        <span className="text-xs font-medium text-center">Pos Keuangan</span>
+                                    <NavLink to="/admin/pos-keuangan" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                        <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shadow-sm">
+                                            <i className="fas fa-chart-pie text-lg"></i>
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Pos Keuangan</span>
                                     </NavLink>
                                 </>
                             )}
-                            <NavLink to="/admin/beasiswa" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                <i className="fas fa-graduation-cap text-2xl"></i>
-                                <span className="text-xs font-medium text-center">Beasiswa</span>
+                            <NavLink to="/admin/beasiswa" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+                                    <i className="fas fa-graduation-cap text-lg"></i>
+                                </div>
+                                <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Beasiswa</span>
                             </NavLink>
-                            <NavLink to="/admin/kontak" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                <i className="fas fa-phone-alt text-2xl"></i>
-                                <span className="text-xs font-medium text-center">Kontak</span>
+                            <NavLink to="/admin/kontak" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-600 flex items-center justify-center shadow-sm">
+                                    <i className="fas fa-phone-alt text-lg"></i>
+                                </div>
+                                <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Kontak</span>
                             </NavLink>
-                            <NavLink to="/admin/aktivitas" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                <i className="fas fa-history text-2xl"></i>
-                                <span className="text-xs font-medium text-center">Log Aktivitas</span>
-                            </NavLink>
-                            {isSuperAdmin && (
-                                <NavLink to="/admin/kelola-user" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                    <i className="fas fa-user-cog text-2xl"></i>
-                                    <span className="text-xs font-medium text-center">Kelola User</span>
+                            {isAdminRole && (
+                                <NavLink to="/admin/aktivitas" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                    <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-sm">
+                                        <i className="fas fa-history text-lg"></i>
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Aktivitas</span>
                                 </NavLink>
                             )}
-                            <NavLink to="/admin/profil" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-2 p-3 rounded-xl hover:bg-gray-50 transition text-gray-600">
-                                <i className="fas fa-user text-2xl"></i>
-                                <span className="text-xs font-medium text-center">Profil</span>
+                            {isSuperAdmin && (
+                                <NavLink to="/admin/kelola-user" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                    <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shadow-sm">
+                                        <i className="fas fa-user-cog text-lg"></i>
+                                    </div>
+                                    <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Kelola User</span>
+                                </NavLink>
+                            )}
+                            <NavLink to="/admin/profil" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center shadow-sm">
+                                    <i className="fas fa-user text-lg"></i>
+                                </div>
+                                <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Profil</span>
                             </NavLink>
                         </div>
                     </div>
