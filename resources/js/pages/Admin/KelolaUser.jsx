@@ -70,7 +70,7 @@ export default function KelolaUser() {
     const roleBadge = (role) => {
         const cls = { super_admin: 'bg-red-100 text-red-700', admin: 'bg-blue-100 text-blue-700', panitia: 'bg-green-100 text-green-700' };
         const lbl = { super_admin: 'Super Admin', admin: 'Admin', panitia: 'Panitia' };
-        return <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${cls[role] || 'bg-gray-100 text-gray-700'}`}>{lbl[role] || role}</span>;
+        return <span className={`inline-block px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold rounded-full ${cls[role] || 'bg-gray-100 text-gray-700'}`}>{lbl[role] || role}</span>;
     };
 
     const closeModal = () => { setModal(null); setForm({}); setSelected(null); };
@@ -92,41 +92,41 @@ export default function KelolaUser() {
             {/* Users Table */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full text-[11px] sm:text-sm">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Username</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Role</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">No</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nama</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Username</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Role</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Dibuat</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {users.map((user, idx) => (
                                 <tr key={user.id} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 text-sm text-gray-500">{idx + 1}</td>
-                                    <td className="px-4 py-3 text-sm font-medium text-gray-800">
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500">{idx + 1}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 font-medium text-gray-800 leading-tight">
                                         {user.nama}
-                                        {user.id === currentUser?.id && <span className="text-xs text-[#E67E22] font-normal ml-1">(Anda)</span>}
+                                        {user.id === currentUser?.id && <span className="text-[10px] text-[#E67E22] font-normal ml-1">(Anda)</span>}
                                     </td>
-                                    <td className="px-4 py-3 text-sm text-gray-600">{user.username}</td>
-                                    <td className="px-4 py-3 text-center">{roleBadge(user.role)}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-500">{user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID') : '-'}</td>
-                                    <td className="px-4 py-3 text-center">
-                                        <button onClick={() => openEdit(user)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition" title="Edit"><i className="fas fa-edit"></i></button>
-                                        <button onClick={() => openResetPw(user)} className="p-2 text-yellow-600 hover:bg-yellow-100 rounded-lg transition" title="Reset Password"><i className="fas fa-key"></i></button>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 leading-tight">{user.username}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">{roleBadge(user.role)}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500">{user.created_at ? new Date(user.created_at).toLocaleDateString('id-ID') : '-'}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap">
+                                        <button onClick={() => openEdit(user)} className="p-1 sm:p-2 text-blue-600 hover:bg-blue-100 rounded transition" title="Edit"><i className="fas fa-edit text-[10px] sm:text-sm"></i></button>
+                                        <button onClick={() => openResetPw(user)} className="p-1 sm:p-2 text-yellow-600 hover:bg-yellow-100 rounded transition" title="Reset Password"><i className="fas fa-key text-[10px] sm:text-sm"></i></button>
                                         {user.id !== currentUser?.id && (
-                                            <button onClick={() => openDelete(user)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition" title="Hapus"><i className="fas fa-trash"></i></button>
+                                            <button onClick={() => openDelete(user)} className="p-1 sm:p-2 text-red-600 hover:bg-red-100 rounded transition" title="Hapus"><i className="fas fa-trash text-[10px] sm:text-sm"></i></button>
                                         )}
                                     </td>
                                 </tr>
                             ))}
                             {users.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="px-4 py-8 text-center text-gray-500 text-sm">
-                                        <i className="fas fa-users text-3xl mb-2 text-gray-300 block"></i>
+                                    <td colSpan={6} className="px-2 py-8 text-center text-gray-500 text-xs sm:text-sm">
+                                        <i className="fas fa-users text-2xl mb-2 text-gray-300 block"></i>
                                         <p>Belum ada user</p>
                                     </td>
                                 </tr>

@@ -101,16 +101,16 @@ export default function Biaya() {
                 );
             }
             items.push(
-                <tr key={row.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-500">{no++}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{row.kategori}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-800">{row.nama_item}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{fmt(row.biaya_pondok)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{fmt(row.biaya_smp)}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600 text-right">{fmt(row.biaya_ma)}</td>
-                    <td className="px-4 py-3 text-center">
-                        <button onClick={() => { setEditing(row); setForm({ ...row }); setShowEdit(true); }} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><i className="fas fa-edit"></i></button>
-                        <button onClick={() => { setDeleting(row); setShowDelete(true); }} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash"></i></button>
+                <tr key={row.id} className="hover:bg-gray-50 text-[11px] sm:text-sm">
+                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500">{no++}</td>
+                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600">{row.kategori}</td>
+                    <td className="px-2 py-2 sm:px-4 sm:py-3 font-medium text-gray-800 leading-tight">{row.nama_item}</td>
+                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 text-right">{fmt(row.biaya_pondok)}</td>
+                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 text-right">{fmt(row.biaya_smp)}</td>
+                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 text-right">{fmt(row.biaya_ma)}</td>
+                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap">
+                        <button onClick={() => { setEditing(row); setForm({ ...row }); setShowEdit(true); }} className="p-1 sm:p-2 text-blue-600 hover:bg-blue-100 rounded transition"><i className="fas fa-edit text-[10px] sm:text-sm"></i></button>
+                        <button onClick={() => { setDeleting(row); setShowDelete(true); }} className="p-1 sm:p-2 text-red-600 hover:bg-red-100 rounded transition"><i className="fas fa-trash text-[10px] sm:text-sm"></i></button>
                     </td>
                 </tr>
             );
@@ -169,25 +169,25 @@ export default function Biaya() {
                     {/* Biaya Table */}
                     <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Item</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pondok</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">SMP</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">MA</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">No</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nama Item</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Pondok</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">SMP</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">MA</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {renderBiayaRows()}
-                                    <tr className="bg-[#E67E22] text-white font-bold">
-                                        <td colSpan={3} className="px-4 py-3 text-sm">TOTAL</td>
-                                        <td className="px-4 py-3 text-sm text-right">Rp{totals.pondok.toLocaleString('id-ID')}</td>
-                                        <td className="px-4 py-3 text-sm text-right">Rp{totals.smp.toLocaleString('id-ID')}</td>
-                                        <td className="px-4 py-3 text-sm text-right">Rp{totals.ma.toLocaleString('id-ID')}</td>
+                                    <tr className="bg-[#E67E22] text-white font-bold text-[11px] sm:text-sm">
+                                        <td colSpan={3} className="px-2 py-2 sm:px-4 sm:py-3">TOTAL</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right">Rp{totals.pondok.toLocaleString('id-ID')}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right">Rp{totals.smp.toLocaleString('id-ID')}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-right">Rp{totals.ma.toLocaleString('id-ID')}</td>
                                         <td></td>
                                     </tr>
                                 </tbody>
@@ -212,30 +212,30 @@ export default function Biaya() {
                                 <table className="w-full">
                                     <thead className="bg-gray-50">
                                         <tr>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Perlengkapan</th>
-                                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Urutan</th>
-                                            <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                            <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">No</th>
+                                            <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nama Perlengkapan</th>
+                                            <th className="px-2 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nominal</th>
+                                            <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Urutan</th>
+                                            <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
                                         {perlengkapanList.length === 0 ? (
-                                            <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-500 text-sm">
-                                                <i className="fas fa-box-open text-3xl mb-2 text-gray-300 block"></i>
+                                            <tr><td colSpan={5} className="px-2 py-8 text-center text-gray-500 text-xs sm:text-sm">
+                                                <i className="fas fa-box-open text-2xl mb-2 text-gray-300 block"></i>
                                                 <p>Belum ada perlengkapan tambahan</p>
                                             </td></tr>
                                         ) : perlengkapanList.map((item, i) => (
-                                            <tr key={item.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3 text-sm text-gray-500">{i + 1}</td>
-                                                <td className="px-4 py-3 text-sm font-medium text-gray-800">{item.nama_item}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-600 text-right">Rp{Number(item.nominal).toLocaleString('id-ID')}</td>
-                                                <td className="px-4 py-3 text-sm text-gray-600 text-center">{item.urutan}</td>
-                                                <td className="px-4 py-3 text-center">
+                                            <tr key={item.id} className="hover:bg-gray-50 text-[11px] sm:text-sm">
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500">{i + 1}</td>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 font-medium text-gray-800 leading-tight">{item.nama_item}</td>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 text-right">Rp{Number(item.nominal).toLocaleString('id-ID')}</td>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 text-center">{item.urutan}</td>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap">
                                                     <button onClick={() => { setEditingP(item); setFormP({ nama_item: item.nama_item, nominal: item.nominal, urutan: item.urutan }); setShowEditP(true); }}
-                                                        className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><i className="fas fa-edit"></i></button>
+                                                        className="p-1 sm:p-2 text-blue-600 hover:bg-blue-100 rounded transition"><i className="fas fa-edit text-[10px] sm:text-sm"></i></button>
                                                     <button onClick={() => { setDeletingP(item); setShowDeleteP(true); }}
-                                                        className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash"></i></button>
+                                                        className="p-1 sm:p-2 text-red-600 hover:bg-red-100 rounded transition"><i className="fas fa-trash text-[10px] sm:text-sm"></i></button>
                                                 </td>
                                             </tr>
                                         ))}

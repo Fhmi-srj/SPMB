@@ -113,14 +113,14 @@ export default function Aktivitas() {
                 ) : (
                     <>
                         <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full text-[11px] sm:text-sm">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Admin</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">IP</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Admin</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">IP</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
@@ -129,17 +129,17 @@ export default function Aktivitas() {
                                         const color = ACTION_COLORS[row.action] ?? 'bg-gray-100 text-gray-700';
                                         return (
                                             <tr key={row.id} className="hover:bg-gray-50">
-                                                <td className="px-4 py-3 text-sm text-gray-500">
-                                                    {dt.day}<br /><span className="text-xs">{dt.time}</span>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500">
+                                                    {dt.day}<br /><span className="text-[10px] sm:text-xs">{dt.time}</span>
                                                 </td>
-                                                <td className="px-4 py-3 text-sm font-medium text-gray-800">
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 font-medium text-gray-800 leading-tight">
                                                     {row.user?.nama ?? row.admin_nama ?? 'System'}
                                                 </td>
-                                                <td className="px-4 py-3">
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${color}`}>{row.action}</span>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium ${color}`}>{row.action}</span>
                                                 </td>
-                                                <td className="px-4 py-3 text-sm text-gray-600">{row.description}</td>
-                                                <td className="px-4 py-3 text-xs text-gray-400 font-mono">{row.ip_address}</td>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 leading-tight">{row.description}</td>
+                                                <td className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-xs text-gray-400 font-mono">{row.ip_address}</td>
                                             </tr>
                                         );
                                     })}

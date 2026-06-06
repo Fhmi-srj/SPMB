@@ -108,29 +108,29 @@ export default function Perlengkapan() {
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full text-[11px] sm:text-sm">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">No</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-12 bg-gray-50 z-10">Nama</th>
-                                <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">JK</th>
-                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lembaga</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">No</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase sticky left-12 bg-gray-50 z-10">Nama</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">JK</th>
+                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Lembaga</th>
                                 {items.map(item => (
-                                    <th key={item.id} className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">{item.nama_item}</th>
+                                    <th key={item.id} className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase leading-tight">{item.nama_item}</th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {peserta.map((p, idx) => (
                                 <tr key={p.id} className="hover:bg-gray-50">
-                                    <td className="px-4 py-3 text-sm text-gray-500 sticky left-0 bg-white z-10">{idx + 1}</td>
-                                    <td className="px-4 py-3 text-sm font-medium text-gray-800 sticky left-12 bg-white z-10">{p.nama}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-600 text-center">{p.jenis_kelamin === 'L' ? 'L' : 'P'}</td>
-                                    <td className="px-4 py-3 text-sm text-gray-600">{p.lembaga}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500 sticky left-0 bg-white z-10">{idx + 1}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 font-medium text-gray-800 sticky left-12 bg-white z-10 leading-tight">{p.nama}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 text-center">{p.jenis_kelamin === 'L' ? 'L' : 'P'}</td>
+                                    <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600">{p.lembaga}</td>
                                     {items.map(item => {
                                         const isChecked = p.perlengkapan && p.perlengkapan[item.id] == 1;
                                         return (
-                                            <td key={item.id} className="px-4 py-3 text-center">
+                                            <td key={item.id} className="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                                 <label className="toggle-switch">
                                                     <input type="checkbox" checked={isChecked} onChange={() => togglePerlengkapan(p.id, item.id, isChecked, p.nama, item.nama_item)} />
                                                     <span className="toggle-slider"></span>
@@ -142,8 +142,8 @@ export default function Perlengkapan() {
                             ))}
                             {peserta.length === 0 && (
                                 <tr>
-                                    <td colSpan={4 + items.length} className="px-4 py-8 text-center text-gray-500 text-sm">
-                                        <i className="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>
+                                    <td colSpan={4 + items.length} className="px-2 py-8 text-center text-gray-500 text-xs sm:text-sm">
+                                        <i className="fas fa-inbox text-2xl mb-2 text-gray-300 block"></i>
                                         <p>Tidak ada data peserta</p>
                                     </td>
                                 </tr>

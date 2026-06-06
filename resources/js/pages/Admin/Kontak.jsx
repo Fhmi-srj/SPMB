@@ -90,29 +90,31 @@ export default function Kontak() {
             {loading ? (
                 <div className="flex items-center justify-center h-32"><div className="w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full animate-spin"></div></div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {data.map(row => (
-                        <div key={row.id} className="bg-white rounded-xl shadow-sm p-4">
-                            <div className="flex items-start justify-between mb-3">
-                                <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                                    <i className="fab fa-whatsapp text-green-600 text-2xl"></i>
+                        <div key={row.id} className="bg-white rounded-xl shadow-sm p-3 flex flex-col justify-between text-left">
+                            <div>
+                                <div className="flex items-start justify-between mb-2">
+                                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i className="fab fa-whatsapp text-green-600 text-lg"></i>
+                                    </div>
+                                    <div className="flex gap-0.5">
+                                        <button onClick={() => openEdit(row)} className="p-1 text-blue-600 hover:bg-blue-100 rounded transition" title="Edit"><i className="fas fa-edit text-xs"></i></button>
+                                        <button onClick={() => openDelete(row)} className="p-1 text-red-600 hover:bg-red-100 rounded transition" title="Hapus"><i className="fas fa-trash text-xs"></i></button>
+                                    </div>
                                 </div>
-                                <div className="flex gap-1">
-                                    <button onClick={() => openEdit(row)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><i className="fas fa-edit"></i></button>
-                                    <button onClick={() => openDelete(row)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash"></i></button>
-                                </div>
+                                <span className="px-1.5 py-0.5 bg-[#E67E22]/10 text-[#E67E22] rounded text-[10px] sm:text-xs font-medium">{row.lembaga}</span>
+                                <h3 className="font-semibold text-gray-800 text-xs sm:text-sm mt-1.5 leading-tight">{row.nama}</h3>
+                                <p className="text-gray-500 text-[10px] sm:text-sm mt-0.5">{row.no_whatsapp}</p>
                             </div>
-                            <span className="px-2 py-1 bg-[#E67E22]/10 text-[#E67E22] rounded-full text-xs font-medium">{row.lembaga}</span>
-                            <h3 className="font-semibold text-gray-800 mt-2">{row.nama}</h3>
-                            <p className="text-gray-500 text-sm">{row.no_whatsapp}</p>
                             {row.link_wa && (
-                                <a href={row.link_wa} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-green-600 text-xs mt-2 hover:underline">
-                                    <i className="fas fa-external-link-alt"></i>Buka Link
+                                <a href={row.link_wa} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-green-600 text-[10px] sm:text-xs mt-2 hover:underline">
+                                    <i className="fas fa-external-link-alt text-[9px]"></i>Buka Link
                                 </a>
                             )}
                         </div>
                     ))}
-                    {data.length === 0 && <div className="col-span-3 text-center py-10 text-gray-400">Belum ada data kontak</div>}
+                    {data.length === 0 && <div className="col-span-2 md:col-span-3 text-center py-10 text-gray-400 text-xs sm:text-sm">Belum ada data kontak</div>}
                 </div>
             )}
 
