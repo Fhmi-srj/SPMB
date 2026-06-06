@@ -149,16 +149,14 @@ class PendaftaranController extends Controller
             'lembaga' => 'required|in:SMP NU BP,MA ALHIKAM',
             'jenis_kelamin' => 'required|in:L,P',
             'status_mukim' => 'required|in:PONDOK PP MAMBAUL HUDA,PONDOK SELAIN PP MAMBAUL HUDA,TIDAK PONDOK',
-            'no_hp_wali' => 'nullable|required_with:password|string|max:20|unique:pendaftaran,no_hp_wali',
-            'password' => 'nullable|required_with:no_hp_wali|string|min:6',
+            'no_hp_wali' => 'nullable|required_with:password|string|max:20',
+            'password' => 'nullable|string|min:6',
         ], [
             'nama.required' => 'Nama lengkap wajib diisi.',
             'lembaga.required' => 'Lembaga wajib dipilih.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
             'status_mukim.required' => 'Status mukim wajib dipilih.',
             'no_hp_wali.required_with' => 'Nomor HP Wali wajib diisi jika Anda membuat akun.',
-            'no_hp_wali.unique' => 'Nomor HP Wali ini sudah terdaftar dalam sistem. Silakan gunakan nomor lain atau login menggunakan akun yang sudah ada.',
-            'password.required_with' => 'Password wajib diisi jika Anda memasukkan nomor HP.',
             'password.min' => 'Password minimal terdiri dari 6 karakter.',
         ]);
 
@@ -235,9 +233,7 @@ class PendaftaranController extends Controller
 
         $request->validate([
             'nama' => 'sometimes|required|string|max:100',
-            'no_hp_wali' => 'sometimes|required|string|max:20|unique:pendaftaran,no_hp_wali,' . $id,
-        ], [
-            'no_hp_wali.unique' => 'Nomor HP Wali ini sudah terdaftar pada siswa lain.',
+            'no_hp_wali' => 'sometimes|required|string|max:20',
         ]);
 
         $allowedFields = [

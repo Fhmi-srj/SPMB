@@ -137,13 +137,13 @@ export default function FormPendaftaran() {
         if (s === 2) {
             if (buatAkun) {
                 if (!form.no_hp_wali?.trim()) errors.push('No. HP WhatsApp Wali harus diisi untuk membuat akun');
-                else if (form.no_hp_wali.length < 9) errors.push('No. HP minimal 9 digit');
+                else if (form.no_hp_wali.length < 5) errors.push('No. HP minimal 5 digit');
                 if (!form.password?.trim()) errors.push('Password harus diisi');
                 else if (form.password.length < 6) errors.push('Password minimal 6 karakter');
                 if (form.password !== form.password_confirm) errors.push('Konfirmasi Password tidak cocok');
             } else {
-                if (form.no_hp_wali?.trim() && form.no_hp_wali.length < 9) {
-                    errors.push('No. HP WhatsApp Wali minimal 9 digit jika diisi');
+                if (form.no_hp_wali?.trim() && form.no_hp_wali.length < 5) {
+                    errors.push('No. HP WhatsApp Wali minimal 5 digit jika diisi');
                 }
             }
         }
