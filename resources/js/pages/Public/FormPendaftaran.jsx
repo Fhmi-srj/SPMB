@@ -82,19 +82,7 @@ export default function FormPendaftaran() {
         // Load draft
         const draft = localStorage.getItem('pendaftaran_draft');
         if (draft) {
-            try {
-                const parsed = JSON.parse(draft);
-                // Convert YYYY-MM-DD from old draft format to DD/MM/YYYY
-                ['tanggal_lahir', 'tanggal_lahir_ayah', 'tanggal_lahir_ibu'].forEach(key => {
-                    if (parsed[key] && parsed[key].includes('-')) {
-                        const parts = parsed[key].split('-');
-                        if (parts.length === 3 && parts[0].length === 4) {
-                            parsed[key] = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                        }
-                    }
-                });
-                setForm(parsed);
-            } catch { }
+            try { setForm(JSON.parse(draft)); } catch { }
         }
         // Load provinsi
         fetch('/api/wilayah?type=provinsi').then(r => r.json()).then(d => setProvinsi(d || [])).catch(() => { });
@@ -109,26 +97,6 @@ export default function FormPendaftaran() {
     }, [form]);
 
     const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
-
-    const handleDateChange = (field, value) => {
-        // Keep only digits and slashes
-        let clean = value.replace(/[^0-9/]/g, '');
-        // Remove consecutive slashes
-        clean = clean.replace(/\/+/g, '/');
-
-        const digits = clean.replace(/\D/g, '');
-        let formatted = '';
-        if (digits.length > 0) {
-            formatted += digits.substring(0, 2);
-        }
-        if (digits.length > 2) {
-            formatted += '/' + digits.substring(2, 4);
-        }
-        if (digits.length > 4) {
-            formatted += '/' + digits.substring(4, 8);
-        }
-        setForm(p => ({ ...p, [field]: formatted }));
-    };
     const setFile = (k, f) => setFiles(p => ({ ...p, [k]: f }));
 
     const loadKota = async (provName) => {
@@ -165,17 +133,8 @@ export default function FormPendaftaran() {
             if (!form.kota_kab) errors.push('Kota/Kabupaten harus diisi');
             if (!form.kecamatan) errors.push('Kecamatan harus diisi');
             if (!form.kelurahan_desa) errors.push('Kelurahan/Desa harus diisi');
-            if (form.tanggal_lahir && !/^\d{2}\/\d{2}\/\d{4}$/.test(form.tanggal_lahir)) {
-                errors.push('Format Tanggal Lahir harus DD/MM/YYYY (contoh: 08/09/2013)');
-            }
         }
         if (s === 2) {
-            if (form.tanggal_lahir_ayah && !/^\d{2}\/\d{2}\/\d{4}$/.test(form.tanggal_lahir_ayah)) {
-                errors.push('Format Tanggal Lahir Ayah harus DD/MM/YYYY (contoh: 17/08/1975)');
-            }
-            if (form.tanggal_lahir_ibu && !/^\d{2}\/\d{2}\/\d{4}$/.test(form.tanggal_lahir_ibu)) {
-                errors.push('Format Tanggal Lahir Ibu harus DD/MM/YYYY (contoh: 21/04/1980)');
-            }
             if (buatAkun) {
                 if (!form.no_hp_wali?.trim()) errors.push('No. HP WhatsApp Wali harus diisi untuk membuat akun');
                 else if (form.no_hp_wali.length < 5) errors.push('No. HP minimal 5 digit');
@@ -216,18 +175,7 @@ export default function FormPendaftaran() {
                 ?.split('=')[1];
 
             const fd = new FormData();
-            Object.entries(form).forEach(([k, v]) => {
-                if (v !== undefined && v !== null) {
-                    let val = v;
-                    if (['tanggal_lahir', 'tanggal_lahir_ayah', 'tanggal_lahir_ibu'].includes(k) && typeof v === 'string') {
-                        const parts = v.split('/');
-                        if (parts.length === 3) {
-                            val = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                        }
-                    }
-                    fd.append(k, val);
-                }
-            });
+            Object.entries(form).forEach(([k, v]) => { if (v !== undefined && v !== null) fd.append(k, v); });
             Object.entries(files).forEach(([k, v]) => { if (v) fd.append(k, v); });
 
             const res = await fetch('/api/pendaftaran', {
@@ -353,9 +301,9 @@ export default function FormPendaftaran() {
                                         <input type="text" value={form.tempat_lahir || ''} onChange={e => set('tempat_lahir', e.target.value)} className={inputCls} placeholder="Kota kelahiran" />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label>
-                                        <input type="text" maxLength="10" placeholder="DD/MM/YYYY" value={form.tanggal_lahir || ''} onChange={e => handleDateChange('tanggal_lahir', e.target.value)} className={inputCls} style={{ textTransform: 'none' }} />
-                                    </div>
+                                         <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label>
+                                         <input type="date" value={form.tanggal_lahir || ''} onChange={e => set('tanggal_lahir', e.target.value)} className={inputCls} style={{ textTransform: 'none' }} />
+                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Kelamin <span className="text-red-500">*</span></label>
                                         <select value={form.jenis_kelamin || ''} onChange={e => set('jenis_kelamin', e.target.value)} className={selectCls}>
@@ -624,7 +572,7 @@ export default function FormPendaftaran() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-2">Nama Ayah</label><input type="text" value={form.nama_ayah || ''} onChange={e => set('nama_ayah', e.target.value)} className={inputCls} placeholder="Nama lengkap ayah" /></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Tempat Lahir</label><input type="text" value={form.tempat_lahir_ayah || ''} onChange={e => set('tempat_lahir_ayah', e.target.value)} className={inputCls} /></div>
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label><input type="text" maxLength="10" placeholder="DD/MM/YYYY" value={form.tanggal_lahir_ayah || ''} onChange={e => handleDateChange('tanggal_lahir_ayah', e.target.value)} className={inputCls} style={{ textTransform: 'none' }} /></div>
+                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label><input type="date" value={form.tanggal_lahir_ayah || ''} onChange={e => set('tanggal_lahir_ayah', e.target.value)} className={inputCls} style={{ textTransform: 'none' }} /></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">NIK Ayah</label><input type="text" value={form.nik_ayah || ''} onChange={e => set('nik_ayah', e.target.value)} className={inputCls} placeholder="16 digit NIK" /></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Pekerjaan</label><input type="text" value={form.pekerjaan_ayah || ''} onChange={e => set('pekerjaan_ayah', e.target.value)} className={inputCls} /></div>
                                     <div>
@@ -642,7 +590,7 @@ export default function FormPendaftaran() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2"><label className="block text-sm font-medium text-gray-700 mb-2">Nama Ibu</label><input type="text" value={form.nama_ibu || ''} onChange={e => set('nama_ibu', e.target.value)} className={inputCls} placeholder="Nama lengkap ibu" /></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Tempat Lahir</label><input type="text" value={form.tempat_lahir_ibu || ''} onChange={e => set('tempat_lahir_ibu', e.target.value)} className={inputCls} /></div>
-                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label><input type="text" maxLength="10" placeholder="DD/MM/YYYY" value={form.tanggal_lahir_ibu || ''} onChange={e => handleDateChange('tanggal_lahir_ibu', e.target.value)} className={inputCls} style={{ textTransform: 'none' }} /></div>
+                                    <div><label className="block text-sm font-medium text-gray-700 mb-2">Tanggal Lahir</label><input type="date" value={form.tanggal_lahir_ibu || ''} onChange={e => set('tanggal_lahir_ibu', e.target.value)} className={inputCls} style={{ textTransform: 'none' }} /></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">NIK Ibu</label><input type="text" value={form.nik_ibu || ''} onChange={e => set('nik_ibu', e.target.value)} className={inputCls} placeholder="16 digit NIK" /></div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">Pekerjaan</label><input type="text" value={form.pekerjaan_ibu || ''} onChange={e => set('pekerjaan_ibu', e.target.value)} className={inputCls} /></div>
                                     <div>
