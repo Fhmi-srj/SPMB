@@ -231,9 +231,27 @@ class PendaftaranController extends Controller
     {
         $pendaftaran = Pendaftaran::findOrFail($id);
 
+        if ($request->has('no_hp_wali')) {
+            if ($request->filled('no_hp_wali')) {
+                $phone = preg_replace('/[^0-9]/', '', $request->no_hp_wali);
+                if (!empty($phone)) {
+                    if (str_starts_with($phone, '62')) {
+                        $phone = '0' . substr($phone, 2);
+                    } elseif (!str_starts_with($phone, '0')) {
+                        $phone = '0' . $phone;
+                    }
+                    $request->merge(['no_hp_wali' => $phone]);
+                } else {
+                    $request->merge(['no_hp_wali' => null]);
+                }
+            } else {
+                $request->merge(['no_hp_wali' => null]);
+            }
+        }
+
         $request->validate([
             'nama' => 'sometimes|required|string|max:100',
-            'no_hp_wali' => 'sometimes|required|string|max:20',
+            'no_hp_wali' => 'sometimes|nullable|string|max:20',
         ]);
 
         $allowedFields = [
@@ -467,8 +485,10 @@ class PendaftaranController extends Controller
     }
 
     /** Helper: kirim WhatsApp */
-    private function sendWhatsApp(string $phone, string $message): void
+    private function sendWhatsApp(?string $phone, string $message): void
     {
+        if (empty($phone)) return;
+
         $url = config('services.mpwa.url');
         $apiKey = config('services.mpwa.api_key');
         $sender = config('services.mpwa.sender');
