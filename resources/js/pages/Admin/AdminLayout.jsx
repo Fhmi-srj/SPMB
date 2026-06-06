@@ -174,11 +174,11 @@ export default function AdminLayout({ children }) {
             </nav>
 
             {/* Dropup Overlay */}
-            {dropupOpen && <div className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40" onClick={() => setDropupOpen(false)}></div>}
+            {dropupOpen && <div className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30 animate-fade-in" onClick={() => setDropupOpen(false)}></div>}
 
             {/* Dropup Menu */}
             {dropupOpen && (
-                <div className="md:hidden fixed bottom-24 left-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-gray-100 z-50 overflow-hidden">
+                <div className="md:hidden fixed bottom-24 left-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] border border-gray-100 z-40 overflow-hidden animate-fade-in-up">
                     <div className="p-4">
                         <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
                             <h3 className="font-bold text-gray-800 text-sm tracking-wide">Pintasan Menu</h3>
@@ -245,6 +245,30 @@ export default function AdminLayout({ children }) {
                     </div>
                 </div>
             )}
+
+            {/* Custom Animations for Dropup Menu */}
+            <style>{`
+                @keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(12px) scale(0.96);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                .animate-fade-in-up {
+                    animation: fadeInUp 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+                .animate-fade-in {
+                    animation: fadeIn 0.2s ease-out forwards;
+                }
+            `}</style>
         </div>
     );
 }
