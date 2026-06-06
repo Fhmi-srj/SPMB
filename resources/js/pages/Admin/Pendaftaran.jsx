@@ -14,7 +14,7 @@ const STATUS_LABELS = { pending: 'Pending', verified: 'Terverifikasi', rejected:
 function Modal({ show, onClose, children, title, footer }) {
     if (!show) return null;
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between p-4 sm:p-5 border-b flex-shrink-0">
                     <h3 className="font-semibold text-gray-800">{title}</h3>

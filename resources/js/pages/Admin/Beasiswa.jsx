@@ -134,7 +134,7 @@ export default function Beasiswa() {
 
             {/* Add Modal */}
             {showAdd && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-4 border-b">
                             <h3 className="font-semibold text-gray-800">Tambah Beasiswa</h3>
@@ -155,7 +155,7 @@ export default function Beasiswa() {
 
             {/* Edit Modal */}
             {showEdit && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-4 border-b">
                             <h3 className="font-semibold text-gray-800">Edit Beasiswa</h3>
@@ -176,7 +176,7 @@ export default function Beasiswa() {
 
             {/* Delete Modal */}
             {showDelete && deleting && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i className="fas fa-trash-alt text-red-500 text-2xl"></i>

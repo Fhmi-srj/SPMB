@@ -138,7 +138,7 @@ export default function KelolaUser() {
 
             {/* Add User Modal */}
             {modal === 'add' && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-6 border-b">
                             <h3 className="text-lg font-bold text-gray-800">Tambah User Baru</h3>
@@ -179,7 +179,7 @@ export default function KelolaUser() {
 
             {/* Edit User Modal */}
             {modal === 'edit' && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-6 border-b">
                             <h3 className="text-lg font-bold text-gray-800">Edit User</h3>
@@ -215,7 +215,7 @@ export default function KelolaUser() {
 
             {/* Reset Password Modal */}
             {modal === 'resetPw' && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
                     <div className="bg-white rounded-xl max-w-sm w-full">
                         <div className="flex items-center justify-between p-6 border-b">
                             <h3 className="text-lg font-bold text-gray-800">Reset Password</h3>
@@ -241,7 +241,7 @@ export default function KelolaUser() {
 
             {/* Delete User Modal */}
             {modal === 'delete' && (
-                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
+                <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={e => e.target === e.currentTarget && closeModal()}>
                     <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i className="fas fa-trash-alt text-red-500 text-2xl"></i>

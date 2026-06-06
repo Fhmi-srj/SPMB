@@ -120,7 +120,7 @@ export default function Biaya() {
 
     // Modal helper
     const ModalWrapper = ({ show, onClose, title, children }) => show ? (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
             <div className="bg-white rounded-xl max-w-md w-full">
                 <div className="flex items-center justify-between p-4 border-b">
                     <h3 className="font-semibold text-gray-800">{title}</h3>
@@ -132,7 +132,7 @@ export default function Biaya() {
     ) : null;
 
     const DeleteModal = ({ show, onClose, onSubmit, name }) => show ? (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
             <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i className="fas fa-trash-alt text-red-500 text-2xl"></i>
