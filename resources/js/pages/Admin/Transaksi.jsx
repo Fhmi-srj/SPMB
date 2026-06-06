@@ -134,7 +134,7 @@ export default function Transaksi() {
     const statusBadge = (status) => {
         const cls = { approved: 'bg-green-100 text-green-700', pending: 'bg-yellow-100 text-yellow-700', rejected: 'bg-red-100 text-red-700' };
         const lbl = { approved: 'ACC', pending: 'Pending', rejected: 'Ditolak' };
-        return <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${cls[status] || 'bg-gray-100 text-gray-700'}`}>{lbl[status] || status}</span>;
+        return <span className={`inline-block px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold rounded-full ${cls[status] || 'bg-gray-100 text-gray-700'}`}>{lbl[status] || status}</span>;
     };
 
     if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full"></div></div>;
@@ -147,32 +147,32 @@ export default function Transaksi() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-green-100 text-sm mb-1">Total Pemasukan</p>
-                            <h3 className="text-2xl font-bold">{fmt(summary.total_masuk)}</h3>
+                            <p className="text-green-100 text-[10px] sm:text-sm mb-1">Total Pemasukan</p>
+                            <h3 className="text-sm sm:text-2xl font-bold">{fmt(summary.total_masuk)}</h3>
                         </div>
-                        <div className="bg-white/20 p-3 rounded-lg"><i className="fas fa-arrow-down text-2xl"></i></div>
+                        <div className="bg-white/20 p-1.5 sm:p-3 rounded-lg"><i className="fas fa-arrow-down text-sm sm:text-2xl"></i></div>
                     </div>
                 </div>
-                <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-red-100 text-sm mb-1">Total Pengeluaran</p>
-                            <h3 className="text-2xl font-bold">{fmt(summary.total_keluar)}</h3>
+                            <p className="text-red-100 text-[10px] sm:text-sm mb-1">Total Pengeluaran</p>
+                            <h3 className="text-sm sm:text-2xl font-bold">{fmt(summary.total_keluar)}</h3>
                         </div>
-                        <div className="bg-white/20 p-3 rounded-lg"><i className="fas fa-arrow-up text-2xl"></i></div>
+                        <div className="bg-white/20 p-1.5 sm:p-3 rounded-lg"><i className="fas fa-arrow-up text-sm sm:text-2xl"></i></div>
                     </div>
                 </div>
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-3 sm:p-5 text-white col-span-2 md:col-span-1">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-blue-100 text-sm mb-1">Saldo</p>
-                            <h3 className="text-2xl font-bold">{fmt(summary.saldo)}</h3>
+                            <p className="text-blue-100 text-[10px] sm:text-sm mb-1">Saldo</p>
+                            <h3 className="text-sm sm:text-2xl font-bold">{fmt(summary.saldo)}</h3>
                         </div>
-                        <div className="bg-white/20 p-3 rounded-lg"><i className="fas fa-wallet text-2xl"></i></div>
+                        <div className="bg-white/20 p-1.5 sm:p-3 rounded-lg"><i className="fas fa-wallet text-sm sm:text-2xl"></i></div>
                     </div>
                 </div>
             </div>
@@ -219,48 +219,48 @@ export default function Transaksi() {
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Input</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Invoice</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Tgl Input</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nama</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nominal</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Jenis</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {pemasukan.map(row => (
                                         <tr key={row.id} className={`hover:bg-gray-50 ${row.status === 'rejected' ? 'opacity-60' : ''}`}>
-                                            <td className="px-4 py-3 text-sm font-mono text-gray-600">{row.invoice}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-sm font-mono text-gray-600">{row.invoice}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-gray-600">
                                                 <div>{row.tanggal ? new Date(row.tanggal).toLocaleDateString('id-ID') : '-'}</div>
-                                                {row.input_nama && <div className="text-xs text-gray-400">oleh: {row.input_nama}</div>}
+                                                {row.input_nama && <div className="text-[9px] sm:text-xs text-gray-400">oleh: {row.input_nama}</div>}
                                             </td>
-                                            <td className="px-4 py-3 text-sm font-medium text-gray-800">{row.nama}</td>
-                                            <td className="px-4 py-3 text-sm text-right font-semibold text-green-600">{fmt(row.nominal)}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-600">{row.jenis_pembayaran}</td>
-                                            <td className="px-4 py-3 text-center">
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm font-medium text-gray-800">{row.nama}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-right font-semibold text-green-600">{fmt(row.nominal)}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-gray-600">{row.jenis_pembayaran}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                                 {statusBadge(row.status)}
-                                                {row.status === 'approved' && row.approved_at && <div className="text-xs text-gray-400 mt-1">{new Date(row.approved_at).toLocaleDateString('id-ID')}</div>}
-                                                {row.status === 'rejected' && row.catatan_approval && <div className="text-xs text-red-500 mt-1">{row.catatan_approval}</div>}
+                                                {row.status === 'approved' && row.approved_at && <div className="text-[9px] sm:text-xs text-gray-400 mt-1">{new Date(row.approved_at).toLocaleDateString('id-ID')}</div>}
+                                                {row.status === 'rejected' && row.catatan_approval && <div className="text-[9px] sm:text-xs text-red-500 mt-1">{row.catatan_approval}</div>}
                                             </td>
-                                            <td className="px-4 py-3 text-center whitespace-nowrap">
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap">
                                                 {isSuperAdmin && row.status === 'pending' && (
                                                     <>
-                                                        <button onClick={() => handleApprove('pemasukan', row.id)} className="text-green-600 hover:text-green-800 mr-1" title="ACC"><i className="fas fa-check-circle"></i></button>
-                                                        <button onClick={() => handleReject('pemasukan', row.id)} className="text-red-600 hover:text-red-800 mr-1" title="Tolak"><i className="fas fa-times-circle"></i></button>
+                                                        <button onClick={() => handleApprove('pemasukan', row.id)} className="text-green-600 hover:text-green-800 mr-1" title="ACC"><i className="fas fa-check-circle text-xs sm:text-base"></i></button>
+                                                        <button onClick={() => handleReject('pemasukan', row.id)} className="text-red-600 hover:text-red-800 mr-1" title="Tolak"><i className="fas fa-times-circle text-xs sm:text-base"></i></button>
                                                     </>
                                                 )}
                                                 {isSuperAdmin && (
                                                     <>
-                                                        <button onClick={() => openEditPemasukan(row)} className="text-blue-600 hover:text-blue-800 mr-1" title="Edit"><i className="fas fa-edit"></i></button>
-                                                        <button onClick={() => handleDelete('pemasukan', row.id)} className="text-red-600 hover:text-red-800" title="Hapus"><i className="fas fa-trash"></i></button>
+                                                        <button onClick={() => openEditPemasukan(row)} className="text-blue-600 hover:text-blue-800 mr-1" title="Edit"><i className="fas fa-edit text-xs sm:text-base"></i></button>
+                                                        <button onClick={() => handleDelete('pemasukan', row.id)} className="text-red-600 hover:text-red-800" title="Hapus"><i className="fas fa-trash text-xs sm:text-base"></i></button>
                                                     </>
                                                 )}
                                             </td>
                                         </tr>
                                     ))}
-                                    {pemasukan.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500 text-sm">Tidak ada data pemasukan</td></tr>}
+                                    {pemasukan.length === 0 && <tr><td colSpan={7} className="px-2 py-8 text-center text-gray-500 text-sm">Tidak ada data pemasukan</td></tr>}
                                 </tbody>
                             </table>
                         </div>
@@ -277,46 +277,46 @@ export default function Transaksi() {
                             <table className="w-full">
                                 <thead className="bg-gray-50">
                                     <tr>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tgl Input</th>
-                                        <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Nominal</th>
-                                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Invoice</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Tgl Input</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nominal</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {pengeluaran.map(row => (
                                         <tr key={row.id} className={`hover:bg-gray-50 ${row.status === 'rejected' ? 'opacity-60' : ''}`}>
-                                            <td className="px-4 py-3 text-sm font-mono text-gray-600">{row.invoice}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-600">
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[10px] sm:text-sm font-mono text-gray-600">{row.invoice}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-gray-600">
                                                 <div>{row.tanggal ? new Date(row.tanggal).toLocaleDateString('id-ID') : '-'}</div>
-                                                {row.input_nama && <div className="text-xs text-gray-400">oleh: {row.input_nama}</div>}
+                                                {row.input_nama && <div className="text-[9px] sm:text-xs text-gray-400">oleh: {row.input_nama}</div>}
                                             </td>
-                                            <td className="px-4 py-3 text-sm text-right font-semibold text-red-600">{fmt(row.nominal)}</td>
-                                            <td className="px-4 py-3 text-sm text-gray-600">{row.kategori}</td>
-                                            <td className="px-4 py-3 text-center">
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-right font-semibold text-red-600">{fmt(row.nominal)}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-gray-600">{row.kategori}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                                 {statusBadge(row.status)}
-                                                {row.status === 'approved' && row.approved_at && <div className="text-xs text-gray-400 mt-1">{new Date(row.approved_at).toLocaleDateString('id-ID')}</div>}
-                                                {row.status === 'rejected' && row.catatan_approval && <div className="text-xs text-red-500 mt-1">{row.catatan_approval}</div>}
+                                                {row.status === 'approved' && row.approved_at && <div className="text-[9px] sm:text-xs text-gray-400 mt-1">{new Date(row.approved_at).toLocaleDateString('id-ID')}</div>}
+                                                {row.status === 'rejected' && row.catatan_approval && <div className="text-[9px] sm:text-xs text-red-500 mt-1">{row.catatan_approval}</div>}
                                             </td>
-                                            <td className="px-4 py-3 text-center whitespace-nowrap">
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap">
                                                 {isSuperAdmin && row.status === 'pending' && (
                                                     <>
-                                                        <button onClick={() => handleApprove('pengeluaran', row.id)} className="text-green-600 hover:text-green-800 mr-1" title="ACC"><i className="fas fa-check-circle"></i></button>
-                                                        <button onClick={() => handleReject('pengeluaran', row.id)} className="text-red-600 hover:text-red-800 mr-1" title="Tolak"><i className="fas fa-times-circle"></i></button>
+                                                        <button onClick={() => handleApprove('pengeluaran', row.id)} className="text-green-600 hover:text-green-800 mr-1" title="ACC"><i className="fas fa-check-circle text-xs sm:text-base"></i></button>
+                                                        <button onClick={() => handleReject('pengeluaran', row.id)} className="text-red-600 hover:text-red-800 mr-1" title="Tolak"><i className="fas fa-times-circle text-xs sm:text-base"></i></button>
                                                     </>
                                                 )}
                                                 {isSuperAdmin && (
                                                     <>
-                                                        <button onClick={() => openEditPengeluaran(row)} className="text-blue-600 hover:text-blue-800 mr-1" title="Edit"><i className="fas fa-edit"></i></button>
-                                                        <button onClick={() => handleDelete('pengeluaran', row.id)} className="text-red-600 hover:text-red-800" title="Hapus"><i className="fas fa-trash"></i></button>
+                                                        <button onClick={() => openEditPengeluaran(row)} className="text-blue-600 hover:text-blue-800 mr-1" title="Edit"><i className="fas fa-edit text-xs sm:text-base"></i></button>
+                                                        <button onClick={() => handleDelete('pengeluaran', row.id)} className="text-red-600 hover:text-red-800" title="Hapus"><i className="fas fa-trash text-xs sm:text-base"></i></button>
                                                     </>
                                                 )}
                                             </td>
                                         </tr>
                                     ))}
-                                    {pengeluaran.length === 0 && <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-500 text-sm">Tidak ada data pengeluaran</td></tr>}
+                                    {pengeluaran.length === 0 && <tr><td colSpan={6} className="px-2 py-8 text-center text-gray-500 text-sm">Tidak ada data pengeluaran</td></tr>}
                                 </tbody>
                             </table>
                         </div>

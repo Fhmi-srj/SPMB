@@ -45,22 +45,22 @@ export default function PosKeuangan() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
-                    <p className="text-blue-100 text-sm mb-1">Total MA</p>
-                    <h3 className="text-2xl font-bold">{fmt(totals.total_ma)}</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
+                    <p className="text-blue-100 text-[10px] sm:text-sm mb-1">Total MA</p>
+                    <h3 className="text-sm sm:text-2xl font-bold">{fmt(totals.total_ma)}</h3>
                 </div>
-                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-6 text-white">
-                    <p className="text-green-100 text-sm mb-1">Total SMP</p>
-                    <h3 className="text-2xl font-bold">{fmt(totals.total_smp)}</h3>
+                <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
+                    <p className="text-green-100 text-[10px] sm:text-sm mb-1">Total SMP</p>
+                    <h3 className="text-sm sm:text-2xl font-bold">{fmt(totals.total_smp)}</h3>
                 </div>
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
-                    <p className="text-purple-100 text-sm mb-1">Total Pondok</p>
-                    <h3 className="text-2xl font-bold">{fmt(totals.total_pondok)}</h3>
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
+                    <p className="text-purple-100 text-[10px] sm:text-sm mb-1">Total Pondok</p>
+                    <h3 className="text-sm sm:text-2xl font-bold">{fmt(totals.total_pondok)}</h3>
                 </div>
-                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
-                    <p className="text-orange-100 text-sm mb-1">Total Perlengkapan</p>
-                    <h3 className="text-2xl font-bold">{fmt(totals.total_perlengkapan)}</h3>
+                <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
+                    <p className="text-orange-100 text-[10px] sm:text-sm mb-1">Total Perlengkapan</p>
+                    <h3 className="text-sm sm:text-2xl font-bold">{fmt(totals.total_perlengkapan)}</h3>
                 </div>
             </div>
 
@@ -84,48 +84,48 @@ export default function PosKeuangan() {
             {/* Table */}
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table id="posKeuanganTable" className="w-full text-sm">
+                    <table id="posKeuanganTable" className="w-full text-[11px] sm:text-sm">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">No</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase sticky left-12 bg-gray-50 z-10">Nama</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lembaga</th>
-                                <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status Pondok</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Tagihan</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase">Pembayaran</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-gray-50">Registrasi</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-blue-50">MA</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-green-50">SMP</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-purple-50">Pondok</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-orange-50">Perlengkapan</th>
-                                <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase bg-red-50">Sisa</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase sticky left-0 bg-gray-50 z-10">No</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase sticky left-12 bg-gray-50 z-10">Nama</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Lembaga</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Status Pondok</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Tagihan</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Pembayaran</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-gray-50">Registrasi</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-blue-50">MA</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-green-50">SMP</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-purple-50">Pondok</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-orange-50">Perlengkapan</th>
+                                <th className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-red-50">Sisa</th>
                             </tr>
                             {/* Total Row */}
                             <tr className="bg-[#E67E22] text-white font-bold">
-                                <td colSpan={6} className="px-3 py-3">TOTAL</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_registrasi)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_ma)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_smp)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_pondok)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_perlengkapan)}</td>
-                                <td className="px-3 py-3 text-right">{fmt(totals.total_sisa)}</td>
+                                <td colSpan={6} className="px-2 py-2 sm:px-3 sm:py-3 text-[10px] sm:text-sm">TOTAL</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(totals.total_registrasi)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(totals.total_ma)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(totals.total_smp)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(totals.total_pondok)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(totals.total_perlengkapan)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(totals.total_sisa)}</td>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {filtered.map((row, idx) => (
                                 <tr key={row.id} className="hover:bg-gray-50">
-                                    <td className="px-3 py-3 text-gray-500 sticky left-0 bg-white z-10">{idx + 1}</td>
-                                    <td className="px-3 py-3 font-medium text-gray-800 sticky left-12 bg-white z-10">{row.nama}</td>
-                                    <td className="px-3 py-3 text-gray-600">{row.lembaga}</td>
-                                    <td className="px-3 py-3 text-gray-600">{row.status_mukim}</td>
-                                    <td className="px-3 py-3 text-right text-gray-600">{fmt(row.total_tagihan)}</td>
-                                    <td className="px-3 py-3 text-right font-semibold text-green-600">{fmt(row.total_pembayaran)}</td>
-                                    <td className="px-3 py-3 text-right text-gray-700 bg-gray-50">{fmt(row.pos_registrasi)}</td>
-                                    <td className="px-3 py-3 text-right text-blue-700 bg-blue-50">{fmt(row.pos_ma)}</td>
-                                    <td className="px-3 py-3 text-right text-green-700 bg-green-50">{fmt(row.pos_smp)}</td>
-                                    <td className="px-3 py-3 text-right text-purple-700 bg-purple-50">{fmt(row.pos_pondok)}</td>
-                                    <td className="px-3 py-3 text-right text-orange-700 bg-orange-50">{fmt(row.pos_perlengkapan)}</td>
-                                    <td className="px-3 py-3 text-right text-red-700 bg-red-50">{fmt(row.pos_sisa)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-gray-500 sticky left-0 bg-white z-10">{idx + 1}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 font-medium text-gray-800 sticky left-12 bg-white z-10 leading-tight">{row.nama}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-gray-600">{row.lembaga}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-gray-600 leading-tight">{row.status_mukim}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-gray-600">{fmt(row.total_tagihan)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right font-semibold text-green-600">{fmt(row.total_pembayaran)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-gray-700 bg-gray-50">{fmt(row.pos_registrasi)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-blue-700 bg-blue-50">{fmt(row.pos_ma)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-green-700 bg-green-50">{fmt(row.pos_smp)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-purple-700 bg-purple-50">{fmt(row.pos_pondok)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-orange-700 bg-orange-50">{fmt(row.pos_perlengkapan)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-red-700 bg-red-50">{fmt(row.pos_sisa)}</td>
                                 </tr>
                             ))}
                             {filtered.length === 0 && (

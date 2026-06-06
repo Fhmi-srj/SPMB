@@ -100,29 +100,29 @@ export default function Beasiswa() {
                         <table className="w-full">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jenis</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Syarat</th>
-                                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Benefit</th>
-                                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">No</th>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Jenis</th>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Syarat</th>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Benefit</th>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {data.length === 0 ? (
-                                    <tr><td colSpan={6} className="text-center py-10 text-gray-400">Belum ada data beasiswa</td></tr>
+                                    <tr><td colSpan={6} className="text-center py-10 text-gray-400 text-xs sm:text-sm">Belum ada data beasiswa</td></tr>
                                 ) : data.map((row, i) => (
-                                    <tr key={row.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 text-sm text-gray-500">{i + 1}</td>
-                                        <td className="px-4 py-3">
-                                            <span className="px-2 py-1 bg-[#E67E22]/10 text-[#E67E22] rounded-full text-xs font-medium">{row.jenis}</span>
+                                    <tr key={row.id} className="hover:bg-gray-50 text-[11px] sm:text-sm">
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500">{i + 1}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                            <span className="px-1.5 py-0.5 bg-[#E67E22]/10 text-[#E67E22] rounded text-[10px] sm:text-xs font-medium">{row.jenis}</span>
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">{row.kategori}</td>
-                                        <td className="px-4 py-3 text-sm font-medium text-gray-800">{row.syarat}</td>
-                                        <td className="px-4 py-3 text-sm text-green-600 font-medium">{row.benefit}</td>
-                                        <td className="px-4 py-3 text-center">
-                                            <button onClick={() => openEdit(row)} className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition"><i className="fas fa-edit"></i></button>
-                                            <button onClick={() => openDelete(row)} className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash"></i></button>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-600 leading-tight">{row.kategori}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 font-medium text-gray-800 leading-tight">{row.syarat}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-green-600 font-medium leading-tight">{row.benefit}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-center whitespace-nowrap">
+                                            <button onClick={() => openEdit(row)} className="p-1 sm:p-2 text-blue-600 hover:bg-blue-100 rounded transition"><i className="fas fa-edit text-[10px] sm:text-sm"></i></button>
+                                            <button onClick={() => openDelete(row)} className="p-1 sm:p-2 text-red-600 hover:bg-red-100 rounded transition"><i className="fas fa-trash text-[10px] sm:text-sm"></i></button>
                                         </td>
                                     </tr>
                                 ))}

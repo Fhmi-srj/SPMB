@@ -42,58 +42,58 @@ export default function Pengaturan() {
                 <p className="text-gray-500 text-sm">Atur konfigurasi website</p>
             </div>
 
-            <form onSubmit={e => { e.preventDefault(); handleSave(); }} className="space-y-6">
+            <form onSubmit={e => { e.preventDefault(); handleSave(); }} className="space-y-4">
                 {/* Status Pendaftaran */}
-                <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-toggle-on mr-2 text-[#E67E22]"></i>Status Pendaftaran</h3>
+                <div className="bg-white rounded-xl shadow-sm p-3.5">
+                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-3"><i className="fas fa-toggle-on mr-2 text-[#E67E22]"></i>Status Pendaftaran</h3>
                     <div className="flex items-center justify-between">
-                        <div>
-                            <p className="font-medium text-gray-700">Buka Pendaftaran</p>
-                            <p className="text-sm text-gray-500">Jika dimatikan, form pendaftaran tidak bisa diakses</p>
+                        <div className="text-left">
+                            <p className="font-medium text-gray-700 text-xs sm:text-sm">Buka Pendaftaran</p>
+                            <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5 leading-tight">Jika dimatikan, form pendaftaran tidak bisa diakses</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" checked={settings.status_pendaftaran === '1'}
                                 onChange={e => setSettings(s => ({ ...s, status_pendaftaran: e.target.checked ? '1' : '0' }))}
                                 className="sr-only peer" />
-                            <div className="w-12 h-6 bg-gray-300 rounded-full peer peer-checked:bg-[#E67E22] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-6"></div>
+                            <div className="w-10 h-5 bg-gray-300 rounded-full peer peer-checked:bg-[#E67E22] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
                         </label>
                     </div>
                 </div>
 
                 {/* Tahun Ajaran */}
-                <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-calendar mr-2 text-[#E67E22]"></i>Tahun Ajaran</h3>
+                <div className="bg-white rounded-xl shadow-sm p-3.5">
+                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-2.5"><i className="fas fa-calendar mr-2 text-[#E67E22]"></i>Tahun Ajaran</h3>
                     <input type="text" value={settings.tahun_ajaran ?? ''} onChange={e => setSettings(s => ({ ...s, tahun_ajaran: e.target.value }))}
-                        placeholder="2026/2027" className={inputCls} />
+                        placeholder="2026/2027" className={inputCls + " py-1.5 text-xs sm:text-sm"} />
                 </div>
 
                 {/* Jadwal Pendaftaran */}
-                <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-clock mr-2 text-[#E67E22]"></i>Jadwal Pendaftaran</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="border border-gray-200 rounded-lg p-3">
-                            <p className="font-medium text-gray-700 mb-2">Gelombang 1</p>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="text-xs text-gray-500">Mulai</label>
-                                    <input type="date" value={settings.gelombang_1_start ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_1_start: e.target.value }))} className={dateInputCls} />
+                <div className="bg-white rounded-xl shadow-sm p-3.5">
+                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-3"><i className="fas fa-clock mr-2 text-[#E67E22]"></i>Jadwal Pendaftaran</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
+                        <div className="border border-gray-150 rounded-lg p-2.5">
+                            <p className="font-semibold text-gray-700 text-xs sm:text-sm mb-1.5 text-left">Gelombang 1</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                <div className="text-left">
+                                    <label className="text-[10px] text-gray-500">Mulai</label>
+                                    <input type="date" value={settings.gelombang_1_start ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_1_start: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-500">Selesai</label>
-                                    <input type="date" value={settings.gelombang_1_end ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_1_end: e.target.value }))} className={dateInputCls} />
+                                <div className="text-left">
+                                    <label className="text-[10px] text-gray-500">Selesai</label>
+                                    <input type="date" value={settings.gelombang_1_end ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_1_end: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
                                 </div>
                             </div>
                         </div>
-                        <div className="border border-gray-200 rounded-lg p-3">
-                            <p className="font-medium text-gray-700 mb-2">Gelombang 2</p>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="text-xs text-gray-500">Mulai</label>
-                                    <input type="date" value={settings.gelombang_2_start ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_2_start: e.target.value }))} className={dateInputCls} />
+                        <div className="border border-gray-150 rounded-lg p-2.5">
+                            <p className="font-semibold text-gray-700 text-xs sm:text-sm mb-1.5 text-left">Gelombang 2</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                                <div className="text-left">
+                                    <label className="text-[10px] text-gray-500">Mulai</label>
+                                    <input type="date" value={settings.gelombang_2_start ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_2_start: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
                                 </div>
-                                <div>
-                                    <label className="text-xs text-gray-500">Selesai</label>
-                                    <input type="date" value={settings.gelombang_2_end ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_2_end: e.target.value }))} className={dateInputCls} />
+                                <div className="text-left">
+                                    <label className="text-[10px] text-gray-500">Selesai</label>
+                                    <input type="date" value={settings.gelombang_2_end ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_2_end: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
                                 </div>
                             </div>
                         </div>
@@ -101,41 +101,41 @@ export default function Pengaturan() {
                 </div>
 
                 {/* Link Download PDF */}
-                <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fas fa-link mr-2 text-[#E67E22]"></i>Link Download PDF</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Link PDF Biaya</label>
-                            <input type="url" value={settings.link_pdf_biaya ?? ''} onChange={e => setSettings(s => ({ ...s, link_pdf_biaya: e.target.value }))} className={inputCls} />
+                <div className="bg-white rounded-xl shadow-sm p-3.5">
+                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-3"><i className="fas fa-link mr-2 text-[#E67E22]"></i>Link Download PDF</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="text-left">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Link PDF Biaya</label>
+                            <input type="url" value={settings.link_pdf_biaya ?? ''} onChange={e => setSettings(s => ({ ...s, link_pdf_biaya: e.target.value }))} className={inputCls + " py-1.5 text-xs sm:text-sm"} />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Link PDF Brosur</label>
-                            <input type="url" value={settings.link_pdf_brosur ?? ''} onChange={e => setSettings(s => ({ ...s, link_pdf_brosur: e.target.value }))} className={inputCls} />
+                        <div className="text-left">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Link PDF Brosur</label>
+                            <input type="url" value={settings.link_pdf_brosur ?? ''} onChange={e => setSettings(s => ({ ...s, link_pdf_brosur: e.target.value }))} className={inputCls + " py-1.5 text-xs sm:text-sm"} />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Link PDF Syarat</label>
-                            <input type="url" value={settings.link_pdf_syarat ?? ''} onChange={e => setSettings(s => ({ ...s, link_pdf_syarat: e.target.value }))} className={inputCls} />
+                        <div className="text-left">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Link PDF Syarat</label>
+                            <input type="url" value={settings.link_pdf_syarat ?? ''} onChange={e => setSettings(s => ({ ...s, link_pdf_syarat: e.target.value }))} className={inputCls + " py-1.5 text-xs sm:text-sm"} />
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Link Info Beasiswa</label>
-                            <input type="url" value={settings.link_beasiswa ?? ''} onChange={e => setSettings(s => ({ ...s, link_beasiswa: e.target.value }))} className={inputCls} />
+                        <div className="text-left">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">Link Info Beasiswa</label>
+                            <input type="url" value={settings.link_beasiswa ?? ''} onChange={e => setSettings(s => ({ ...s, link_beasiswa: e.target.value }))} className={inputCls + " py-1.5 text-xs sm:text-sm"} />
                         </div>
                     </div>
                 </div>
 
                 {/* Grup WhatsApp */}
-                <div className="bg-white rounded-xl shadow-sm p-4">
-                    <h3 className="font-semibold text-gray-800 mb-4"><i className="fab fa-whatsapp mr-2 text-green-600"></i>Grup WhatsApp</h3>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Link Grup WA Pendaftar</label>
+                <div className="bg-white rounded-xl shadow-sm p-3.5">
+                    <h3 className="font-semibold text-gray-800 text-sm sm:text-base mb-2.5"><i className="fab fa-whatsapp mr-2 text-green-600"></i>Grup WhatsApp</h3>
+                    <div className="text-left">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Link Grup WA Pendaftar</label>
                         <input type="url" value={settings.link_grup_wa ?? ''} onChange={e => setSettings(s => ({ ...s, link_grup_wa: e.target.value }))}
-                            placeholder="https://chat.whatsapp.com/..." className={inputCls} />
-                        <p className="text-xs text-gray-500 mt-1">Link ini akan ditampilkan setelah pendaftar berhasil mendaftar</p>
+                            placeholder="https://chat.whatsapp.com/..." className={inputCls + " py-1.5 text-xs sm:text-sm"} />
+                        <p className="text-[10px] text-gray-500 mt-1 leading-tight">Link ini akan ditampilkan setelah pendaftar mendaftar</p>
                     </div>
                 </div>
 
                 <button type="submit" disabled={saving}
-                    className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-lg transition disabled:opacity-70">
+                    className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-70">
                     <i className="fas fa-save mr-2"></i>{saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
                 </button>
             </form>
