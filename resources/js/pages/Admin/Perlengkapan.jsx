@@ -78,27 +78,27 @@ export default function Perlengkapan() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
-                <form onSubmit={handleFilter} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white rounded-xl shadow-sm p-2.5 sm:p-4 mb-4">
+                <form onSubmit={handleFilter} className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Cari Nama</label>
+                        <label className="block text-[10px] sm:text-sm font-medium text-gray-600 mb-0.5">Cari Nama</label>
                         <input type="text" value={searchNama} onChange={e => setSearchNama(e.target.value)} placeholder="Nama peserta..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                            className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-xs sm:text-sm" />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Lembaga</label>
+                        <label className="block text-[10px] sm:text-sm font-medium text-gray-600 mb-0.5">Lembaga</label>
                         <select value={filterLembaga} onChange={e => setFilterLembaga(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                            className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-xs sm:text-sm">
                             <option value="">Semua Lembaga</option>
                             <option value="SMP NU BP">SMP NU BP</option>
                             <option value="MA ALHIKAM">MA ALHIKAM</option>
                         </select>
                     </div>
-                    <div className="flex items-end gap-2">
-                        <button type="submit" className="bg-[#E67E22] hover:bg-[#d35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition flex-1">
-                            <i className="fas fa-search mr-2"></i>Filter
+                    <div className="col-span-2 md:col-span-1 flex items-end gap-2 mt-1 md:mt-0">
+                        <button type="submit" className="bg-[#E67E22] hover:bg-[#d35400] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition flex-1">
+                            <i className="fas fa-search mr-1.5"></i>Filter
                         </button>
-                        <button type="button" onClick={resetFilter} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                        <button type="button" onClick={resetFilter} className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition">
                             <i className="fas fa-redo"></i>
                         </button>
                     </div>
