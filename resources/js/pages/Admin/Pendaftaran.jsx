@@ -11,16 +11,23 @@ const STATUS_COLORS = {
 
 const STATUS_LABELS = { pending: 'Pending', verified: 'Terverifikasi', rejected: 'Ditolak' };
 
-function Modal({ show, onClose, children, title }) {
+function Modal({ show, onClose, children, title, footer }) {
     if (!show) return null;
     return (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-                <div className="flex items-center justify-between p-5 border-b">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="flex items-center justify-between p-4 sm:p-5 border-b flex-shrink-0">
                     <h3 className="font-semibold text-gray-800">{title}</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
                 </div>
-                <div className="p-5">{children}</div>
+                <div className="p-4 sm:p-5 overflow-y-auto flex-1 pb-16 sm:pb-20">
+                    {children}
+                </div>
+                {footer && (
+                    <div className="border-t p-4 bg-gray-50 flex gap-3 flex-shrink-0">
+                        {footer}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -95,7 +102,7 @@ export default function Pendaftaran() {
         const isSorted = sort.column === column;
         return (
             <th 
-                className="px-4 py-3 text-left cursor-pointer hover:bg-gray-100 transition select-none"
+                className="px-2 py-2 sm:px-4 sm:py-3 text-left cursor-pointer hover:bg-gray-100 transition select-none"
                 onClick={() => handleSort(column)}
             >
                 <div className="flex items-center gap-1.5">
@@ -354,8 +361,8 @@ export default function Pendaftaran() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
-                            <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
+                        <table className="w-full text-xs sm:text-sm">
+                            <thead className="bg-gray-50 text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide">
                                 <tr>
                                     {renderHeader('No. Reg', 'no_registrasi')}
                                     {renderHeader('Nama', 'nama')}
@@ -363,7 +370,7 @@ export default function Pendaftaran() {
                                     {renderHeader('No. HP', 'no_hp_wali')}
                                     {renderHeader('Status', 'status')}
                                     {renderHeader('Tanggal', 'created_at')}
-                                    <th className="px-4 py-3 text-center">Aksi</th>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
@@ -371,17 +378,17 @@ export default function Pendaftaran() {
                                     <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500 text-sm"><i className="fas fa-inbox text-4xl mb-3 text-gray-300 block"></i><p>Tidak ada data pendaftaran</p></td></tr>
                                 ) : data.map(row => (
                                     <tr key={row.id} className="hover:bg-gray-50 transition">
-                                        <td className="px-4 py-3 font-mono text-xs text-gray-500">{row.no_registrasi}</td>
-                                        <td className="px-4 py-3">
-                                            <div className="font-medium text-gray-800">{row.nama}</div>
-                                            <div className="text-xs text-gray-400">{row.asal_sekolah}</div>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 font-mono text-[10px] sm:text-xs text-gray-500">{row.no_registrasi}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                            <div className="font-medium text-[11px] sm:text-sm text-gray-800 leading-tight">{row.nama}</div>
+                                            <div className="text-[10px] sm:text-xs text-gray-400 leading-tight mt-0.5">{row.asal_sekolah}</div>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-xs">{row.lembaga}</span>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] sm:text-xs">{row.lembaga}</span>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="text-gray-600">{row.no_hp_wali}</span>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-[11px] sm:text-sm text-gray-600">{row.no_hp_wali}</span>
                                                 <a 
                                                     href={`https://wa.me/${row.no_hp_wali.replace(/\D/g, '').replace(/^0/, '62')}`} 
                                                     target="_blank" 
@@ -389,21 +396,21 @@ export default function Pendaftaran() {
                                                     className="text-green-500 hover:text-green-700 transition"
                                                     title="Hubungi via WhatsApp"
                                                 >
-                                                    <i className="fab fa-whatsapp text-sm"></i>
+                                                    <i className="fab fa-whatsapp text-xs"></i>
                                                 </a>
                                             </div>
                                         </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[row.status]}`}>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                            <span className={`px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${STATUS_COLORS[row.status]}`}>
                                                 {STATUS_LABELS[row.status] ?? row.status}
                                             </span>
                                         </td>
-                                        <td className="px-4 py-3 text-gray-500 text-xs">{row.created_at ? new Date(row.created_at).toLocaleDateString('id') : '-'}</td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center justify-center gap-1">
-                                                <button onClick={() => openEdit(row)} title="Edit" className="p-1.5 text-[#E67E22] hover:bg-orange-100 rounded-lg transition"><i className="fas fa-edit text-xs"></i></button>
-                                                <button onClick={() => handleNotifBerkas(row)} title="Kirim WA Berkas" className="p-1.5 text-green-600 hover:bg-green-100 rounded-lg transition"><i className="fab fa-whatsapp text-xs"></i></button>
-                                                <button onClick={() => handleDelete(row)} title="Hapus" className="p-1.5 text-red-600 hover:bg-red-100 rounded-lg transition"><i className="fas fa-trash text-xs"></i></button>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500 text-[10px] sm:text-xs">{row.created_at ? new Date(row.created_at).toLocaleDateString('id') : '-'}</td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                            <div className="flex items-center justify-center gap-0.5">
+                                                <button onClick={() => openEdit(row)} title="Edit" className="p-1 text-[#E67E22] hover:bg-orange-100 rounded transition"><i className="fas fa-edit text-[10px] sm:text-xs"></i></button>
+                                                <button onClick={() => handleNotifBerkas(row)} title="Kirim WA Berkas" className="p-1 text-green-600 hover:bg-green-100 rounded transition"><i className="fab fa-whatsapp text-[10px] sm:text-xs"></i></button>
+                                                <button onClick={() => handleDelete(row)} title="Hapus" className="p-1 text-red-600 hover:bg-red-100 rounded transition"><i className="fas fa-trash text-[10px] sm:text-xs"></i></button>
                                             </div>
                                         </td>
                                     </tr>
@@ -436,7 +443,23 @@ export default function Pendaftaran() {
 
 
             {/* Edit Modal */}
-            <Modal show={showEdit} onClose={() => setShowEdit(false)} title="Edit Data Pendaftaran">
+            <Modal 
+                show={showEdit} 
+                onClose={() => setShowEdit(false)} 
+                title="Edit Data Pendaftaran"
+                footer={(
+                    <>
+                        <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition bg-white">
+                            Batal
+                        </button>
+                        <button type="button" onClick={handleSaveEdit} disabled={saving}
+                            className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold transition disabled:opacity-70 flex items-center justify-center gap-2 shadow-md">
+                            {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                            {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                        </button>
+                    </>
+                )}
+            >
                 {selected && (
                     <div className="space-y-4 text-left">
                         {/* Data Siswa */}
@@ -572,17 +595,7 @@ export default function Pendaftaran() {
                             </div>
                         </div>
 
-                        {/* Tombol Aksi */}
-                        <div className="flex gap-3 pt-4 border-t">
-                            <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition">
-                                Batal
-                            </button>
-                            <button type="button" onClick={handleSaveEdit} disabled={saving}
-                                className="flex-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold transition disabled:opacity-70 flex items-center justify-center gap-2 shadow-md">
-                                {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-                                {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
-                            </button>
-                        </div>
+                        {/* Tombol Aksi moved to Modal footer */}
                     </div>
                 )}
             </Modal>

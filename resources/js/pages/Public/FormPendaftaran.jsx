@@ -325,7 +325,7 @@ export default function FormPendaftaran() {
                 </div>
             </header>
 
-            <div className="max-w-4xl mx-auto px-4 py-6">
+            <div className="max-w-4xl mx-auto px-4 pt-6 pb-28">
                 <form onSubmit={handleSubmit}>
                     {/* Step 1: Data Calon Siswa */}
                     {step === 1 && (
@@ -615,9 +615,7 @@ export default function FormPendaftaran() {
                                 </div>
                             </div>
 
-                            <button type="button" onClick={() => nextStep(1)} className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-xl transition hover:-translate-y-0.5 hover:shadow-lg">
-                                Lanjutkan <i className="fas fa-arrow-right ml-2"></i>
-                            </button>
+                            {/* Navigation button moved to global floating bar */}
                         </div>
                     )}
 
@@ -834,10 +832,7 @@ export default function FormPendaftaran() {
                                 )}
                             </div>
 
-                            <div className="flex gap-3">
-                                <button type="button" onClick={() => prevStep(2)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition"><i className="fas fa-arrow-left mr-2"></i> Kembali</button>
-                                <button type="button" onClick={() => nextStep(2)} className="flex-1 bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-xl transition">Lanjutkan <i className="fas fa-arrow-right ml-2"></i></button>
-                            </div>
+                            {/* Navigation buttons moved to global floating bar */}
                         </div>
                     )}
 
@@ -868,14 +863,34 @@ export default function FormPendaftaran() {
                                 </div>
                             </div>
 
-                            <div className="flex gap-3">
-                                <button type="button" onClick={() => prevStep(3)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition"><i className="fas fa-arrow-left mr-2"></i> Kembali</button>
-                                <button type="submit" disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50">
-                                    {loading ? <><i className="fas fa-spinner animate-spin mr-2"></i>Mengirim...</> : <><i className="fas fa-paper-plane mr-2"></i>Kirim Pendaftaran</>}
-                                </button>
-                            </div>
+                            {/* Navigation buttons moved to global floating bar */}
                         </div>
                     )}
+
+                    {/* Sticky/Floating Bottom Navigation Bar */}
+                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 py-3 px-4 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
+                        <div className="max-w-4xl mx-auto flex gap-3">
+                            {step === 1 && (
+                                <button type="button" onClick={() => nextStep(1)} className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-xl transition hover:-translate-y-0.5 hover:shadow-lg flex items-center justify-center">
+                                    Lanjutkan <i className="fas fa-arrow-right ml-2"></i>
+                                </button>
+                            )}
+                            {step === 2 && (
+                                <>
+                                    <button type="button" onClick={() => prevStep(2)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition"><i className="fas fa-arrow-left mr-2"></i> Kembali</button>
+                                    <button type="button" onClick={() => nextStep(2)} className="flex-1 bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-3 rounded-xl transition">Lanjutkan <i className="fas fa-arrow-right ml-2"></i></button>
+                                </>
+                            )}
+                            {step === 3 && (
+                                <>
+                                    <button type="button" onClick={() => prevStep(3)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition"><i className="fas fa-arrow-left mr-2"></i> Kembali</button>
+                                    <button type="submit" disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 flex items-center justify-center">
+                                        {loading ? <><i className="fas fa-spinner animate-spin mr-2"></i>Mengirim...</> : <><i className="fas fa-paper-plane mr-2"></i>Kirim Pendaftaran</>}
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
