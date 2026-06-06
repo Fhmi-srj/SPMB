@@ -359,7 +359,7 @@ export default function FormPendaftaran() {
                                              <button type="button" onClick={() => { try { document.getElementById('picker_tanggal_lahir').showPicker(); } catch (err) { document.getElementById('picker_tanggal_lahir').focus(); } }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E67E22] transition">
                                                  <i className="fas fa-calendar-alt text-lg"></i>
                                              </button>
-                                             <input type="date" id="picker_tanggal_lahir" onChange={e => { if (e.target.value) { const parts = e.target.value.split('-'); if (parts.length === 3) { set('tanggal_lahir', `${parts[2]}/${parts[1]}/${parts[0]}`); } } }} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 pointer-events-none w-0 h-0" />
+                                             <input type="date" id="picker_tanggal_lahir" onChange={e => { if (e.target.value) { const parts = e.target.value.split('-'); if (parts.length === 3) { set('tanggal_lahir', `${parts[2]}/${parts[1]}/${parts[0]}`); } } }} className="absolute opacity-0 pointer-events-none" style={{ width: '1px', height: '1px', padding: 0, margin: 0, border: 0, minWidth: 0, minHeight: 0 }} />
                                          </div>
                                      </div>
                                     <div>
@@ -637,7 +637,7 @@ export default function FormPendaftaran() {
                                             <button type="button" onClick={() => { try { document.getElementById('picker_tanggal_lahir_ayah').showPicker(); } catch (err) { document.getElementById('picker_tanggal_lahir_ayah').focus(); } }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E67E22] transition">
                                                 <i className="fas fa-calendar-alt text-lg"></i>
                                             </button>
-                                            <input type="date" id="picker_tanggal_lahir_ayah" onChange={e => { if (e.target.value) { const parts = e.target.value.split('-'); if (parts.length === 3) { set('tanggal_lahir_ayah', `${parts[2]}/${parts[1]}/${parts[0]}`); } } }} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 pointer-events-none w-0 h-0" />
+                                            <input type="date" id="picker_tanggal_lahir_ayah" onChange={e => { if (e.target.value) { const parts = e.target.value.split('-'); if (parts.length === 3) { set('tanggal_lahir_ayah', `${parts[2]}/${parts[1]}/${parts[0]}`); } } }} className="absolute opacity-0 pointer-events-none" style={{ width: '1px', height: '1px', padding: 0, margin: 0, border: 0, minWidth: 0, minHeight: 0 }} />
                                         </div>
                                     </div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">NIK Ayah</label><input type="text" value={form.nik_ayah || ''} onChange={e => set('nik_ayah', e.target.value)} className={inputCls} placeholder="16 digit NIK" /></div>
@@ -664,7 +664,7 @@ export default function FormPendaftaran() {
                                             <button type="button" onClick={() => { try { document.getElementById('picker_tanggal_lahir_ibu').showPicker(); } catch (err) { document.getElementById('picker_tanggal_lahir_ibu').focus(); } }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E67E22] transition">
                                                 <i className="fas fa-calendar-alt text-lg"></i>
                                             </button>
-                                            <input type="date" id="picker_tanggal_lahir_ibu" onChange={e => { if (e.target.value) { const parts = e.target.value.split('-'); if (parts.length === 3) { set('tanggal_lahir_ibu', `${parts[2]}/${parts[1]}/${parts[0]}`); } } }} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-0 pointer-events-none w-0 h-0" />
+                                            <input type="date" id="picker_tanggal_lahir_ibu" onChange={e => { if (e.target.value) { const parts = e.target.value.split('-'); if (parts.length === 3) { set('tanggal_lahir_ibu', `${parts[2]}/${parts[1]}/${parts[0]}`); } } }} className="absolute opacity-0 pointer-events-none" style={{ width: '1px', height: '1px', padding: 0, margin: 0, border: 0, minWidth: 0, minHeight: 0 }} />
                                         </div>
                                     </div>
                                     <div><label className="block text-sm font-medium text-gray-700 mb-2">NIK Ibu</label><input type="text" value={form.nik_ibu || ''} onChange={e => set('nik_ibu', e.target.value)} className={inputCls} placeholder="16 digit NIK" /></div>
