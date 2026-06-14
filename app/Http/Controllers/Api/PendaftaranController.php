@@ -484,6 +484,35 @@ class PendaftaranController extends Controller
         return response()->json(['success' => true, 'message' => 'WA ucapan selamat berhasil dikirim.']);
     }
 
+    /** Verifikasi masal (bulk verify) */
+    public function verifyBulk(Request $request): JsonResponse
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:pendaftaran,id',
+        ], [
+            'ids.required' => 'Pilih setidaknya satu pendaftar.',
+            'ids.array' => 'Data pendaftar tidak valid.',
+            'ids.*.exists' => 'Pendaftar tidak ditemukan.',
+        ]);
+
+        $ids = $request->ids;
+
+        Pendaftaran::whereIn('id', $ids)->update(['status' => 'verified']);
+
+        ActivityLog::create([
+            'admin_id' => auth()->id(),
+            'action' => 'UPDATE',
+            'description' => 'Melakukan verifikasi masal untuk ' . count($ids) . ' pendaftar.',
+            'ip_address' => $request->ip(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => count($ids) . ' pendaftar berhasil diverifikasi.',
+        ]);
+    }
+
     /** Helper: kirim WhatsApp */
     private function sendWhatsApp(?string $phone, string $message): void
     {

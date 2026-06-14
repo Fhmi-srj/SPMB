@@ -49,6 +49,12 @@ export default function Pendaftaran() {
     const [saving, setSaving] = useState(false);
     const [sort, setSort] = useState({ column: 'no_registrasi', direction: 'asc' });
     const searchTimer = React.useRef(null);
+    const [selectedIds, setSelectedIds] = useState([]);
+
+    // Clear selection when data changes
+    useEffect(() => {
+        setSelectedIds([]);
+    }, [data]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -96,6 +102,65 @@ export default function Pendaftaran() {
             return { column, direction };
         });
         setFilters(f => ({ ...f, page: 1 }));
+    };
+
+    const handleSelectRow = (e, id) => {
+        if (e.target.checked) {
+            setSelectedIds(prev => [...prev, id]);
+        } else {
+            setSelectedIds(prev => prev.filter(item => item !== id));
+        }
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(data.map(row => row.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const handleBulkVerify = async () => {
+        const conf = await Swal.fire({
+            title: 'Verifikasi Masal?',
+            html: `Apakah Anda yakin ingin memverifikasi <b>${selectedIds.length}</b> pendaftar yang terpilih?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Verifikasi',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#E67E22',
+            cancelButtonColor: '#aaa',
+        });
+        if (!conf.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Memproses Verifikasi...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        try {
+            const res = await axios.post('/api/pendaftaran/verify-bulk', { ids: selectedIds }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.data.success) {
+                Swal.fire({ 
+                    icon: 'success', 
+                    title: 'Berhasil', 
+                    text: res.data.message, 
+                    confirmButtonColor: '#E67E22',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                setSelectedIds([]);
+                fetchData();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Gagal', text: res.data.message || 'Gagal memverifikasi.', confirmButtonColor: '#E67E22' });
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: err.response?.data?.message || 'Terjadi kesalahan jaringan.', confirmButtonColor: '#E67E22' });
+        }
     };
 
     const renderHeader = (label, column) => {
@@ -308,10 +373,20 @@ export default function Pendaftaran() {
                     <h2 className="text-2xl font-bold text-gray-800">Data Pendaftar</h2>
                     <p className="text-gray-500 text-sm">Kelola data pendaftaran siswa baru</p>
                 </div>
-                <button onClick={handleExport}
-                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
-                    <i className="fas fa-file-excel mr-2"></i>Export Excel
-                </button>
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                    {selectedIds.length > 0 && (
+                        <button onClick={handleBulkVerify}
+                            className="bg-[#E67E22] hover:bg-[#D35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                            <i className="fas fa-check-double"></i>
+                            <span>Verifikasi Masal ({selectedIds.length})</span>
+                        </button>
+                    )}
+                    <button onClick={handleExport}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                        <i className="fas fa-file-excel"></i>
+                        <span>Export Excel</span>
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -364,6 +439,14 @@ export default function Pendaftaran() {
                         <table className="w-full text-xs sm:text-sm">
                             <thead className="bg-gray-50 text-[10px] sm:text-xs text-gray-500 uppercase tracking-wide">
                                 <tr>
+                                    <th className="px-2 py-2 sm:px-4 sm:py-3 text-center w-10">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={data.length > 0 && selectedIds.length === data.length}
+                                            onChange={handleSelectAll}
+                                            className="rounded text-[#E67E22] focus:ring-[#E67E22] h-4 w-4 border-gray-300 cursor-pointer"
+                                        />
+                                    </th>
                                     {renderHeader('No. Reg', 'no_registrasi')}
                                     {renderHeader('Nama', 'nama')}
                                     {renderHeader('Lembaga', 'lembaga')}
@@ -375,9 +458,17 @@ export default function Pendaftaran() {
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {data.length === 0 ? (
-                                    <tr><td colSpan={7} className="px-4 py-8 text-center text-gray-500 text-sm"><i className="fas fa-inbox text-4xl mb-3 text-gray-300 block"></i><p>Tidak ada data pendaftaran</p></td></tr>
+                                    <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500 text-sm"><i className="fas fa-inbox text-4xl mb-3 text-gray-300 block"></i><p>Tidak ada data pendaftaran</p></td></tr>
                                 ) : data.map(row => (
                                     <tr key={row.id} className="hover:bg-gray-50 transition">
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.includes(row.id)}
+                                                onChange={(e) => handleSelectRow(e, row.id)}
+                                                className="rounded text-[#E67E22] focus:ring-[#E67E22] h-4 w-4 border-gray-300 cursor-pointer"
+                                            />
+                                        </td>
                                         <td className="px-2 py-2 sm:px-4 sm:py-3 font-mono text-[10px] sm:text-xs text-gray-500">{row.no_registrasi}</td>
                                         <td className="px-2 py-2 sm:px-4 sm:py-3">
                                             <div className="font-medium text-[11px] sm:text-sm text-gray-800 leading-tight">{row.nama}</div>
@@ -387,18 +478,22 @@ export default function Pendaftaran() {
                                             <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] sm:text-xs">{row.lembaga}</span>
                                         </td>
                                         <td className="px-2 py-2 sm:px-4 sm:py-3">
-                                            <div className="flex items-center gap-1">
-                                                <span className="text-[11px] sm:text-sm text-gray-600">{row.no_hp_wali}</span>
-                                                <a 
-                                                    href={`https://wa.me/${row.no_hp_wali.replace(/\D/g, '').replace(/^0/, '62')}`} 
-                                                    target="_blank" 
-                                                    rel="noreferrer" 
-                                                    className="text-green-500 hover:text-green-700 transition"
-                                                    title="Hubungi via WhatsApp"
-                                                >
-                                                    <i className="fab fa-whatsapp text-xs"></i>
-                                                </a>
-                                            </div>
+                                            {row.no_hp_wali ? (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[11px] sm:text-sm text-gray-600">{row.no_hp_wali}</span>
+                                                    <a 
+                                                        href={`https://wa.me/${row.no_hp_wali.replace(/\D/g, '').replace(/^0/, '62')}`} 
+                                                        target="_blank" 
+                                                        rel="noreferrer" 
+                                                        className="text-green-500 hover:text-green-700 transition"
+                                                        title="Hubungi via WhatsApp"
+                                                    >
+                                                        <i className="fab fa-whatsapp text-xs"></i>
+                                                    </a>
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-400 text-xs italic">-</span>
+                                            )}
                                         </td>
                                         <td className="px-2 py-2 sm:px-4 sm:py-3">
                                             <span className={`px-1.5 py-0.5 rounded-full text-[10px] sm:text-xs font-medium ${STATUS_COLORS[row.status]}`}>
