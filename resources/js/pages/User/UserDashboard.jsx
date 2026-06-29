@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import DatePickerInput from '../../components/DatePickerInput';
 
 const API = '/api';
 
@@ -81,6 +82,17 @@ export default function UserDashboard() {
     const fmt = (n) => 'Rp' + (n || 0).toLocaleString('id-ID');
 
     // Fix #17: EditableField as a function instead of nested component to prevent focus loss
+    const formatDateView = (field, val) => {
+        if (!val) return '-';
+        if (['tanggal_lahir', 'tanggal_lahir_ayah', 'tanggal_lahir_ibu'].includes(field)) {
+            const parts = val.substring(0, 10).split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+        }
+        return val;
+    };
+
     const renderEditableField = (label, field, type = 'text', options = null) => {
         const val = data?.[field] || '';
         return (
@@ -105,6 +117,19 @@ export default function UserDashboard() {
                             debounceRef.current = setTimeout(() => updateField(field, e.target.value), 300);
                         }} onChange={e => setData({ ...data, [field]: e.target.value })}
                             rows={2} className="w-full border rounded-lg px-3 py-2 text-sm" />
+                    ) : type === 'date' ? (
+                        <DatePickerInput
+                            id={`picker_${field}`}
+                            value={val}
+                            onChange={newVal => {
+                                setData(d => ({ ...d, [field]: newVal }));
+                                clearTimeout(debounceRef.current);
+                                if (!newVal || newVal.length === 10) {
+                                    debounceRef.current = setTimeout(() => updateField(field, newVal), 500);
+                                }
+                            }}
+                            className="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none"
+                        />
                     ) : (
                         <input type={type} value={val} onBlur={e => {
                             clearTimeout(debounceRef.current);
@@ -113,7 +138,7 @@ export default function UserDashboard() {
                             className="w-full border rounded-lg px-3 py-2 text-sm" />
                     )
                 ) : (
-                    <p className="text-sm text-gray-800">{val || '-'}</p>
+                    <p className="text-sm text-gray-800">{formatDateView(field, val)}</p>
                 )}
             </div>
         );

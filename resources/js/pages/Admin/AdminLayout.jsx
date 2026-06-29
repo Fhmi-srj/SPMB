@@ -66,6 +66,7 @@ export default function AdminLayout({ children }) {
                 <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
                     <SideLink to="/admin/dashboard" icon="fas fa-tachometer-alt" label="Dashboard" isActive={isActive} />
                     <SideLink to="/admin/pendaftaran" icon="fas fa-users" label="Data Pendaftar" isActive={isActive} />
+                    {isAdminRole && <SideLink to="/admin/rekap-pendaftaran" icon="fas fa-file-invoice" label="Rekap Pendaftaran" isActive={isActive} />}
 
                     {isAdminRole && (
                         <>
@@ -204,6 +205,12 @@ export default function AdminLayout({ children }) {
                                             <i className="fas fa-chart-pie text-lg"></i>
                                         </div>
                                         <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Pos Keuangan</span>
+                                    </NavLink>
+                                    <NavLink to="/admin/rekap-pendaftaran" onClick={() => setDropupOpen(false)} className="flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-gray-50 active:scale-95 transition-all">
+                                        <div className="w-10 h-10 rounded-xl bg-orange-50 text-[#E67E22] flex items-center justify-center shadow-sm">
+                                            <i className="fas fa-file-invoice text-lg"></i>
+                                        </div>
+                                        <span className="text-[10px] font-semibold text-gray-700 text-center leading-tight">Rekap</span>
                                     </NavLink>
                                 </>
                             )}

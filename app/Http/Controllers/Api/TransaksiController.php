@@ -88,10 +88,19 @@ class TransaksiController extends Controller
         $user = auth()->user();
         $isAdmin = in_array($user->role, ['super_admin', 'admin']);
 
-        // Auto-generate invoice with DB lock to prevent race condition (Fix #21)
+        // Auto-generate invoice using the latest invoice count for today to prevent locks/race conditions
         $data = \DB::transaction(function () use ($request, $user, $isAdmin) {
             $today = now()->format('Ymd');
-            $count = TransaksiPemasukan::whereDate('created_at', today())->lockForUpdate()->count() + 1;
+            $latest = TransaksiPemasukan::where('invoice', 'like', "INV-{$today}-%")
+                ->orderByDesc('invoice')
+                ->first();
+            if ($latest) {
+                $parts = explode('-', $latest->invoice);
+                $lastCount = (int) end($parts);
+                $count = $lastCount + 1;
+            } else {
+                $count = 1;
+            }
             $invoice = 'INV-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
             $pendaftar = Pendaftaran::find($request->pendaftaran_id);
@@ -231,10 +240,19 @@ class TransaksiController extends Controller
         $user = auth()->user();
         $isAdmin = in_array($user->role, ['super_admin', 'admin']);
 
-        // Auto-generate invoice with DB lock to prevent race condition (Fix #21)
+        // Auto-generate invoice using the latest invoice count for today to prevent locks/race conditions
         $data = \DB::transaction(function () use ($request, $user, $isAdmin) {
             $today = now()->format('Ymd');
-            $count = TransaksiPengeluaran::whereDate('created_at', today())->lockForUpdate()->count() + 1;
+            $latest = TransaksiPengeluaran::where('invoice', 'like', "OUT-{$today}-%")
+                ->orderByDesc('invoice')
+                ->first();
+            if ($latest) {
+                $parts = explode('-', $latest->invoice);
+                $lastCount = (int) end($parts);
+                $count = $lastCount + 1;
+            } else {
+                $count = 1;
+            }
             $invoice = 'OUT-' . $today . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
 
             $txn = TransaksiPengeluaran::create([
@@ -352,6 +370,13 @@ class TransaksiController extends Controller
             ->where('perlengkapan_pesanan.status', 1)
             ->sum('perlengkapan_items.nominal');
 
+        $perlengkapanDetails = \DB::table('perlengkapan_pesanan')
+            ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
+            ->where('perlengkapan_pesanan.pendaftaran_id', $id)
+            ->where('perlengkapan_pesanan.status', 1)
+            ->select('perlengkapan_items.nama_item', 'perlengkapan_items.nominal')
+            ->get();
+
         $totalPaid = \App\Models\TransaksiPemasukan::where('pendaftaran_id', $id)
             ->where('status', 'approved')
             ->sum('nominal');
@@ -366,9 +391,12 @@ class TransaksiController extends Controller
             'biaya_pondok'       => $biayaPondok,
             'biaya_sekolah'      => $biayaSekolah,
             'biaya_perlengkapan' => $perlengkapanTotal,
+            'perlengkapan_details'=> $perlengkapanDetails,
             'lembaga'            => $peserta->lembaga,
             'status_mukim'       => $peserta->status_mukim,
             'is_pondok'          => $isPondok,
+            'alamat'             => $peserta->alamat,
+            'asal_sekolah'       => $peserta->asal_sekolah,
         ]);
     }
 

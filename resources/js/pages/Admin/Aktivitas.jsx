@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import DatePickerInput from '../../components/DatePickerInput';
 
 const ACTION_COLORS = {
     LOGIN: 'bg-green-100 text-green-800',
@@ -86,10 +87,20 @@ export default function Aktivitas() {
                         <option value="">Semua Aksi</option>
                         {actions.map(a => <option key={a} value={a}>{a}</option>)}
                     </select>
-                    <input type="date" value={filters.from} onChange={e => setFilters(f => ({ ...f, from: e.target.value }))} placeholder="Dari tanggal"
-                        className="col-span-1 sm:col-span-1 px-2.5 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-xs sm:text-sm" />
-                    <input type="date" value={filters.to} onChange={e => setFilters(f => ({ ...f, to: e.target.value }))} placeholder="Sampai tanggal"
-                        className="col-span-1 sm:col-span-1 px-2.5 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-xs sm:text-sm" />
+                    <DatePickerInput
+                        id="picker_filter_from"
+                        value={filters.from}
+                        onChange={val => setFilters(f => ({ ...f, from: val }))}
+                        placeholder="Dari tanggal"
+                        className="col-span-1 sm:col-span-1 px-2.5 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-xs sm:text-sm"
+                    />
+                    <DatePickerInput
+                        id="picker_filter_to"
+                        value={filters.to}
+                        onChange={val => setFilters(f => ({ ...f, to: val }))}
+                        placeholder="Sampai tanggal"
+                        className="col-span-1 sm:col-span-1 px-2.5 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-xs sm:text-sm"
+                    />
                     <div className="col-span-2 sm:col-span-1 flex gap-2">
                         <button type="submit" className="flex-1 bg-[#E67E22] text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg hover:bg-[#D35400] transition text-xs sm:text-sm">
                             <i className="fas fa-search mr-1.5"></i>Filter

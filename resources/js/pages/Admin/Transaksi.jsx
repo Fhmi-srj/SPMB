@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../contexts/AuthContext';
+import DatePickerInput from '../../components/DatePickerInput';
 
 const API = '/api';
 const fmt = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
@@ -326,85 +327,112 @@ export default function Transaksi() {
 
             {/* Modal Pemasukan */}
             {(showModal === 'pemasukan' || showModal === 'edit_pemasukan') && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-gray-200">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden border border-gray-100">
+                        <div className="p-6 border-b border-gray-200 flex-shrink-0">
                             <h3 className="text-xl font-bold text-gray-800">{showModal === 'edit_pemasukan' ? 'Edit Pemasukan' : 'Tambah Pemasukan'}</h3>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6">
-                            {showModal === 'edit_pemasukan' && (
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Peserta</label>
-                                    <input type="text" value={searchPeserta} disabled className="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-500 outline-none" />
-                                </div>
-                            )}
-                            {showModal === 'pemasukan' && (
-                                <>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Peserta *</label>
-                                        <input type="text" value={searchPeserta} onChange={e => searchPesertaFn(e.target.value)} placeholder="Ketik nama atau no. registrasi..." autoComplete="off"
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-                                        {searchResults.length > 0 && (
-                                            <div className="mt-2 border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
-                                                {searchResults.map(p => (
-                                                    <button type="button" key={p.id} onClick={() => selectPeserta(p)} className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm border-b border-gray-100">
-                                                        <span className="font-medium">{p.nama}</span>
-                                                        {p.no_registrasi && <span className="text-gray-500 ml-2">({p.no_registrasi})</span>}
-                                                        <span className="text-xs text-gray-400 ml-2">{p.lembaga}</span>
-                                                    </button>
-                                                ))}
+                        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                                {showModal === 'edit_pemasukan' && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Peserta</label>
+                                        <input type="text" value={searchPeserta} disabled className="w-full px-3 py-2 border border-gray-200 bg-gray-50 rounded-lg text-gray-500 outline-none" />
+                                    </div>
+                                )}
+                                {showModal === 'pemasukan' && (
+                                    <>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Peserta *</label>
+                                            <input type="text" value={searchPeserta} onChange={e => searchPesertaFn(e.target.value)} placeholder="Ketik nama atau no. registrasi..." autoComplete="off"
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                            {searchResults.length > 0 && (
+                                                <div className="mt-2 border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
+                                                    {searchResults.map(p => (
+                                                        <button type="button" key={p.id} onClick={() => selectPeserta(p)} className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm border-b border-gray-100">
+                                                            <span className="font-medium">{p.nama}</span>
+                                                            {p.no_registrasi && <span className="text-gray-500 ml-2">({p.no_registrasi})</span>}
+                                                            <span className="text-xs text-gray-400 ml-2">{p.lembaga}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {tagihanInfo && (
+                                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                                                <h4 className="font-semibold text-blue-800 mb-2 text-sm">Rincian Tagihan</h4>
+                                                
+                                                <div className="mb-3 pb-2 border-b border-blue-200/50 text-xs space-y-1 text-blue-950">
+                                                    <div><span className="font-semibold text-blue-800">Sekolah Asal:</span> {tagihanInfo.asal_sekolah || '-'}</div>
+                                                    <div><span className="font-semibold text-blue-800">Alamat:</span> {tagihanInfo.alamat || '-'}</div>
+                                                </div>
+
+                                                <div className="space-y-2 text-xs sm:text-sm">
+                                                    <div className="flex justify-between"><span className="text-gray-700">Biaya Sekolah:</span><span className="font-semibold">{fmt(tagihanInfo.biaya_sekolah)}</span></div>
+                                                    <div className="flex justify-between"><span className="text-gray-700">Biaya Perlengkapan:</span><span className="font-semibold">{fmt(tagihanInfo.biaya_perlengkapan)}</span></div>
+                                                    
+                                                    {tagihanInfo.perlengkapan_details && tagihanInfo.perlengkapan_details.length > 0 && (
+                                                        <div className="bg-blue-100/30 rounded-lg p-2 border border-blue-200/30 space-y-1 my-1">
+                                                            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wider mb-0.5">Perlengkapan Dipesan:</p>
+                                                            {tagihanInfo.perlengkapan_details.map((x, idx) => (
+                                                                <div key={idx} className="flex justify-between text-[11px] text-gray-700">
+                                                                    <span>• {x.nama_item}</span>
+                                                                    <span className="font-semibold text-gray-600">{fmt(x.nominal)}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex justify-between border-t border-blue-300 pt-2 mt-2"><span className="font-semibold text-gray-800">Total Tagihan:</span><span className="font-bold text-blue-800">{fmt(tagihanInfo.total_tagihan)}</span></div>
+                                                    <div className="flex justify-between"><span className="text-gray-700">Sudah Dibayar:</span><span className="font-semibold text-green-600">{fmt(tagihanInfo.total_dibayar)}</span></div>
+                                                    <div className="flex justify-between border-t border-blue-300 pt-2 mt-2"><span className="font-semibold text-gray-800">Sisa Kekurangan:</span><span className="font-bold text-red-600">{fmt(tagihanInfo.sisa_kekurangan)}</span></div>
+                                                </div>
                                             </div>
                                         )}
+                                    </>
+                                )}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal *</label>
+                                        <DatePickerInput
+                                            id="picker_pemasukan_tanggal"
+                                            value={form.tanggal || ''}
+                                            onChange={val => setForm({ ...form, tanggal: val })}
+                                            required
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm"
+                                        />
                                     </div>
-                                    {tagihanInfo && (
-                                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                                            <h4 className="font-semibold text-blue-800 mb-3">Rincian Tagihan</h4>
-                                            <div className="space-y-2 text-sm">
-                                                <div className="flex justify-between"><span className="text-gray-700">Biaya Sekolah:</span><span className="font-semibold">{fmt(tagihanInfo.biaya_sekolah)}</span></div>
-                                                <div className="flex justify-between"><span className="text-gray-700">Biaya Perlengkapan:</span><span className="font-semibold">{fmt(tagihanInfo.biaya_perlengkapan)}</span></div>
-                                                <div className="flex justify-between border-t border-blue-300 pt-2 mt-2"><span className="font-semibold text-gray-800">Total Tagihan:</span><span className="font-bold text-blue-800">{fmt(tagihanInfo.total_tagihan)}</span></div>
-                                                <div className="flex justify-between"><span className="text-gray-700">Sudah Dibayar:</span><span className="font-semibold text-green-600">{fmt(tagihanInfo.total_dibayar)}</span></div>
-                                                <div className="flex justify-between border-t border-blue-300 pt-2 mt-2"><span className="font-semibold text-gray-800">Sisa Kekurangan:</span><span className="font-bold text-red-600">{fmt(tagihanInfo.sisa_kekurangan)}</span></div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal *</label>
-                                    <input type="date" value={form.tanggal || ''} onChange={e => setForm({ ...form, tanggal: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
+                                        <input
+                                            type="text"
+                                            value={formatNumberString(form.nominal)}
+                                            onChange={e => {
+                                                const clean = e.target.value.replace(/\D/g, '');
+                                                setForm({ ...form, nominal: clean });
+                                            }}
+                                            required
+                                            placeholder="Masukkan nominal"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"
+                                        />
+                                    </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
-                                    <input
-                                        type="text"
-                                        value={formatNumberString(form.nominal)}
-                                        onChange={e => {
-                                            const clean = e.target.value.replace(/\D/g, '');
-                                            setForm({ ...form, nominal: clean });
-                                        }}
-                                        required
-                                        placeholder="Masukkan nominal"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Pembayaran *</label>
+                                    <select value={form.jenis_pembayaran || ''} onChange={e => setForm({ ...form, jenis_pembayaran: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                                        <option value="">Pilih Jenis</option>
+                                        <option value="Transfer">Transfer</option>
+                                        <option value="Cash">Cash</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                                    <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"></textarea>
                                 </div>
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Pembayaran *</label>
-                                <select value={form.jenis_pembayaran || ''} onChange={e => setForm({ ...form, jenis_pembayaran: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
-                                    <option value="">Pilih Jenis</option>
-                                    <option value="Transfer">Transfer</option>
-                                    <option value="Cash">Cash</option>
-                                </select>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-                                <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"></textarea>
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                                <button type="button" onClick={() => { setShowModal(null); setTagihanInfo(null); setSearchPeserta(''); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Simpan</button>
+                            <div className="p-6 border-t border-gray-200 flex gap-2 justify-end flex-shrink-0 bg-gray-50">
+                                <button type="button" onClick={() => { setShowModal(null); setTagihanInfo(null); setSearchPeserta(''); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 bg-white transition">Batal</button>
+                                <button type="submit" className="px-5 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold rounded-lg shadow-sm transition">Simpan</button>
                             </div>
                         </form>
                     </div>
@@ -413,46 +441,54 @@ export default function Transaksi() {
 
             {/* Modal Pengeluaran */}
             {(showModal === 'pengeluaran' || showModal === 'edit_pengeluaran') && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4">
-                        <div className="p-6 border-b border-gray-200">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col overflow-hidden border border-gray-100">
+                        <div className="p-6 border-b border-gray-200 flex-shrink-0">
                             <h3 className="text-xl font-bold text-gray-800">{showModal === 'edit_pengeluaran' ? 'Edit Pengeluaran' : 'Tambah Pengeluaran'}</h3>
                         </div>
-                        <form onSubmit={handleSubmit} className="p-6">
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal *</label>
-                                    <input type="date" value={form.tanggal || ''} onChange={e => setForm({ ...form, tanggal: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+                        <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                            <div className="p-6 overflow-y-auto flex-1 space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal *</label>
+                                        <DatePickerInput
+                                            id="picker_pengeluaran_tanggal"
+                                            value={form.tanggal || ''}
+                                            onChange={val => setForm({ ...form, tanggal: val })}
+                                            required
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
+                                        <input
+                                            type="text"
+                                            value={formatNumberString(form.nominal)}
+                                            onChange={e => {
+                                                const clean = e.target.value.replace(/\D/g, '');
+                                                setForm({ ...form, nominal: clean });
+                                            }}
+                                            required
+                                            placeholder="Masukkan nominal"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"
+                                        />
+                                    </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Nominal *</label>
-                                    <input
-                                        type="text"
-                                        value={formatNumberString(form.nominal)}
-                                        onChange={e => {
-                                            const clean = e.target.value.replace(/\D/g, '');
-                                            setForm({ ...form, nominal: clean });
-                                        }}
-                                        required
-                                        placeholder="Masukkan nominal"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"
-                                    />
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
+                                    <select value={form.kategori || ''} onChange={e => setForm({ ...form, kategori: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
+                                        <option value="">Pilih Kategori</option>
+                                        {kategoriList.map(k => <option key={k} value={k}>{k}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                                    <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"></textarea>
                                 </div>
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Kategori *</label>
-                                <select value={form.kategori || ''} onChange={e => setForm({ ...form, kategori: e.target.value })} required className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none">
-                                    <option value="">Pilih Kategori</option>
-                                    {kategoriList.map(k => <option key={k} value={k}>{k}</option>)}
-                                </select>
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
-                                <textarea value={form.keterangan || ''} onChange={e => setForm({ ...form, keterangan: e.target.value })} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none"></textarea>
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                                <button type="button" onClick={() => setShowModal(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Simpan</button>
+                            <div className="p-6 border-t border-gray-200 flex gap-2 justify-end flex-shrink-0 bg-gray-50">
+                                <button type="button" onClick={() => { setShowModal(null); setForm({}); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 bg-white transition">Batal</button>
+                                <button type="submit" className="px-5 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold rounded-lg shadow-sm transition">Simpan</button>
                             </div>
                         </form>
                     </div>

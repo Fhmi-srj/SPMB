@@ -20,6 +20,7 @@ import Perlengkapan from './pages/Admin/Perlengkapan';
 import PosKeuangan from './pages/Admin/PosKeuangan';
 import KelolaUser from './pages/Admin/KelolaUser';
 import Profil from './pages/Admin/Profil';
+import RekapPendaftaran from './pages/Admin/RekapPendaftaran';
 
 // Public Pages
 import Beranda from './pages/Public/Beranda';
@@ -49,6 +50,7 @@ function App() {
                                     <Route index element={<Navigate to="dashboard" replace />} />
                                     <Route path="dashboard" element={<Dashboard />} />
                                     <Route path="pendaftaran" element={<Pendaftaran />} />
+                                    <Route path="rekap-pendaftaran" element={<RekapPendaftaran />} />
                                     <Route path="transaksi" element={<Transaksi />} />
                                     <Route path="perlengkapan" element={<Perlengkapan />} />
                                     <Route path="pos-keuangan" element={<PosKeuangan />} />

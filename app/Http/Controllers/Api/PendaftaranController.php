@@ -174,7 +174,18 @@ class PendaftaranController extends Controller
             $tahunAjaran = Pengaturan::where('kunci', 'tahun_ajaran')->value('nilai');
             $tahun = substr(($tahunAjaran ?? date('Y')), 0, 4);
             $bulan = date('m');
-            $count = Pendaftaran::whereMonth('created_at', date('m'))->lockForUpdate()->count() + 1;
+            
+            // Generate registration number based on current month/year suffix to avoid DB lock and timezone issues
+            $latest = Pendaftaran::where('no_registrasi', 'like', "%." . $bulan . $tahun)
+                ->orderByDesc('id')
+                ->first();
+            if ($latest) {
+                $parts = explode('.', $latest->no_registrasi);
+                $lastCount = (int) $parts[0];
+                $count = $lastCount + 1;
+            } else {
+                $count = 1;
+            }
             $noReg = str_pad($count, 3, '0', STR_PAD_LEFT) . '.' . $bulan . $tahun;
 
             // Use whitelist instead of $request->except() to prevent mass assignment (Fix #6, #14)
@@ -544,5 +555,380 @@ class PendaftaranController extends Controller
         } catch (\Exception $e) {
             // Silently fail
         }
+    }
+
+    public function rekap(Request $request): JsonResponse
+    {
+        $query = Pendaftaran::query();
+
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('no_registrasi', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->lembaga) {
+            $query->where('lembaga', $request->lembaga);
+        }
+
+        if ($request->status_mukim) {
+            $query->where('status_mukim', $request->status_mukim);
+        }
+
+        // Calculate summary statistics for ALL filtered records
+        $allFiltered = (clone $query)->get(['id', 'lembaga', 'status_mukim', 'file_kk', 'file_ktp_ortu', 'file_akta', 'file_ijazah']);
+        
+        $biayaSMPTotal = \App\Models\Biaya::sum('biaya_smp');
+        $biayaMATotal = \App\Models\Biaya::sum('biaya_ma');
+        $biayaPondokTotal = \App\Models\Biaya::sum('biaya_pondok');
+
+        $filteredIds = $allFiltered->pluck('id')->toArray();
+
+        // Get perlengkapan orders sum for filtered in bulk
+        $perlengkapanTotals = [];
+        if (!empty($filteredIds)) {
+            $perlengkapanTotals = \DB::table('perlengkapan_pesanan')
+                ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
+                ->whereIn('perlengkapan_pesanan.pendaftaran_id', $filteredIds)
+                ->where('perlengkapan_pesanan.status', 1)
+                ->groupBy('perlengkapan_pesanan.pendaftaran_id')
+                ->select('perlengkapan_pesanan.pendaftaran_id', \DB::raw('SUM(perlengkapan_items.nominal) as total'))
+                ->pluck('total', 'pendaftaran_id')
+                ->toArray();
+        }
+
+        // Get total paid for filtered in bulk
+        $paidTotals = [];
+        if (!empty($filteredIds)) {
+            $paidTotals = \DB::table('transaksi_pemasukan')
+                ->whereIn('pendaftaran_id', $filteredIds)
+                ->where('status', 'approved')
+                ->groupBy('pendaftaran_id')
+                ->select('pendaftaran_id', \DB::raw('SUM(nominal) as total'))
+                ->pluck('total', 'pendaftaran_id')
+                ->toArray();
+        }
+
+        $sumTotalTagihan = 0;
+        $sumTotalKekurangan = 0;
+        $sumTotalPaid = 0;
+        $countLengkap = 0;
+
+        foreach ($allFiltered as $p) {
+            $tagihanSekolah = ($p->lembaga === 'SMP NU BP') ? $biayaSMPTotal : $biayaMATotal;
+            $tagihanPondok = ($p->status_mukim === 'PONDOK PP MAMBAUL HUDA') ? $biayaPondokTotal : 0;
+            $tagihanFees = $tagihanSekolah + $tagihanPondok;
+            $pemesananPerlengkapan = $perlengkapanTotals[$p->id] ?? 0;
+            $totalTagihan = $tagihanFees + $pemesananPerlengkapan;
+            $totalPaid = $paidTotals[$p->id] ?? 0;
+            $kekurangan = $totalTagihan - $totalPaid;
+
+            $isLengkap = !empty($p->file_kk) && !empty($p->file_ktp_ortu) && !empty($p->file_akta) && !empty($p->file_ijazah);
+
+            $sumTotalTagihan += $totalTagihan;
+            $sumTotalKekurangan += $kekurangan;
+            $sumTotalPaid += $totalPaid;
+            if ($isLengkap) {
+                $countLengkap++;
+            }
+        }
+
+        $totalPengeluaran = \App\Models\TransaksiPengeluaran::where('status', 'approved')->sum('nominal');
+
+        $perPage = (int)($request->per_page ?? 20);
+        $paginator = $query->orderBy('no_registrasi')->paginate($perPage);
+
+        $items = [];
+        foreach ($paginator->items() as $p) {
+            $tagihanSekolah = ($p->lembaga === 'SMP NU BP') ? $biayaSMPTotal : $biayaMATotal;
+            $tagihanPondok = ($p->status_mukim === 'PONDOK PP MAMBAUL HUDA') ? $biayaPondokTotal : 0;
+            $tagihanFees = $tagihanSekolah + $tagihanPondok;
+            $pemesananPerlengkapan = $perlengkapanTotals[$p->id] ?? 0;
+            $totalTagihan = $tagihanFees + $pemesananPerlengkapan;
+            $totalPaid = $paidTotals[$p->id] ?? 0;
+            $kekurangan = $totalTagihan - $totalPaid;
+
+            $isLengkap = !empty($p->file_kk) && !empty($p->file_ktp_ortu) && !empty($p->file_akta) && !empty($p->file_ijazah);
+            $missing = [];
+            if (empty($p->file_kk)) $missing[] = 'KK';
+            if (empty($p->file_ktp_ortu)) $missing[] = 'KTP';
+            if (empty($p->file_akta)) $missing[] = 'Akta';
+            if (empty($p->file_ijazah)) $missing[] = 'Ijazah';
+            $statusBerkasLabel = $isLengkap ? 'Lengkap' : 'Belum Lengkap (' . implode(', ', $missing) . ')';
+
+            $items[] = [
+                'id' => $p->id,
+                'no_registrasi' => $p->no_registrasi,
+                'nama' => $p->nama,
+                'lembaga' => $p->lembaga,
+                'alamat' => $p->alamat,
+                'status_berkas' => $isLengkap ? 'Lengkap' : 'Belum Lengkap',
+                'status_berkas_detail' => $statusBerkasLabel,
+                'missing_berkas' => $missing,
+                'tagihan' => $tagihanFees,
+                'pemesanan' => $pemesananPerlengkapan,
+                'total_tagihan' => $totalTagihan,
+                'total_dibayar' => $totalPaid,
+                'kekurangan' => $kekurangan,
+                'status_mukim' => $p->status_mukim,
+                'asal_sekolah' => $p->asal_sekolah,
+            ];
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $items,
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+            'summary' => [
+                'total_pendaftar' => $allFiltered->count(),
+                'total_lengkap_berkas' => $countLengkap,
+                'total_tagihan' => $sumTotalTagihan,
+                'total_kekurangan' => $sumTotalKekurangan,
+                'total_pemasukan' => $sumTotalPaid,
+                'total_pengeluaran' => $totalPengeluaran,
+            ]
+        ]);
+    }
+
+    public function exportRekapExcel(Request $request)
+    {
+        $query = Pendaftaran::query();
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('no_registrasi', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%");
+            });
+        }
+        if ($request->lembaga) $query->where('lembaga', $request->lembaga);
+        if ($request->status_mukim) $query->where('status_mukim', $request->status_mukim);
+
+        $data = $query->orderBy('no_registrasi')->get();
+
+        $biayaSMPTotal = \App\Models\Biaya::sum('biaya_smp');
+        $biayaMATotal = \App\Models\Biaya::sum('biaya_ma');
+        $biayaPondokTotal = \App\Models\Biaya::sum('biaya_pondok');
+
+        $studentIds = $data->pluck('id')->toArray();
+
+        $perlengkapanTotals = [];
+        if (!empty($studentIds)) {
+            $perlengkapanTotals = \DB::table('perlengkapan_pesanan')
+                ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
+                ->whereIn('perlengkapan_pesanan.pendaftaran_id', $studentIds)
+                ->where('perlengkapan_pesanan.status', 1)
+                ->groupBy('perlengkapan_pesanan.pendaftaran_id')
+                ->select('perlengkapan_pesanan.pendaftaran_id', \DB::raw('SUM(perlengkapan_items.nominal) as total'))
+                ->pluck('total', 'pendaftaran_id')
+                ->toArray();
+        }
+
+        $paidTotals = [];
+        if (!empty($studentIds)) {
+            $paidTotals = \DB::table('transaksi_pemasukan')
+                ->whereIn('pendaftaran_id', $studentIds)
+                ->where('status', 'approved')
+                ->groupBy('pendaftaran_id')
+                ->select('pendaftaran_id', \DB::raw('SUM(nominal) as total'))
+                ->pluck('total', 'pendaftaran_id')
+                ->toArray();
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Rekap Pendaftaran');
+
+        $headers = [
+            'No', 'No. Reg', 'Nama Calon', 'Lembaga', 'Alamat', 
+            'Status Pemberkasan', 'Tagihan (Sekolah & Pondok)', 
+            'Pemesanan (Perlengkapan)', 'Total Tagihan', 'Kekurangan Pembayaran'
+        ];
+
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $col++;
+        }
+
+        $row = 2;
+        foreach ($data as $i => $p) {
+            $tagihanSekolah = ($p->lembaga === 'SMP NU BP') ? $biayaSMPTotal : $biayaMATotal;
+            $tagihanPondok = ($p->status_mukim === 'PONDOK PP MAMBAUL HUDA') ? $biayaPondokTotal : 0;
+            $tagihanFees = $tagihanSekolah + $tagihanPondok;
+            $pemesananPerlengkapan = $perlengkapanTotals[$p->id] ?? 0;
+            $totalTagihan = $tagihanFees + $pemesananPerlengkapan;
+            $totalPaid = $paidTotals[$p->id] ?? 0;
+            $kekurangan = $totalTagihan - $totalPaid;
+
+            $isLengkap = !empty($p->file_kk) && !empty($p->file_ktp_ortu) && !empty($p->file_akta) && !empty($p->file_ijazah);
+            $missing = [];
+            if (empty($p->file_kk)) $missing[] = 'KK';
+            if (empty($p->file_ktp_ortu)) $missing[] = 'KTP';
+            if (empty($p->file_akta)) $missing[] = 'Akta';
+            if (empty($p->file_ijazah)) $missing[] = 'Ijazah';
+            $statusBerkasLabel = $isLengkap ? 'Lengkap' : 'Belum Lengkap (' . implode(', ', $missing) . ')';
+
+            $sheet->setCellValue('A' . $row, $i + 1);
+            $sheet->setCellValue('B' . $row, $p->no_registrasi);
+            $sheet->setCellValue('C' . $row, $p->nama);
+            $sheet->setCellValue('D' . $row, $p->lembaga);
+            $sheet->setCellValue('E' . $row, $p->alamat);
+            $sheet->setCellValue('F' . $row, $statusBerkasLabel);
+            $sheet->setCellValue('G' . $row, $tagihanFees);
+            $sheet->setCellValue('H' . $row, $pemesananPerlengkapan);
+            $sheet->setCellValue('I' . $row, $totalTagihan);
+            $sheet->setCellValue('J' . $row, $kekurangan);
+            $row++;
+        }
+
+        foreach (range('A', 'J') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $filename = 'rekap-pendaftaran-' . date('Ymd-His') . '.xlsx';
+        $tempPath = sys_get_temp_dir() . '/' . $filename;
+        $writer->save($tempPath);
+
+        ActivityLog::create([
+            'admin_id' => auth()->id(),
+            'action' => 'EXPORT',
+            'description' => 'Export rekap pendaftaran ke Excel (' . $data->count() . ' records)',
+            'ip_address' => request()->ip(),
+        ]);
+
+        return response()->download($tempPath, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function exportRekapPdf(Request $request)
+    {
+        $query = Pendaftaran::query();
+        if ($request->search) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('no_registrasi', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%");
+            });
+        }
+        if ($request->lembaga) $query->where('lembaga', $request->lembaga);
+        if ($request->status_mukim) $query->where('status_mukim', $request->status_mukim);
+
+        $data = $query->orderBy('no_registrasi')->get();
+
+        $biayaSMPTotal = \App\Models\Biaya::sum('biaya_smp');
+        $biayaMATotal = \App\Models\Biaya::sum('biaya_ma');
+        $biayaPondokTotal = \App\Models\Biaya::sum('biaya_pondok');
+
+        $studentIds = $data->pluck('id')->toArray();
+
+        $perlengkapanTotals = [];
+        if (!empty($studentIds)) {
+            $perlengkapanTotals = \DB::table('perlengkapan_pesanan')
+                ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
+                ->whereIn('perlengkapan_pesanan.pendaftaran_id', $studentIds)
+                ->where('perlengkapan_pesanan.status', 1)
+                ->groupBy('perlengkapan_pesanan.pendaftaran_id')
+                ->select('perlengkapan_pesanan.pendaftaran_id', \DB::raw('SUM(perlengkapan_items.nominal) as total'))
+                ->pluck('total', 'pendaftaran_id')
+                ->toArray();
+        }
+
+        $paidTotals = [];
+        if (!empty($studentIds)) {
+            $paidTotals = \DB::table('transaksi_pemasukan')
+                ->whereIn('pendaftaran_id', $studentIds)
+                ->where('status', 'approved')
+                ->groupBy('pendaftaran_id')
+                ->select('pendaftaran_id', \DB::raw('SUM(nominal) as total'))
+                ->pluck('total', 'pendaftaran_id')
+                ->toArray();
+        }
+
+        $sumTotalTagihan = 0;
+        $sumTotalKekurangan = 0;
+        $sumTotalPaid = 0;
+        $countLengkap = 0;
+
+        $items = [];
+        foreach ($data as $p) {
+            $tagihanSekolah = ($p->lembaga === 'SMP NU BP') ? $biayaSMPTotal : $biayaMATotal;
+            $tagihanPondok = ($p->status_mukim === 'PONDOK PP MAMBAUL HUDA') ? $biayaPondokTotal : 0;
+            $tagihanFees = $tagihanSekolah + $tagihanPondok;
+            $pemesananPerlengkapan = $perlengkapanTotals[$p->id] ?? 0;
+            $totalTagihan = $tagihanFees + $pemesananPerlengkapan;
+            $totalPaid = $paidTotals[$p->id] ?? 0;
+            $kekurangan = $totalTagihan - $totalPaid;
+
+            $isLengkap = !empty($p->file_kk) && !empty($p->file_ktp_ortu) && !empty($p->file_akta) && !empty($p->file_ijazah);
+            $missing = [];
+            if (empty($p->file_kk)) $missing[] = 'KK';
+            if (empty($p->file_ktp_ortu)) $missing[] = 'KTP';
+            if (empty($p->file_akta)) $missing[] = 'Akta';
+            if (empty($p->file_ijazah)) $missing[] = 'Ijazah';
+            $statusBerkasLabel = $isLengkap ? 'Lengkap' : 'Belum Lengkap (' . implode(', ', $missing) . ')';
+
+            $sumTotalTagihan += $totalTagihan;
+            $sumTotalKekurangan += $kekurangan;
+            $sumTotalPaid += $totalPaid;
+            if ($isLengkap) {
+                $countLengkap++;
+            }
+
+            $items[] = [
+                'no_registrasi' => $p->no_registrasi,
+                'nama' => $p->nama,
+                'lembaga' => $p->lembaga,
+                'alamat' => $p->alamat,
+                'status_berkas' => $isLengkap ? 'Lengkap' : 'Belum Lengkap',
+                'status_berkas_detail' => $statusBerkasLabel,
+                'tagihan' => $tagihanFees,
+                'pemesanan' => $pemesananPerlengkapan,
+                'total_tagihan' => $totalTagihan,
+                'total_dibayar' => $totalPaid,
+                'kekurangan' => $kekurangan,
+            ];
+        }
+
+        $totalPengeluaran = \App\Models\TransaksiPengeluaran::where('status', 'approved')->sum('nominal');
+
+        $summary = [
+            'total_pendaftar' => $data->count(),
+            'total_lengkap_berkas' => $countLengkap,
+            'total_tagihan' => $sumTotalTagihan,
+            'total_kekurangan' => $sumTotalKekurangan,
+            'total_pemasukan' => $sumTotalPaid,
+            'total_pengeluaran' => $totalPengeluaran,
+        ];
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekap_pendaftaran', [
+            'data' => $items,
+            'title' => 'Rekap Pendaftaran Calon Siswa Baru',
+            'date' => date('d/m/Y H:i'),
+            'summary' => $summary,
+        ]);
+
+        $pdf->setPaper('a4', 'landscape');
+
+        ActivityLog::create([
+            'admin_id' => auth()->id(),
+            'action' => 'EXPORT',
+            'description' => 'Export rekap pendaftaran ke PDF (' . $data->count() . ' records)',
+            'ip_address' => request()->ip(),
+        ]);
+
+        return $pdf->download('rekap-pendaftaran-' . date('Ymd-His') . '.pdf');
     }
 }

@@ -67,6 +67,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Pendaftaran (admin CRUD)
     Route::get('pendaftaran', [PendaftaranController::class, 'index']);
+    Route::get('pendaftaran/rekap', [PendaftaranController::class, 'rekap']);
+    Route::get('pendaftaran/rekap/excel', [PendaftaranController::class, 'exportRekapExcel']);
+    Route::get('pendaftaran/rekap/pdf', [PendaftaranController::class, 'exportRekapPdf']);
     Route::get('pendaftaran/export/excel', [PendaftaranController::class, 'exportExcel']); // Must be BEFORE {id} route
     Route::post('pendaftaran/verify-bulk', [PendaftaranController::class, 'verifyBulk']);
     Route::get('pendaftaran/{id}', [PendaftaranController::class, 'show'])->where('id', '[0-9]+');

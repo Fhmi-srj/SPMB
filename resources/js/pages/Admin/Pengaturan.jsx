@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
+import DatePickerInput from '../../components/DatePickerInput';
 
 export default function Pengaturan() {
     const { token } = useAuth();
@@ -76,11 +77,21 @@ export default function Pengaturan() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                                 <div className="text-left">
                                     <label className="text-[10px] text-gray-500">Mulai</label>
-                                    <input type="date" value={settings.gelombang_1_start ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_1_start: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
+                                    <DatePickerInput
+                                        id="picker_gelombang_1_start"
+                                        value={settings.gelombang_1_start ?? ''}
+                                        onChange={val => setSettings(s => ({ ...s, gelombang_1_start: val }))}
+                                        className={dateInputCls + " text-[11px] sm:text-sm"}
+                                    />
                                 </div>
                                 <div className="text-left">
                                     <label className="text-[10px] text-gray-500">Selesai</label>
-                                    <input type="date" value={settings.gelombang_1_end ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_1_end: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
+                                    <DatePickerInput
+                                        id="picker_gelombang_1_end"
+                                        value={settings.gelombang_1_end ?? ''}
+                                        onChange={val => setSettings(s => ({ ...s, gelombang_1_end: val }))}
+                                        className={dateInputCls + " text-[11px] sm:text-sm"}
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -89,11 +100,21 @@ export default function Pengaturan() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                                 <div className="text-left">
                                     <label className="text-[10px] text-gray-500">Mulai</label>
-                                    <input type="date" value={settings.gelombang_2_start ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_2_start: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
+                                    <DatePickerInput
+                                        id="picker_gelombang_2_start"
+                                        value={settings.gelombang_2_start ?? ''}
+                                        onChange={val => setSettings(s => ({ ...s, gelombang_2_start: val }))}
+                                        className={dateInputCls + " text-[11px] sm:text-sm"}
+                                    />
                                 </div>
                                 <div className="text-left">
                                     <label className="text-[10px] text-gray-500">Selesai</label>
-                                    <input type="date" value={settings.gelombang_2_end ?? ''} onChange={e => setSettings(s => ({ ...s, gelombang_2_end: e.target.value }))} className={dateInputCls + " text-[11px] sm:text-sm"} />
+                                    <DatePickerInput
+                                        id="picker_gelombang_2_end"
+                                        value={settings.gelombang_2_end ?? ''}
+                                        onChange={val => setSettings(s => ({ ...s, gelombang_2_end: val }))}
+                                        className={dateInputCls + " text-[11px] sm:text-sm"}
+                                    />
                                 </div>
                             </div>
                         </div>

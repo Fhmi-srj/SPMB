@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
+import DatePickerInput from '../../components/DatePickerInput';
 
 const STATUS_COLORS = {
     pending: 'bg-amber-100 text-amber-700',
@@ -599,8 +600,12 @@ export default function Pendaftaran() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">Tanggal Lahir</label>
-                                    <input type="date" value={editForm.tanggal_lahir || ''} onChange={e => setEdit('tanggal_lahir', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white" />
+                                    <DatePickerInput
+                                        id="picker_pendaftaran_tanggal_lahir"
+                                        value={editForm.tanggal_lahir || ''}
+                                        onChange={val => setEdit('tanggal_lahir', val)}
+                                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none bg-white"
+                                    />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 mb-1">Asal Sekolah</label>
