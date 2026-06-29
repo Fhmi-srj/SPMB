@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { useAuth } from '../../contexts/AuthContext';
@@ -28,6 +28,8 @@ export default function Transaksi() {
     const [tagihanInfo, setTagihanInfo] = useState(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [activeSearchIndex, setActiveSearchIndex] = useState(-1);
+    const activeItemRef = useRef(null);
     const [kategoriList, setKategoriList] = useState(['Registrasi', 'MA', 'SMP', 'Pondok', 'Perlengkapan', 'Lainnya']);
 
     const isSuperAdmin = user?.role === 'super_admin';
@@ -52,8 +54,15 @@ export default function Transaksi() {
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
+    useEffect(() => {
+        if (activeSearchIndex >= 0 && activeItemRef.current) {
+            activeItemRef.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    }, [activeSearchIndex]);
+
     const searchPesertaFn = async (q) => {
         setSearchPeserta(q);
+        setActiveSearchIndex(-1);
         if (q.length < 1) { setSearchResults([]); return; }
         try {
             const res = await axios.get(`${API}/transaksi/search-peserta`, { headers, params: { q } });
@@ -65,11 +74,32 @@ export default function Transaksi() {
         setForm({ ...form, pendaftaran_id: p.id });
         setSearchPeserta(p.nama + (p.no_registrasi ? ` (${p.no_registrasi})` : ''));
         setSearchResults([]);
+        setActiveSearchIndex(-1);
         // Load tagihan
         try {
             const res = await axios.get(`${API}/transaksi/tagihan/${p.id}`, { headers });
             setTagihanInfo(res.data);
         } catch { }
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (searchResults.length === 0) return;
+        
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setActiveSearchIndex(prev => (prev + 1) % searchResults.length);
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setActiveSearchIndex(prev => (prev - 1 + searchResults.length) % searchResults.length);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (activeSearchIndex >= 0 && activeSearchIndex < searchResults.length) {
+                selectPeserta(searchResults[activeSearchIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            setSearchResults([]);
+            setActiveSearchIndex(-1);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -348,12 +378,20 @@ export default function Transaksi() {
                                     <>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Peserta *</label>
-                                            <input type="text" value={searchPeserta} onChange={e => searchPesertaFn(e.target.value)} placeholder="Ketik nama atau no. registrasi..." autoComplete="off"
+                                            <input type="text" value={searchPeserta} onChange={e => searchPesertaFn(e.target.value)} onKeyDown={handleSearchKeyDown} placeholder="Ketik nama atau no. registrasi..." autoComplete="off"
                                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
                                             {searchResults.length > 0 && (
                                                 <div className="mt-2 border border-gray-200 rounded-lg max-h-48 overflow-y-auto">
-                                                    {searchResults.map(p => (
-                                                        <button type="button" key={p.id} onClick={() => selectPeserta(p)} className="w-full text-left px-3 py-2 hover:bg-gray-100 text-sm border-b border-gray-100">
+                                                    {searchResults.map((p, index) => (
+                                                        <button 
+                                                            type="button" 
+                                                            key={p.id} 
+                                                            ref={index === activeSearchIndex ? activeItemRef : null}
+                                                            onClick={() => selectPeserta(p)} 
+                                                            className={`w-full text-left px-3 py-2 text-sm border-b border-gray-100 transition ${
+                                                                index === activeSearchIndex ? 'bg-orange-50 text-[#E67E22] font-semibold' : 'hover:bg-gray-100'
+                                                            }`}
+                                                        >
                                                             <span className="font-medium">{p.nama}</span>
                                                             {p.no_registrasi && <span className="text-gray-500 ml-2">({p.no_registrasi})</span>}
                                                             <span className="text-xs text-gray-400 ml-2">{p.lembaga}</span>
