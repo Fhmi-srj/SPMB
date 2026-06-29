@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export default function DatePickerInput({
     value = '',
@@ -9,6 +9,7 @@ export default function DatePickerInput({
     required = false,
     disabled = false
 }) {
+    const [isFocused, setIsFocused] = useState(false);
     const pickerId = id || `picker_${Math.random().toString(36).substr(2, 9)}`;
 
     // Convert YYYY-MM-DD (with optional time) to DD/MM/YYYY
@@ -70,7 +71,9 @@ export default function DatePickerInput({
                 placeholder={placeholder}
                 value={formatToDMY(value)}
                 onChange={handleTextChange}
-                className={className}
+                className={`${className} ${isFocused ? 'ring-2 ring-[#E67E22] border-transparent outline-none' : ''}`}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 required={required}
                 disabled={disabled}
                 style={{ textTransform: 'none' }}
@@ -79,6 +82,8 @@ export default function DatePickerInput({
                 type="button"
                 onClick={openPicker}
                 disabled={disabled}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#E67E22] transition disabled:opacity-50"
             >
                 <i className="fas fa-calendar-alt text-lg"></i>
@@ -89,6 +94,8 @@ export default function DatePickerInput({
                 value={validYmdValue}
                 onChange={handlePickerChange}
                 disabled={disabled}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 className="absolute opacity-0 pointer-events-none"
                 style={{ width: '1px', height: '1px', padding: 0, margin: 0, border: 0, minWidth: 0, minHeight: 0 }}
             />
