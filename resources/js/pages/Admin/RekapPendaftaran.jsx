@@ -89,7 +89,7 @@ function DetailModal({ show, onClose, data }) {
 export default function RekapPendaftaran() {
     const { token } = useAuth();
     const [data, setData] = useState([]);
-    const [summary, setSummary] = useState({ total_pendaftar: 0, total_lengkap_berkas: 0, total_tagihan: 0, total_kekurangan: 0 });
+    const [summary, setSummary] = useState({ total_pendaftar: 0, total_lengkap_berkas: 0, total_tagihan: 0, total_kekurangan: 0, total_pemasukan: 0, total_pengeluaran: 0, saldo_tersedia: 0 });
     const [meta, setMeta] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 });
     const [loading, setLoading] = useState(true);
     
@@ -116,7 +116,7 @@ export default function RekapPendaftaran() {
             if (res.data.success) {
                 setData(res.data.data || []);
                 setMeta(res.data.meta || { current_page: 1, last_page: 1, per_page: 20, total: 0 });
-                setSummary(res.data.summary || { total_pendaftar: 0, total_lengkap_berkas: 0, total_tagihan: 0, total_kekurangan: 0 });
+                setSummary(res.data.summary || { total_pendaftar: 0, total_lengkap_berkas: 0, total_tagihan: 0, total_kekurangan: 0, total_pemasukan: 0, total_pengeluaran: 0, saldo_tersedia: 0 });
             }
         } catch (e) {
             console.error(e);
@@ -229,7 +229,7 @@ export default function RekapPendaftaran() {
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
                 <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-orange-50 text-[#E67E22] flex items-center justify-center text-base flex-shrink-0">
                         <i className="fas fa-users"></i>
@@ -258,6 +258,15 @@ export default function RekapPendaftaran() {
                     </div>
                 </div>
                 <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-base flex-shrink-0">
+                        <i className="fas fa-comment-dollar"></i>
+                    </div>
+                    <div className="min-w-0">
+                        <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider truncate">Kekurangan</p>
+                        <h3 className="text-lg font-bold text-amber-600 truncate">{fmt(summary.total_kekurangan)}</h3>
+                    </div>
+                </div>
+                <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center text-base flex-shrink-0">
                         <i className="fas fa-hand-holding-usd"></i>
                     </div>
@@ -276,12 +285,12 @@ export default function RekapPendaftaran() {
                     </div>
                 </div>
                 <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center text-base flex-shrink-0">
-                        <i className="fas fa-comment-dollar"></i>
+                    <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-base flex-shrink-0">
+                        <i className="fas fa-wallet"></i>
                     </div>
                     <div className="min-w-0">
-                        <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider truncate">Kekurangan</p>
-                        <h3 className="text-lg font-bold text-amber-600 truncate">{fmt(summary.total_kekurangan)}</h3>
+                        <p className="text-gray-500 text-[10px] font-semibold uppercase tracking-wider truncate">Saldo Tersedia</p>
+                        <h3 className="text-lg font-bold text-indigo-600 truncate">{fmt(summary.saldo_tersedia)}</h3>
                     </div>
                 </div>
             </div>

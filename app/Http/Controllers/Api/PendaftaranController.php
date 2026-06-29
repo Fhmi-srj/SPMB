@@ -694,6 +694,7 @@ class PendaftaranController extends Controller
                 'total_kekurangan' => $sumTotalKekurangan,
                 'total_pemasukan' => $sumTotalPaid,
                 'total_pengeluaran' => $totalPengeluaran,
+                'saldo_tersedia' => $sumTotalPaid - $totalPengeluaran,
             ]
         ]);
     }
@@ -911,6 +912,7 @@ class PendaftaranController extends Controller
             'total_kekurangan' => $sumTotalKekurangan,
             'total_pemasukan' => $sumTotalPaid,
             'total_pengeluaran' => $totalPengeluaran,
+            'saldo_tersedia' => $sumTotalPaid - $totalPengeluaran,
         ];
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.rekap_pendaftaran', [

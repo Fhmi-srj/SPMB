@@ -127,40 +127,46 @@
     @if(isset($summary))
     <table class="stats-table" style="margin-left: -8px; margin-right: -8px;">
         <tr>
-            <td width="16.6%">
+            <td width="14.28%">
                 <div class="stats-card" style="border-left: 3px solid #E67E22;">
                     <div class="stats-label">Total Pendaftar</div>
                     <div class="stats-value">{{ $summary['total_pendaftar'] }}</div>
                 </div>
             </td>
-            <td width="16.6%">
+            <td width="14.28%">
                 <div class="stats-card" style="border-left: 3px solid #2ecc71;">
                     <div class="stats-label">Berkas Lengkap</div>
                     <div class="stats-value">{{ $summary['total_lengkap_berkas'] }}</div>
                 </div>
             </td>
-            <td width="16.6%">
+            <td width="14.28%">
                 <div class="stats-card" style="border-left: 3px solid #3498db;">
                     <div class="stats-label">Total Tagihan</div>
                     <div class="stats-value">Rp {{ number_format($summary['total_tagihan'], 0, ',', '.') }}</div>
                 </div>
             </td>
-            <td width="16.6%">
+            <td width="14.28%">
+                <div class="stats-card" style="border-left: 3px solid #f39c12;">
+                    <div class="stats-label">Kekurangan</div>
+                    <div class="stats-value" style="color: #e74c3c;">Rp {{ number_format($summary['total_kekurangan'], 0, ',', '.') }}</div>
+                </div>
+            </td>
+            <td width="14.28%">
                 <div class="stats-card" style="border-left: 3px solid #27ae60;">
                     <div class="stats-label">Uang Masuk</div>
                     <div class="stats-value">Rp {{ number_format($summary['total_pemasukan'], 0, ',', '.') }}</div>
                 </div>
             </td>
-            <td width="16.6%">
+            <td width="14.28%">
                 <div class="stats-card" style="border-left: 3px solid #e74c3c;">
                     <div class="stats-label">Uang Keluar</div>
                     <div class="stats-value">Rp {{ number_format($summary['total_pengeluaran'], 0, ',', '.') }}</div>
                 </div>
             </td>
-            <td width="16.6%">
-                <div class="stats-card" style="border-left: 3px solid #f39c12;">
-                    <div class="stats-label">Kekurangan</div>
-                    <div class="stats-value" style="color: #e74c3c;">Rp {{ number_format($summary['total_kekurangan'], 0, ',', '.') }}</div>
+            <td width="14.28%">
+                <div class="stats-card" style="border-left: 3px solid #3f51b5;">
+                    <div class="stats-label">Saldo Tersedia</div>
+                    <div class="stats-value" style="color: #3f51b5;">Rp {{ number_format($summary['saldo_tersedia'], 0, ',', '.') }}</div>
                 </div>
             </td>
         </tr>
