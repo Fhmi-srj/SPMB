@@ -27,6 +27,7 @@ export default function Transaksi() {
     const [searchResults, setSearchResults] = useState([]);
     const [tagihanInfo, setTagihanInfo] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [kategoriList, setKategoriList] = useState(['Registrasi', 'MA', 'SMP', 'Pondok', 'Perlengkapan', 'Lainnya']);
 
     const isSuperAdmin = user?.role === 'super_admin';
@@ -74,6 +75,7 @@ export default function Transaksi() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const action = showModal;
+        setSaving(true);
         try {
             if (action === 'pemasukan') {
                 await axios.post(`${API}/transaksi/pemasukan`, form, { headers });
@@ -89,6 +91,8 @@ export default function Transaksi() {
             fetchData();
         } catch (err) {
             Swal.fire('Error', err.response?.data?.message || 'Gagal', 'error');
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -431,8 +435,15 @@ export default function Transaksi() {
                                 </div>
                             </div>
                             <div className="p-6 border-t border-gray-200 flex gap-2 justify-end flex-shrink-0 bg-gray-50">
-                                <button type="button" onClick={() => { setShowModal(null); setTagihanInfo(null); setSearchPeserta(''); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 bg-white transition">Batal</button>
-                                <button type="submit" className="px-5 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold rounded-lg shadow-sm transition">Simpan</button>
+                                <button type="button" disabled={saving} onClick={() => { setShowModal(null); setTagihanInfo(null); setSearchPeserta(''); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 bg-white transition disabled:opacity-50 disabled:cursor-not-allowed">Batal</button>
+                                <button type="submit" disabled={saving} className="px-5 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold rounded-lg shadow-sm transition disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2">
+                                    {saving ? (
+                                        <>
+                                            <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                            Menyimpan...
+                                        </>
+                                    ) : 'Simpan'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -487,8 +498,15 @@ export default function Transaksi() {
                                 </div>
                             </div>
                             <div className="p-6 border-t border-gray-200 flex gap-2 justify-end flex-shrink-0 bg-gray-50">
-                                <button type="button" onClick={() => { setShowModal(null); setForm({}); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 bg-white transition">Batal</button>
-                                <button type="submit" className="px-5 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold rounded-lg shadow-sm transition">Simpan</button>
+                                <button type="button" disabled={saving} onClick={() => { setShowModal(null); setForm({}); }} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 bg-white transition disabled:opacity-50 disabled:cursor-not-allowed">Batal</button>
+                                <button type="submit" disabled={saving} className="px-5 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold rounded-lg shadow-sm transition disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2">
+                                    {saving ? (
+                                        <>
+                                            <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                            Menyimpan...
+                                        </>
+                                    ) : 'Simpan'}
+                                </button>
                             </div>
                         </form>
                     </div>
