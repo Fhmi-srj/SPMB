@@ -65,8 +65,15 @@ export default function ResetPassword() {
                                 placeholder="Ulangi password" className="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-400 outline-none text-sm" />
                         </div>
                         <button type="submit" disabled={loading}
-                            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition disabled:opacity-70">
-                            {loading ? 'Menyimpan...' : '💾 Simpan Password Baru'}
+                            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition disabled:opacity-70 flex items-center justify-center gap-2">
+                            {loading ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                <>💾 Simpan Password Baru</>
+                            )}
                         </button>
                     </form>
                 )}

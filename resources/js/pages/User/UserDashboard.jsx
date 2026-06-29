@@ -15,6 +15,8 @@ export default function UserDashboard() {
     const [tab, setTab] = useState('identitas');
     const [pwForm, setPwForm] = useState({ old_password: '', new_password: '', new_password_confirmation: '' });
     const [loading, setLoading] = useState(true);
+    const [savingPw, setSavingPw] = useState(false);
+    const [uploading, setUploading] = useState({});
 
     const portal = JSON.parse(localStorage.getItem('user_portal') || 'null');
     const userId = portal?.user_id || portal?.user?.id;
@@ -60,6 +62,7 @@ export default function UserDashboard() {
 
     const uploadFile = async (field, file) => {
         if (!canEdit) return;
+        setUploading(prev => ({ ...prev, [field]: true }));
         const fd = new FormData();
         fd.append('user_id', userId); fd.append('token', userToken); fd.append('field', field); fd.append('file', file);
         try {
@@ -67,15 +70,18 @@ export default function UserDashboard() {
             Swal.fire('Berhasil', 'File berhasil diupload', 'success');
             fetchDashboard();
         } catch (e) { Swal.fire('Error', e.response?.data?.message || 'Gagal upload', 'error'); }
+        finally { setUploading(prev => ({ ...prev, [field]: false })); }
     };
 
     const changePassword = async (e) => {
         e.preventDefault();
+        setSavingPw(true);
         try {
             await axios.post(`${API}/user/change-password`, { user_id: userId, token: userToken, ...pwForm }, { headers: getHeaders() });
             setPwForm({ old_password: '', new_password: '', new_password_confirmation: '' });
             Swal.fire('Berhasil', 'Password berhasil diubah', 'success');
         } catch (e) { Swal.fire('Error', e.response?.data?.message || 'Gagal', 'error'); }
+        finally { setSavingPw(false); }
     };
 
     const handleLogout = () => { localStorage.removeItem('user_portal'); navigate('/portal'); };
@@ -272,9 +278,20 @@ export default function UserDashboard() {
                                             <p className={`text-xs ${info.uploaded ? 'text-green-600' : 'text-gray-400'}`}>{info.uploaded ? `✅ ${info.filename}` : '❌ Belum diupload'}</p>
                                         </div>
                                         {canEdit && (
-                                            <label className="bg-orange-50 text-orange-600 hover:bg-orange-100 px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition">
-                                                📤 Upload
-                                                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" onChange={e => { if (e.target.files[0]) uploadFile(field, e.target.files[0]); }} />
+                                            <label className={`px-3 py-1.5 rounded-lg text-xs font-medium cursor-pointer transition flex items-center gap-1.5 ${
+                                                uploading[field] 
+                                                    ? 'bg-gray-100 text-gray-400 pointer-events-none' 
+                                                    : 'bg-orange-50 text-orange-600 hover:bg-orange-100'
+                                            }`}>
+                                                {uploading[field] ? (
+                                                    <>
+                                                        <span className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></span>
+                                                        Uploading...
+                                                    </>
+                                                ) : (
+                                                    <>📤 Upload</>
+                                                )}
+                                                <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="hidden" disabled={uploading[field]} onChange={e => { if (e.target.files[0]) uploadFile(field, e.target.files[0]); }} />
                                             </label>
                                         )}
                                     </div>
@@ -291,7 +308,10 @@ export default function UserDashboard() {
                                         <input type="password" value={pwForm.new_password} onChange={e => setPwForm({ ...pwForm, new_password: e.target.value })} required minLength={6} className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
                                     <div><label className="block text-sm text-gray-600 mb-1">Konfirmasi Password</label>
                                         <input type="password" value={pwForm.new_password_confirmation} onChange={e => setPwForm({ ...pwForm, new_password_confirmation: e.target.value })} required className="w-full border rounded-lg px-3 py-2 text-sm" /></div>
-                                    <button type="submit" className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm">Ubah Password</button>
+                                    <button type="submit" disabled={savingPw} className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-70 flex items-center justify-center gap-2">
+                                        {savingPw && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>}
+                                        {savingPw ? 'Mengubah...' : 'Ubah Password'}
+                                    </button>
                                 </form>
                             </div>
                         )}

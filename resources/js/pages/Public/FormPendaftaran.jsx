@@ -883,7 +883,7 @@ export default function FormPendaftaran() {
                             )}
                             {step === 3 && (
                                 <>
-                                    <button type="button" onClick={() => prevStep(3)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition"><i className="fas fa-arrow-left mr-2"></i> Kembali</button>
+                                    <button type="button" disabled={loading} onClick={() => prevStep(3)} className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"><i className="fas fa-arrow-left mr-2"></i> Kembali</button>
                                     <button type="submit" disabled={loading} className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition disabled:opacity-50 flex items-center justify-center">
                                         {loading ? <><i className="fas fa-spinner animate-spin mr-2"></i>Mengirim...</> : <><i className="fas fa-paper-plane mr-2"></i>Kirim Pendaftaran</>}
                                     </button>
