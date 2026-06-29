@@ -156,8 +156,17 @@ export default function Pengaturan() {
                 </div>
 
                 <button type="submit" disabled={saving}
-                    className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-70">
-                    <i className="fas fa-save mr-2"></i>{saving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+                    className="w-full bg-[#E67E22] hover:bg-[#D35400] text-white font-semibold py-2.5 rounded-lg text-sm transition disabled:opacity-70 flex items-center justify-center gap-2">
+                    {saving ? (
+                        <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Menyimpan...
+                        </>
+                    ) : (
+                        <>
+                            <i className="fas fa-save mr-2"></i>Simpan Pengaturan
+                        </>
+                    )}
                 </button>
             </form>
         </div>

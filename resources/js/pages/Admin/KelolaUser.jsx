@@ -11,6 +11,7 @@ export default function KelolaUser() {
     const [modal, setModal] = useState(null); // 'add' | 'edit' | 'resetPw' | 'delete'
     const [form, setForm] = useState({});
     const [selected, setSelected] = useState(null);
+    const [saving, setSaving] = useState(false);
 
     const { token, user: currentUser } = useAuth();
     const headers = { Authorization: `Bearer ${token}` };
@@ -27,40 +28,48 @@ export default function KelolaUser() {
 
     const handleAdd = async (e) => {
         e.preventDefault();
+        setSaving(true);
         try {
             await axios.post(`${API}/users`, form, { headers });
             Swal.fire({ icon: 'success', title: 'User berhasil ditambahkan!', timer: 1500, showConfirmButton: false });
             setModal(null); setForm({});
             fetchUsers();
         } catch (err) { Swal.fire('Error', err.response?.data?.message || 'Gagal', 'error'); }
+        finally { setSaving(false); }
     };
 
     const handleEdit = async (e) => {
         e.preventDefault();
+        setSaving(true);
         try {
             await axios.put(`${API}/users/${form.id}`, form, { headers });
             Swal.fire({ icon: 'success', title: 'User berhasil diupdate!', timer: 1500, showConfirmButton: false });
             setModal(null); setForm({});
             fetchUsers();
         } catch (err) { Swal.fire('Error', err.response?.data?.message || 'Gagal', 'error'); }
+        finally { setSaving(false); }
     };
 
     const handleResetPw = async (e) => {
         e.preventDefault();
+        setSaving(true);
         try {
             await axios.post(`${API}/users/${selected.id}/reset-password`, { new_password: form.new_password }, { headers });
             Swal.fire({ icon: 'success', title: 'Password berhasil direset!', timer: 1500, showConfirmButton: false });
             setModal(null); setForm({});
         } catch (err) { Swal.fire('Error', err.response?.data?.message || 'Gagal', 'error'); }
+        finally { setSaving(false); }
     };
 
     const handleDelete = async () => {
+        setSaving(true);
         try {
             await axios.delete(`${API}/users/${selected.id}`, { headers });
             Swal.fire({ icon: 'success', title: 'User berhasil dihapus!', timer: 1500, showConfirmButton: false });
             setModal(null);
             fetchUsers();
         } catch (err) { Swal.fire('Error', err.response?.data?.message || 'Gagal', 'error'); }
+        finally { setSaving(false); }
     };
 
     const openEdit = (user) => { setForm({ id: user.id, username: user.username, nama: user.nama, role: user.role }); setModal('edit'); };
@@ -73,7 +82,7 @@ export default function KelolaUser() {
         return <span className={`inline-block px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold rounded-full ${cls[role] || 'bg-gray-100 text-gray-700'}`}>{lbl[role] || role}</span>;
     };
 
-    const closeModal = () => { setModal(null); setForm({}); setSelected(null); };
+    const closeModal = () => { if (saving) return; setModal(null); setForm({}); setSelected(null); };
 
     if (loading) return <div className="flex justify-center py-20"><div className="animate-spin w-8 h-8 border-4 border-[#E67E22] border-t-transparent rounded-full"></div></div>;
 
@@ -142,7 +151,7 @@ export default function KelolaUser() {
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-6 border-b">
                             <h3 className="text-lg font-bold text-gray-800">Tambah User Baru</h3>
-                            <button onClick={closeModal} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
+                            <button onClick={closeModal} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className="p-6 space-y-4">
@@ -169,8 +178,11 @@ export default function KelolaUser() {
                                 </div>
                             </div>
                             <div className="flex gap-2 justify-end p-6 border-t bg-gray-50 rounded-b-xl">
-                                <button type="button" onClick={closeModal} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Simpan</button>
+                                <button type="button" onClick={closeModal} disabled={saving} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                                <button type="submit" disabled={saving} className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2">
+                                    {saving && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>}
+                                    {saving ? 'Menyimpan...' : 'Simpan'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -183,7 +195,7 @@ export default function KelolaUser() {
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-6 border-b">
                             <h3 className="text-lg font-bold text-gray-800">Edit User</h3>
-                            <button onClick={closeModal} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
+                            <button onClick={closeModal} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleEdit}>
                             <div className="p-6 space-y-4">
@@ -205,8 +217,11 @@ export default function KelolaUser() {
                                 </div>
                             </div>
                             <div className="flex gap-2 justify-end p-6 border-t bg-gray-50 rounded-b-xl">
-                                <button type="button" onClick={closeModal} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition">Update</button>
+                                <button type="button" onClick={closeModal} disabled={saving} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                                <button type="submit" disabled={saving} className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white rounded-lg transition disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2">
+                                    {saving && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>}
+                                    {saving ? 'Mengupdate...' : 'Update'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -219,7 +234,7 @@ export default function KelolaUser() {
                     <div className="bg-white rounded-xl max-w-sm w-full">
                         <div className="flex items-center justify-between p-6 border-b">
                             <h3 className="text-lg font-bold text-gray-800">Reset Password</h3>
-                            <button onClick={closeModal} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
+                            <button onClick={closeModal} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleResetPw}>
                             <div className="p-6 space-y-4">
@@ -231,8 +246,11 @@ export default function KelolaUser() {
                                 </div>
                             </div>
                             <div className="flex gap-2 justify-end p-6 border-t bg-gray-50 rounded-b-xl">
-                                <button type="button" onClick={closeModal} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition">Reset Password</button>
+                                <button type="button" onClick={closeModal} disabled={saving} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                                <button type="submit" disabled={saving} className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg transition disabled:opacity-75 disabled:cursor-not-allowed flex items-center gap-2">
+                                    {saving && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>}
+                                    {saving ? 'Mereset...' : 'Reset Password'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -249,8 +267,11 @@ export default function KelolaUser() {
                         <h3 className="font-bold text-lg text-gray-800 mb-2">Hapus User?</h3>
                         <p className="text-gray-500 text-sm mb-6">Yakin ingin menghapus <strong>{selected?.nama}</strong>? Tindakan ini tidak bisa dibatalkan.</p>
                         <div className="flex gap-3">
-                            <button onClick={closeModal} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Batal</button>
-                            <button onClick={handleDelete} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition">Hapus</button>
+                            <button onClick={closeModal} disabled={saving} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                            <button onClick={handleDelete} disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition disabled:opacity-75 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                {saving && <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>}
+                                {saving ? 'Menghapus...' : 'Hapus'}
+                            </button>
                         </div>
                     </div>
                 </div>

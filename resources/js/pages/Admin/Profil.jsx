@@ -9,6 +9,8 @@ export default function Profil() {
     const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
     const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false });
     const [loading, setLoading] = useState(true);
+    const [savingProfile, setSavingProfile] = useState(false);
+    const [savingPassword, setSavingPassword] = useState(false);
 
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
@@ -27,6 +29,7 @@ export default function Profil() {
 
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
+        setSavingProfile(true);
         try {
             await axios.put(`${API}/profil`, { nama: profile.nama, username: profile.username }, { headers });
             Swal.fire({ icon: 'success', title: 'Profil berhasil diupdate!', timer: 1500, showConfirmButton: false });
@@ -36,6 +39,7 @@ export default function Profil() {
             user.username = profile.username;
             localStorage.setItem('user', JSON.stringify(user));
         } catch (err) { Swal.fire('Error', err.response?.data?.message || 'Gagal', 'error'); }
+        finally { setSavingProfile(false); }
     };
 
     const handleChangePassword = async (e) => {
@@ -44,11 +48,13 @@ export default function Profil() {
             Swal.fire('Error', 'Konfirmasi password tidak cocok!', 'error');
             return;
         }
+        setSavingPassword(true);
         try {
             await axios.put(`${API}/profil/password`, pwForm, { headers });
             Swal.fire({ icon: 'success', title: 'Password berhasil diubah!', timer: 1500, showConfirmButton: false });
             setPwForm({ current_password: '', new_password: '', confirm_password: '' });
         } catch (err) { Swal.fire('Error', err.response?.data?.message || 'Gagal', 'error'); }
+        finally { setSavingPassword(false); }
     };
 
     const togglePw = (field) => setShowPw({ ...showPw, [field]: !showPw[field] });
@@ -89,8 +95,17 @@ export default function Profil() {
                             <input type="text" value={profile.username || ''} onChange={e => setProfile({ ...profile, username: e.target.value })} required
                                 className="w-full px-2.5 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-xs sm:text-sm" />
                         </div>
-                        <button type="submit" className="w-full bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm">
-                            <i className="fas fa-save mr-1.5"></i>Simpan Perubahan
+                        <button type="submit" disabled={savingProfile} className="w-full bg-[#E67E22] hover:bg-[#d35400] text-white font-semibold py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm disabled:opacity-70 flex items-center justify-center gap-2">
+                            {savingProfile ? (
+                                <>
+                                    <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                    Menyimpan...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="fas fa-save mr-1.5"></i>Simpan Perubahan
+                                </>
+                            )}
                         </button>
                     </form>
                 </div>
@@ -132,8 +147,17 @@ export default function Profil() {
                                 </button>
                             </div>
                         </div>
-                        <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm">
-                            <i className="fas fa-key mr-1.5"></i>Ubah Password
+                        <button type="submit" disabled={savingPassword} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm disabled:opacity-70 flex items-center justify-center gap-2">
+                            {savingPassword ? (
+                                <>
+                                    <span className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                                    Mengubah Password...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="fas fa-key mr-1.5"></i>Ubah Password
+                                </>
+                            )}
                         </button>
                     </form>
                 </div>

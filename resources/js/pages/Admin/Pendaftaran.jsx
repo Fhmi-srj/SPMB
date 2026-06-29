@@ -538,14 +538,13 @@ export default function Pendaftaran() {
 
 
 
-            {/* Edit Modal */}
             <Modal 
                 show={showEdit} 
-                onClose={() => setShowEdit(false)} 
+                onClose={() => { if (!saving) setShowEdit(false); }} 
                 title="Edit Data Pendaftaran"
                 footer={(
                     <>
-                        <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition bg-white">
+                        <button type="button" disabled={saving} onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-200 rounded-lg text-sm hover:bg-gray-50 transition bg-white disabled:opacity-50 disabled:cursor-not-allowed">
                             Batal
                         </button>
                         <button type="button" onClick={handleSaveEdit} disabled={saving}

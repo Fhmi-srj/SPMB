@@ -124,7 +124,7 @@ export default function Biaya() {
             <div className="bg-white rounded-xl max-w-md w-full">
                 <div className="flex items-center justify-between p-4 border-b">
                     <h3 className="font-semibold text-gray-800">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
+                    <button onClick={onClose} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                 </div>
                 {children}
             </div>
@@ -140,8 +140,11 @@ export default function Biaya() {
                 <h3 className="font-bold text-lg text-gray-800 mb-2">Hapus Item?</h3>
                 <p className="text-gray-500 text-sm mb-6">Yakin ingin menghapus <strong>{name}</strong>?</p>
                 <form onSubmit={onSubmit} className="flex gap-3">
-                    <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                    <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Hapus</button>
+                    <button type="button" disabled={saving} onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                    <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                        {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                        {saving ? 'Menghapus...' : 'Hapus'}
+                    </button>
                 </form>
             </div>
         </div>
@@ -272,8 +275,11 @@ export default function Biaya() {
                             <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: e.target.value }))} className={inputCls} /></div>
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
-                        <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
+                        <button type="button" disabled={saving} onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                            {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                            {saving ? 'Menyimpan...' : 'Simpan'}
+                        </button>
                     </div>
                 </form>
             </ModalWrapper>
@@ -300,8 +306,11 @@ export default function Biaya() {
                             <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: e.target.value }))} className={inputCls} /></div>
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
-                        <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
+                        <button type="button" disabled={saving} onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                            {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                            {saving ? 'Mengupdate...' : 'Update'}
+                        </button>
                     </div>
                 </form>
             </ModalWrapper>
@@ -320,8 +329,11 @@ export default function Biaya() {
                             <input type="number" value={formP.urutan} onChange={e => setFormP(f => ({ ...f, urutan: e.target.value }))} min="0" className={inputCls} /></div>
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
-                        <button type="button" onClick={() => setShowAddP(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
+                        <button type="button" disabled={saving} onClick={() => setShowAddP(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                            {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                            {saving ? 'Menyimpan...' : 'Simpan'}
+                        </button>
                     </div>
                 </form>
             </ModalWrapper>
@@ -338,8 +350,11 @@ export default function Biaya() {
                             <input type="number" value={formP.urutan} onChange={e => setFormP(f => ({ ...f, urutan: e.target.value }))} min="0" className={inputCls} /></div>
                     </div>
                     <div className="flex gap-3 p-4 border-t bg-gray-50">
-                        <button type="button" onClick={() => setShowEditP(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
+                        <button type="button" disabled={saving} onClick={() => setShowEditP(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                        <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                            {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                            {saving ? 'Mengupdate...' : 'Update'}
+                        </button>
                     </div>
                 </form>
             </ModalWrapper>

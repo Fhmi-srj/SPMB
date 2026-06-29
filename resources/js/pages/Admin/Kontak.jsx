@@ -124,13 +124,16 @@ export default function Kontak() {
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-4 border-b">
                             <h3 className="font-semibold text-gray-800">Tambah Kontak</h3>
-                            <button onClick={() => setShowAdd(false)} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
+                            <button onClick={() => setShowAdd(false)} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleAdd}>
                             <div className="p-4 space-y-4"><FormFields /></div>
                             <div className="flex gap-3 p-4 border-t bg-gray-50">
-                                <button type="button" onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Simpan</button>
+                                <button type="button" disabled={saving} onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                                    {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                                    {saving ? 'Menyimpan...' : 'Simpan'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -143,13 +146,16 @@ export default function Kontak() {
                     <div className="bg-white rounded-xl max-w-md w-full">
                         <div className="flex items-center justify-between p-4 border-b">
                             <h3 className="font-semibold text-gray-800">Edit Kontak</h3>
-                            <button onClick={() => setShowEdit(false)} className="text-gray-400 hover:text-gray-600"><i className="fas fa-times"></i></button>
+                            <button onClick={() => setShowEdit(false)} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleEdit}>
                             <div className="p-4 space-y-4"><FormFields /></div>
                             <div className="flex gap-3 p-4 border-t bg-gray-50">
-                                <button type="button" onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Update</button>
+                                <button type="button" disabled={saving} onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                                <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                                    {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                                    {saving ? 'Mengupdate...' : 'Update'}
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -166,8 +172,11 @@ export default function Kontak() {
                         <h3 className="font-bold text-lg text-gray-800 mb-2">Hapus Kontak?</h3>
                         <p className="text-gray-500 text-sm mb-6">Yakin ingin menghapus <strong>{deleting.nama}</strong>?</p>
                         <form onSubmit={handleDelete} className="flex gap-3">
-                            <button type="button" onClick={() => setShowDelete(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition">Batal</button>
-                            <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70">Hapus</button>
+                            <button type="button" disabled={saving} onClick={() => setShowDelete(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                            <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                                {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                                {saving ? 'Menghapus...' : 'Hapus'}
+                            </button>
                         </form>
                     </div>
                 </div>
