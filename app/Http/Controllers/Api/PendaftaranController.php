@@ -158,7 +158,7 @@ class PendaftaranController extends Controller
         if (!empty($ids)) {
             $paidTotals = \DB::table('transaksi_pemasukan')
                 ->whereIn('pendaftaran_id', $ids)
-                ->where('status', 'approved')
+                ->where('status', '!=', 'rejected')
                 ->groupBy('pendaftaran_id')
                 ->select('pendaftaran_id', \DB::raw('SUM(nominal) as total'))
                 ->pluck('total', 'pendaftaran_id')

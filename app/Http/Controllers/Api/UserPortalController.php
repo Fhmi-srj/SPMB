@@ -259,7 +259,7 @@ class UserPortalController extends Controller
             ->sum('perlengkapan_items.nominal');
 
         $totalPaid = TransaksiPemasukan::where('pendaftaran_id', $id)
-            ->where('status', 'approved')
+            ->where('status', '!=', 'rejected')
             ->sum('nominal');
 
         $totalTagihan = $biayaSekolah + $biayaPondok + $perlengkapanTotal;

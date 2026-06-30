@@ -70,7 +70,7 @@ function DetailModal({ show, onClose, data }) {
                             <span className="text-gray-900">{fmt(data.total_tagihan)}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-200 font-semibold bg-gray-50 px-2 rounded mt-1.5">
-                            <span className="text-gray-700">Total Pembayaran (ACC)</span>
+                            <span className="text-gray-700">Total Pembayaran</span>
                             <span className="text-green-600">{fmt(data.total_dibayar)}</span>
                         </div>
                         <div className="flex justify-between py-2.5 px-2 rounded-lg bg-orange-100/60 text-orange-950 font-bold border border-orange-200 mt-2">
