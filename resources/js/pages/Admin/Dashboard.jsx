@@ -167,8 +167,8 @@ export default function Dashboard() {
                                     );
                                 })}
                                 {(() => {
-                                    const tp = Object.values(stats.pos_keuangan).reduce((s, v) => s + (v.pemasukan || 0), 0);
-                                    const te = Object.values(stats.pos_keuangan).reduce((s, v) => s + (v.pengeluaran || 0), 0);
+                                    const tp = Object.values(stats.pos_keuangan).reduce((s, v) => s + Number(v.pemasukan || 0), 0);
+                                    const te = Object.values(stats.pos_keuangan).reduce((s, v) => s + Number(v.pengeluaran || 0), 0);
                                     const ts = tp - te;
                                     return (
                                         <tr className="bg-gray-50 font-bold">

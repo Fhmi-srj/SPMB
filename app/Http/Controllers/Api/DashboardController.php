@@ -90,8 +90,8 @@ class DashboardController extends Controller
             $allKategori = $pemasukan->keys()->merge($pengeluaran->keys())->unique();
             foreach ($allKategori as $kat) {
                 $posKeuangan[$kat] = [
-                    'pemasukan'   => $pemasukan[$kat] ?? 0,
-                    'pengeluaran' => $pengeluaran[$kat] ?? 0,
+                    'pemasukan'   => (float)($pemasukan[$kat] ?? 0),
+                    'pengeluaran' => (float)($pengeluaran[$kat] ?? 0),
                 ];
             }
         } catch (\Exception $e) {

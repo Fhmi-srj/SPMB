@@ -82,7 +82,7 @@ export default function Biaya() {
     };
 
     // Totals
-    const totals = biayaList.reduce((t, b) => ({ pondok: t.pondok + (b.biaya_pondok || 0), smp: t.smp + (b.biaya_smp || 0), ma: t.ma + (b.biaya_ma || 0) }), { pondok: 0, smp: 0, ma: 0 });
+    const totals = biayaList.reduce((t, b) => ({ pondok: t.pondok + Number(b.biaya_pondok || 0), smp: t.smp + Number(b.biaya_smp || 0), ma: t.ma + Number(b.biaya_ma || 0) }), { pondok: 0, smp: 0, ma: 0 });
 
     // Render table rows with category headers
     const renderBiayaRows = () => {
