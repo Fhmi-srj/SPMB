@@ -32,27 +32,32 @@ export default function Perlengkapan() {
 
     const togglePerlengkapan = async (pesertaId, itemId, currentStatus, namaPeserta, namaItem) => {
         const newStatus = currentStatus ? 0 : 1;
-        const actionText = newStatus ? 'menambahkan' : 'membatalkan';
 
-        const result = await Swal.fire({
-            title: 'Konfirmasi',
-            html: `Yakin ingin <strong>${actionText}</strong> perlengkapan<br><strong>${namaItem}</strong><br>untuk <strong>${namaPeserta}</strong>?`,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Ya, Lanjutkan',
-            cancelButtonText: 'Batal',
-        });
+        // 1. Optimistic Update (Ubah UI secara instan sebelum kirim request)
+        setPeserta(prevPeserta =>
+            prevPeserta.map(p => {
+                if (p.id === pesertaId) {
+                    return {
+                        ...p,
+                        perlengkapan: {
+                            ...(p.perlengkapan || {}),
+                            [itemId]: newStatus
+                        }
+                    };
+                }
+                return p;
+            })
+        );
 
-        if (!result.isConfirmed) return;
-
-        Swal.fire({
-            title: 'Memproses...',
-            text: 'Mohon tunggu sebentar',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
             }
         });
 
@@ -62,10 +67,33 @@ export default function Perlengkapan() {
                 perlengkapan_item_id: itemId,
                 status: newStatus,
             }, { headers });
-            Swal.fire({ icon: 'success', title: 'Berhasil!', text: 'Status perlengkapan berhasil diupdate', timer: 1500, showConfirmButton: false });
-            fetchData();
+
+            Toast.fire({
+                icon: 'success',
+                title: `Status ${namaItem} untuk ${namaPeserta} berhasil diperbarui`
+            });
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Gagal!', text: err.response?.data?.message || 'Terjadi kesalahan' });
+            // 2. Rollback jika request API gagal
+            setPeserta(prevPeserta =>
+                prevPeserta.map(p => {
+                    if (p.id === pesertaId) {
+                        return {
+                            ...p,
+                            perlengkapan: {
+                                ...(p.perlengkapan || {}),
+                                [itemId]: currentStatus ? 1 : 0
+                            }
+                        };
+                    }
+                    return p;
+                })
+            );
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: err.response?.data?.message || 'Terjadi kesalahan saat menyimpan status'
+            });
         }
     };
 
