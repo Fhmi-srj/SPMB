@@ -69,10 +69,6 @@ function DetailModal({ show, onClose, data }) {
                             <span className="text-gray-700">Total Tagihan</span>
                             <span className="text-gray-900">{fmt(data.total_tagihan)}</span>
                         </div>
-                        <div className="flex justify-between py-1.5 border-b border-gray-100 text-green-600 font-medium px-2">
-                            <span>Total Pembayaran Disetujui (ACC)</span>
-                            <span>{fmt(data.total_dibayar)}</span>
-                        </div>
                         <div className="flex justify-between py-2.5 px-2 rounded-lg bg-orange-100/60 text-orange-950 font-bold border border-orange-200 mt-2">
                             <span>Sisa Kekurangan Pembayaran</span>
                             <span className={data.sisa_kekurangan > 0 ? "text-red-600" : "text-green-600"}>

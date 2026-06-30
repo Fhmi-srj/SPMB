@@ -74,7 +74,11 @@ export default function Biaya() {
         }
         if (perlRes) {
             const perlD = await perlRes.json();
-            if (perlD.success) setPerlengkapanList(perlD.data || []);
+            if (perlD.success) {
+                setPerlengkapanList(perlD.data || []);
+            } else if (Array.isArray(perlD)) {
+                setPerlengkapanList(perlD);
+            }
         }
         setLoading(false);
     }, [token]);
@@ -100,17 +104,54 @@ export default function Biaya() {
     // Perlengkapan CRUD
     const handlePerlSubmit = async (e, isEdit) => {
         e.preventDefault(); setSaving(true);
-        const url = isEdit ? `/api/perlengkapan/items/${editingP.id}` : '/api/perlengkapan/items';
-        const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(formP) });
-        const d = await res.json(); setSaving(false);
-        if (d.success) { isEdit ? setShowEditP(false) : setShowAddP(false); Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false }); fetchAll(); }
+        try {
+            const url = isEdit ? `/api/perlengkapan/items/${editingP.id}` : '/api/perlengkapan/items';
+            const res = await fetch(url, {
+                method: isEdit ? 'PUT' : 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formP)
+            });
+
+            const d = await res.json();
+            if (res.ok && (d.success || d.data)) {
+                isEdit ? setShowEditP(false) : setShowAddP(false);
+                Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false });
+                fetchAll();
+            } else {
+                throw new Error(d.message || 'Gagal menyimpan item perlengkapan');
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan saat menyimpan' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handlePerlDelete = async (e) => {
         e.preventDefault(); setSaving(true);
-        await fetch(`/api/perlengkapan/items/${deletingP.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
-        setSaving(false); setShowDeleteP(false);
-        Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false }); fetchAll();
+        try {
+            const res = await fetch(`/api/perlengkapan/items/${deletingP.id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (res.ok) {
+                setShowDeleteP(false);
+                Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false });
+                fetchAll();
+            } else {
+                const d = await res.json().catch(() => null);
+                throw new Error(d?.message || 'Gagal menghapus item perlengkapan');
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan saat menghapus' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     // Totals

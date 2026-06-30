@@ -13,15 +13,17 @@ export default function Perlengkapan() {
 
     const token = localStorage.getItem('token');
     const headers = { Authorization: `Bearer ${token}` };
-
     const fetchData = useCallback(async () => {
         try {
             const [itemsRes, pesananRes] = await Promise.all([
                 axios.get(`${API}/perlengkapan/items`, { headers }),
                 axios.get(`${API}/perlengkapan/pesanan`, { headers, params: { search: searchNama, lembaga: filterLembaga } }),
             ]);
-            setItems(itemsRes.data.data || []);
-            setPeserta(pesananRes.data.data || []);
+            const itemsData = itemsRes.data.success ? itemsRes.data.data : itemsRes.data;
+            setItems(Array.isArray(itemsData) ? itemsData : []);
+            
+            const pesertaData = pesananRes.data.pendaftar || pesananRes.data.data || [];
+            setPeserta(pesertaData);
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
     }, [searchNama, filterLembaga]);

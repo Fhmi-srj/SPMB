@@ -14,7 +14,10 @@ class PerlengkapanController extends Controller
 
     public function indexItems()
     {
-        return response()->json(PerlengkapanItem::orderBy('urutan')->get());
+        return response()->json([
+            'success' => true,
+            'data' => PerlengkapanItem::orderBy('urutan')->get()
+        ]);
     }
 
     public function storeItem(Request $request)
@@ -26,7 +29,11 @@ class PerlengkapanController extends Controller
         ]);
 
         $item = PerlengkapanItem::create($request->only(['nama_item', 'nominal', 'urutan']));
-        return response()->json(['message' => 'Item berhasil ditambahkan', 'data' => $item], 201);
+        return response()->json([
+            'success' => true,
+            'message' => 'Item berhasil ditambahkan',
+            'data' => $item
+        ], 201);
     }
 
     public function updateItem(Request $request, $id)
@@ -40,13 +47,20 @@ class PerlengkapanController extends Controller
 
         $item = PerlengkapanItem::findOrFail($id);
         $item->update($request->only(['nama_item', 'nominal', 'urutan', 'aktif']));
-        return response()->json(['message' => 'Item berhasil diupdate', 'data' => $item]);
+        return response()->json([
+            'success' => true,
+            'message' => 'Item berhasil diupdate',
+            'data' => $item
+        ]);
     }
 
     public function destroyItem($id)
     {
         PerlengkapanItem::findOrFail($id)->delete();
-        return response()->json(['message' => 'Item berhasil dihapus']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Item berhasil dihapus'
+        ]);
     }
 
     // ─── PESANAN PER PENDAFTAR ───────────────────────────────────
