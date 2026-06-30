@@ -60,8 +60,8 @@ export default function Biaya() {
     const fetchAll = useCallback(async () => {
         setLoading(true);
         const [biayaRes, perlRes] = await Promise.all([
-            fetch('/api/biaya', { headers: { Authorization: `Bearer ${token}` } }),
-            fetch('/api/perlengkapan/items', { headers: { Authorization: `Bearer ${token}` } }).catch(() => null),
+            fetch('/api/biaya', { headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' } }),
+            fetch('/api/perlengkapan/items', { headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' } }).catch(() => null),
         ]);
         const biayaD = await biayaRes.json();
         if (biayaD.success) {
@@ -89,14 +89,28 @@ export default function Biaya() {
     const handleBiayaSubmit = async (e, isEdit) => {
         e.preventDefault(); setSaving(true);
         const url = isEdit ? `/api/biaya/${editing.id}` : '/api/biaya';
-        const res = await fetch(url, { method: isEdit ? 'PUT' : 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+        const res = await fetch(url, {
+            method: isEdit ? 'PUT' : 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(form)
+        });
         const d = await res.json(); setSaving(false);
         if (d.success) { isEdit ? setShowEdit(false) : setShowAdd(false); Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false }); fetchAll(); }
     };
 
     const handleBiayaDelete = async (e) => {
         e.preventDefault(); setSaving(true);
-        await fetch(`/api/biaya/${deleting.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+        await fetch(`/api/biaya/${deleting.id}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
         setSaving(false); setShowDelete(false);
         Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false }); fetchAll();
     };
@@ -110,12 +124,22 @@ export default function Biaya() {
                 method: isEdit ? 'PUT' : 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify(formP)
             });
 
-            const d = await res.json();
+            const contentType = res.headers.get("content-type");
+            let d = {};
+            if (contentType && contentType.includes("application/json")) {
+                d = await res.json();
+            } else {
+                const text = await res.text();
+                console.error("HTML response:", text);
+                throw new Error(`Server returned HTML error (${res.status})`);
+            }
+
             if (res.ok && (d.success || d.data)) {
                 isEdit ? setShowEditP(false) : setShowAddP(false);
                 Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false });
@@ -136,7 +160,10 @@ export default function Biaya() {
         try {
             const res = await fetch(`/api/perlengkapan/items/${deletingP.id}`, {
                 method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` }
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Accept': 'application/json'
+                }
             });
             if (res.ok) {
                 setShowDeleteP(false);
