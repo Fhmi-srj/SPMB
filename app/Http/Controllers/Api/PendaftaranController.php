@@ -27,7 +27,15 @@ class PendaftaranController extends Controller
                     ->orWhere('nisn', 'like', "%{$search}%")
                     ->orWhere('no_registrasi', 'like', "%{$search}%")
                     ->orWhere('asal_sekolah', 'like', "%{$search}%")
-                    ->orWhere('no_hp_wali', 'like', "%{$search}%");
+                    ->orWhere('no_hp_wali', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('provinsi', 'like', "%{$search}%")
+                    ->orWhere('kota_kab', 'like', "%{$search}%")
+                    ->orWhere('kecamatan', 'like', "%{$search}%")
+                    ->orWhere('kelurahan_desa', 'like', "%{$search}%")
+                    ->orWhere('nama_ayah', 'like', "%{$search}%")
+                    ->orWhere('nama_ibu', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
             });
         }
 
@@ -632,8 +640,18 @@ class PendaftaranController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('no_registrasi', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%");
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('no_registrasi', 'like', "%{$search}%")
+                    ->orWhere('asal_sekolah', 'like', "%{$search}%")
+                    ->orWhere('no_hp_wali', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('provinsi', 'like', "%{$search}%")
+                    ->orWhere('kota_kab', 'like', "%{$search}%")
+                    ->orWhere('kecamatan', 'like', "%{$search}%")
+                    ->orWhere('kelurahan_desa', 'like', "%{$search}%")
+                    ->orWhere('nama_ayah', 'like', "%{$search}%")
+                    ->orWhere('nama_ibu', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
             });
         }
 
@@ -773,8 +791,18 @@ class PendaftaranController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('no_registrasi', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%");
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('no_registrasi', 'like', "%{$search}%")
+                    ->orWhere('asal_sekolah', 'like', "%{$search}%")
+                    ->orWhere('no_hp_wali', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('provinsi', 'like', "%{$search}%")
+                    ->orWhere('kota_kab', 'like', "%{$search}%")
+                    ->orWhere('kecamatan', 'like', "%{$search}%")
+                    ->orWhere('kelurahan_desa', 'like', "%{$search}%")
+                    ->orWhere('nama_ayah', 'like', "%{$search}%")
+                    ->orWhere('nama_ibu', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
             });
         }
         if ($request->lembaga) $query->where('lembaga', $request->lembaga);
@@ -887,8 +915,18 @@ class PendaftaranController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
-                  ->orWhere('no_registrasi', 'like', "%{$search}%")
-                  ->orWhere('alamat', 'like', "%{$search}%");
+                    ->orWhere('nisn', 'like', "%{$search}%")
+                    ->orWhere('no_registrasi', 'like', "%{$search}%")
+                    ->orWhere('asal_sekolah', 'like', "%{$search}%")
+                    ->orWhere('no_hp_wali', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('provinsi', 'like', "%{$search}%")
+                    ->orWhere('kota_kab', 'like', "%{$search}%")
+                    ->orWhere('kecamatan', 'like', "%{$search}%")
+                    ->orWhere('kelurahan_desa', 'like', "%{$search}%")
+                    ->orWhere('nama_ayah', 'like', "%{$search}%")
+                    ->orWhere('nama_ibu', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
             });
         }
         if ($request->lembaga) $query->where('lembaga', $request->lembaga);

@@ -299,9 +299,9 @@ export default function RekapPendaftaran() {
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Cari Nama Calon / No. Reg / Alamat</label>
+                        <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Cari Nama, Reg, Alamat, Wali, Sekolah</label>
                         <div className="relative">
-                            <input type="text" value={search} onChange={handleSearchChange} placeholder="Ketik nama, no registrasi, atau alamat..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#E67E22] focus:border-[#E67E22] transition" />
+                            <input type="text" value={search} onChange={handleSearchChange} placeholder="Ketik nama, registrasi, alamat, wali, sekolah..." className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:ring-1 focus:ring-[#E67E22] focus:border-[#E67E22] transition" />
                             <i className="fas fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
                         </div>
                     </div>

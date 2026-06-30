@@ -394,7 +394,7 @@ export default function Pendaftaran() {
             <div className="bg-white rounded-xl shadow-sm p-4 mb-4">
                 <div className="space-y-3">
                     <div className="relative">
-                        <input type="text" placeholder="Cari nama, NISN, atau asal sekolah..."
+                        <input type="text" placeholder="Cari nama, NISN, asal sekolah, alamat, orang tua, NIK..."
                             value={searchInput} onChange={e => handleSearchInput(e.target.value)}
                             onKeyDown={e => { if (e.key === 'Enter') { clearTimeout(searchTimer.current); setFilters(f => ({ ...f, search: searchInput, page: 1 })); } }}
                             className="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none text-sm transition-all" />
