@@ -4,6 +4,38 @@ import Swal from 'sweetalert2';
 
 const fmt = (n) => n > 0 ? 'Rp' + Number(n).toLocaleString('id-ID') : '-';
 
+// Modal helper
+const ModalWrapper = ({ show, onClose, title, disabled, children }) => show ? (
+    <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl max-w-md w-full">
+            <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="font-semibold text-gray-800">{title}</h3>
+                <button onClick={onClose} disabled={disabled} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
+            </div>
+            {children}
+        </div>
+    </div>
+) : null;
+
+const DeleteModal = ({ show, onClose, onSubmit, name, disabled }) => show ? (
+    <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+        <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-trash-alt text-red-500 text-2xl"></i>
+            </div>
+            <h3 className="font-bold text-lg text-gray-800 mb-2">Hapus Item?</h3>
+            <p className="text-gray-500 text-sm mb-6">Yakin ingin menghapus <strong>{name}</strong>?</p>
+            <form onSubmit={onSubmit} className="flex gap-3">
+                <button type="button" disabled={disabled} onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
+                <button type="submit" disabled={disabled} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
+                    {disabled && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                    {disabled ? 'Menghapus...' : 'Hapus'}
+                </button>
+            </form>
+        </div>
+    </div>
+) : null;
+
 export default function Biaya() {
     const { token } = useAuth();
     const [biayaList, setBiayaList] = useState([]);
@@ -118,37 +150,7 @@ export default function Biaya() {
         }).flat();
     };
 
-    // Modal helper
-    const ModalWrapper = ({ show, onClose, title, children }) => show ? (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl max-w-md w-full">
-                <div className="flex items-center justify-between p-4 border-b">
-                    <h3 className="font-semibold text-gray-800">{title}</h3>
-                    <button onClick={onClose} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
-                </div>
-                {children}
-            </div>
-        </div>
-    ) : null;
 
-    const DeleteModal = ({ show, onClose, onSubmit, name }) => show ? (
-        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl max-w-sm w-full p-6 text-center">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i className="fas fa-trash-alt text-red-500 text-2xl"></i>
-                </div>
-                <h3 className="font-bold text-lg text-gray-800 mb-2">Hapus Item?</h3>
-                <p className="text-gray-500 text-sm mb-6">Yakin ingin menghapus <strong>{name}</strong>?</p>
-                <form onSubmit={onSubmit} className="flex gap-3">
-                    <button type="button" disabled={saving} onClick={onClose} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
-                    <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
-                        {saving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
-                        {saving ? 'Menghapus...' : 'Hapus'}
-                    </button>
-                </form>
-            </div>
-        </div>
-    ) : null;
 
     const inputCls = "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none";
 
@@ -251,7 +253,7 @@ export default function Biaya() {
             )}
 
             {/* Biaya Add Modal */}
-            <ModalWrapper show={showAdd} onClose={() => setShowAdd(false)} title="Tambah Item Biaya">
+            <ModalWrapper show={showAdd} onClose={() => setShowAdd(false)} title="Tambah Item Biaya" disabled={saving}>
                 <form onSubmit={e => handleBiayaSubmit(e, false)}>
                     <div className="p-4 space-y-4">
                         <div>
@@ -285,7 +287,7 @@ export default function Biaya() {
             </ModalWrapper>
 
             {/* Biaya Edit Modal */}
-            <ModalWrapper show={showEdit} onClose={() => setShowEdit(false)} title="Edit Item Biaya">
+            <ModalWrapper show={showEdit} onClose={() => setShowEdit(false)} title="Edit Item Biaya" disabled={saving}>
                 <form onSubmit={e => handleBiayaSubmit(e, true)}>
                     <div className="p-4 space-y-4">
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
@@ -315,10 +317,10 @@ export default function Biaya() {
                 </form>
             </ModalWrapper>
 
-            <DeleteModal show={showDelete} onClose={() => setShowDelete(false)} onSubmit={handleBiayaDelete} name={deleting?.nama_item} />
+            <DeleteModal show={showDelete} onClose={() => setShowDelete(false)} onSubmit={handleBiayaDelete} name={deleting?.nama_item} disabled={saving} />
 
             {/* Perlengkapan Add Modal */}
-            <ModalWrapper show={showAddP} onClose={() => setShowAddP(false)} title="Tambah Perlengkapan">
+            <ModalWrapper show={showAddP} onClose={() => setShowAddP(false)} title="Tambah Perlengkapan" disabled={saving}>
                 <form onSubmit={e => handlePerlSubmit(e, false)}>
                     <div className="p-4 space-y-4">
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Perlengkapan</label>
@@ -339,7 +341,7 @@ export default function Biaya() {
             </ModalWrapper>
 
             {/* Perlengkapan Edit Modal */}
-            <ModalWrapper show={showEditP} onClose={() => setShowEditP(false)} title="Edit Perlengkapan">
+            <ModalWrapper show={showEditP} onClose={() => setShowEditP(false)} title="Edit Perlengkapan" disabled={saving}>
                 <form onSubmit={e => handlePerlSubmit(e, true)}>
                     <div className="p-4 space-y-4">
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Perlengkapan</label>
@@ -359,7 +361,7 @@ export default function Biaya() {
                 </form>
             </ModalWrapper>
 
-            <DeleteModal show={showDeleteP} onClose={() => setShowDeleteP(false)} onSubmit={handlePerlDelete} name={deletingP?.nama_item} />
+            <DeleteModal show={showDeleteP} onClose={() => setShowDeleteP(false)} onSubmit={handlePerlDelete} name={deletingP?.nama_item} disabled={saving} />
         </div>
     );
 }

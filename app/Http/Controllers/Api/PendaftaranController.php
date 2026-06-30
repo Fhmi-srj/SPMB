@@ -116,11 +116,78 @@ class PendaftaranController extends Controller
         $results = Pendaftaran::where('nama', 'like', "%{$q}%")
             ->orderBy('created_at', 'desc')
             ->limit(20)
-            ->get(['nama', 'lembaga', 'status', 'created_at']);
+            ->get(['id', 'nama', 'lembaga', 'no_registrasi', 'status', 'alamat', 'asal_sekolah', 'status_mukim', 'created_at']);
+
+        $ids = $results->pluck('id')->toArray();
+
+        $biayaSMPTotal = \App\Models\Biaya::sum('biaya_smp');
+        $biayaMATotal = \App\Models\Biaya::sum('biaya_ma');
+        $biayaPondokTotal = \App\Models\Biaya::sum('biaya_pondok');
+
+        $perlengkapanDetails = [];
+        $perlengkapanTotals = [];
+        if (!empty($ids)) {
+            $pesanans = \DB::table('perlengkapan_pesanan')
+                ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
+                ->whereIn('perlengkapan_pesanan.pendaftaran_id', $ids)
+                ->where('perlengkapan_pesanan.status', 1)
+                ->select('perlengkapan_pesanan.pendaftaran_id', 'perlengkapan_items.nama_item', 'perlengkapan_items.nominal')
+                ->get();
+            
+            foreach ($pesanans as $p) {
+                $perlengkapanDetails[$p->pendaftaran_id][] = [
+                    'nama_item' => $p->nama_item,
+                    'nominal' => (int)$p->nominal
+                ];
+                if (!isset($perlengkapanTotals[$p->pendaftaran_id])) {
+                    $perlengkapanTotals[$p->pendaftaran_id] = 0;
+                }
+                $perlengkapanTotals[$p->pendaftaran_id] += (int)$p->nominal;
+            }
+        }
+
+        $paidTotals = [];
+        if (!empty($ids)) {
+            $paidTotals = \DB::table('transaksi_pemasukan')
+                ->whereIn('pendaftaran_id', $ids)
+                ->where('status', 'approved')
+                ->groupBy('pendaftaran_id')
+                ->select('pendaftaran_id', \DB::raw('SUM(nominal) as total'))
+                ->pluck('total', 'pendaftaran_id')
+                ->toArray();
+        }
+
+        $formattedResults = $results->map(function ($r) use ($biayaSMPTotal, $biayaMATotal, $biayaPondokTotal, $perlengkapanTotals, $perlengkapanDetails, $paidTotals) {
+            $biayaSekolah = ($r->lembaga === 'SMP NU BP') ? (int)$biayaSMPTotal : (int)$biayaMATotal;
+            $biayaPondok = ($r->status_mukim === 'PONDOK PP MAMBAUL HUDA') ? (int)$biayaPondokTotal : 0;
+            $biayaPerlengkapan = (int)($perlengkapanTotals[$r->id] ?? 0);
+            $totalTagihan = $biayaSekolah + $biayaPondok + $biayaPerlengkapan;
+            $totalPaid = (int)($paidTotals[$r->id] ?? 0);
+            $sisaKekurangan = $totalTagihan - $totalPaid;
+
+            return [
+                'id' => $r->id,
+                'nama' => $r->nama,
+                'lembaga' => $r->lembaga,
+                'no_registrasi' => $r->no_registrasi,
+                'status' => $r->status,
+                'alamat' => $r->alamat,
+                'asal_sekolah' => $r->asal_sekolah,
+                'status_mukim' => $r->status_mukim,
+                'created_at' => $r->created_at,
+                'biaya_sekolah' => $biayaSekolah,
+                'biaya_pondok' => $biayaPondok,
+                'biaya_perlengkapan' => $biayaPerlengkapan,
+                'perlengkapan_details' => $perlengkapanDetails[$r->id] ?? [],
+                'total_tagihan' => $totalTagihan,
+                'total_dibayar' => $totalPaid,
+                'sisa_kekurangan' => $sisaKekurangan,
+            ];
+        });
 
         return response()->json([
             'success' => true,
-            'data' => $results,
+            'data' => $formattedResults,
         ]);
     }
 

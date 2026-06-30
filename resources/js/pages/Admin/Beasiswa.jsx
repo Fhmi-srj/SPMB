@@ -2,6 +2,37 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
 
+// Form fields helper
+const FormFields = ({ form, setForm }) => (
+    <>
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Beasiswa</label>
+            <input type="text" value={form.jenis} onChange={e => setForm(f => ({ ...f, jenis: e.target.value }))} required placeholder="Contoh: Tahfidz, Akademik"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+        </div>
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+            <input type="text" value={form.kategori} onChange={e => setForm(f => ({ ...f, kategori: e.target.value }))} required placeholder="Contoh: Penghafal Al-Quran"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+        </div>
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Syarat</label>
+            <input type="text" value={form.syarat} onChange={e => setForm(f => ({ ...f, syarat: e.target.value }))} required placeholder="Contoh: Hafal 1-5 Juz"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+        </div>
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Benefit</label>
+            <input type="text" value={form.benefit} onChange={e => setForm(f => ({ ...f, benefit: e.target.value }))} required placeholder="Contoh: Gratis SPP 1 Bulan"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+        </div>
+        <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
+            <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
+        </div>
+    </>
+);
+
 export default function Beasiswa() {
     const { token } = useAuth();
     const [data, setData] = useState([]);
@@ -50,35 +81,7 @@ export default function Beasiswa() {
         fetch_();
     };
 
-    const FormFields = () => (
-        <>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Beasiswa</label>
-                <input type="text" value={form.jenis} onChange={e => setForm(f => ({ ...f, jenis: e.target.value }))} required placeholder="Contoh: Tahfidz, Akademik"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
-                <input type="text" value={form.kategori} onChange={e => setForm(f => ({ ...f, kategori: e.target.value }))} required placeholder="Contoh: Penghafal Al-Quran"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Syarat</label>
-                <input type="text" value={form.syarat} onChange={e => setForm(f => ({ ...f, syarat: e.target.value }))} required placeholder="Contoh: Hafal 1-5 Juz"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Benefit</label>
-                <input type="text" value={form.benefit} onChange={e => setForm(f => ({ ...f, benefit: e.target.value }))} required placeholder="Contoh: Gratis SPP 1 Bulan"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
-                <input type="number" value={form.urutan} onChange={e => setForm(f => ({ ...f, urutan: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#E67E22] focus:border-transparent outline-none" />
-            </div>
-        </>
-    );
+
 
     return (
         <div>
@@ -141,7 +144,7 @@ export default function Beasiswa() {
                             <button onClick={() => setShowAdd(false)} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleAdd}>
-                            <div className="p-4 space-y-4"><FormFields /></div>
+                            <div className="p-4 space-y-4"><FormFields form={form} setForm={setForm} /></div>
                             <div className="flex gap-3 p-4 border-t bg-gray-50">
                                 <button type="button" disabled={saving} onClick={() => setShowAdd(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
                                 <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">
@@ -163,7 +166,7 @@ export default function Beasiswa() {
                             <button onClick={() => setShowEdit(false)} disabled={saving} className="text-gray-400 hover:text-gray-600 disabled:opacity-50"><i className="fas fa-times"></i></button>
                         </div>
                         <form onSubmit={handleEdit}>
-                            <div className="p-4 space-y-4"><FormFields /></div>
+                            <div className="p-4 space-y-4"><FormFields form={form} setForm={setForm} /></div>
                             <div className="flex gap-3 p-4 border-t bg-gray-50">
                                 <button type="button" disabled={saving} onClick={() => setShowEdit(false)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition disabled:opacity-50">Batal</button>
                                 <button type="submit" disabled={saving} className="flex-1 px-4 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-medium transition disabled:opacity-70 flex items-center justify-center gap-2">

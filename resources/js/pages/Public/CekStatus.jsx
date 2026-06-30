@@ -1,11 +1,103 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+const fmt = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+
+function DetailModal({ show, onClose, data }) {
+    if (!show || !data) return null;
+    return (
+        <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden border border-gray-100 animate-modal-zoom" onClick={e => e.stopPropagation()}>
+                {/* Modal Header */}
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h3 className="font-bold text-gray-800">Rincian Status & Tagihan</h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+                        <i className="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+
+                {/* Modal Body */}
+                <div className="p-5 overflow-y-auto space-y-4">
+                    {/* Student Info Card */}
+                    <div className="bg-orange-50/50 p-4 rounded-xl border border-orange-100 space-y-2">
+                        <div>
+                            <h4 className="font-bold text-[#E67E22] text-sm uppercase tracking-wide">{data.nama}</h4>
+                            <p className="text-xs text-gray-500 font-mono mt-0.5">No. Reg: {data.no_registrasi || '-'}</p>
+                        </div>
+                        <div className="flex gap-1.5 flex-wrap">
+                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold bg-orange-100 text-orange-800 rounded-md">{data.lembaga}</span>
+                            <span className="inline-block px-2 py-0.5 text-[10px] font-bold bg-gray-100 text-gray-700 rounded-md">{data.status_mukim}</span>
+                        </div>
+                        <div className="border-t border-orange-100/70 pt-2 space-y-1.5 text-xs text-gray-600">
+                            <div>
+                                <span className="font-semibold text-gray-500">Sekolah Asal:</span> {data.asal_sekolah || '-'}
+                            </div>
+                            <div>
+                                <span className="font-semibold text-gray-500">Alamat:</span> {data.alamat || '-'}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bill breakdown */}
+                    <div className="space-y-2 text-sm">
+                        <div className="flex justify-between py-1.5 border-b border-gray-100">
+                            <span className="text-gray-500">Biaya Sekolah ({data.lembaga})</span>
+                            <span className="font-medium text-gray-800">{fmt(data.biaya_sekolah)}</span>
+                        </div>
+                        <div className="flex justify-between py-1.5 border-b border-gray-100">
+                            <span className="text-gray-500">Biaya Pondok</span>
+                            <span className="font-medium text-gray-800">{fmt(data.biaya_pondok)}</span>
+                        </div>
+                        
+                        <div className="flex justify-between py-1.5 border-b border-gray-100">
+                            <span className="text-gray-500">Biaya Pemesanan Perlengkapan</span>
+                            <span className="font-medium text-gray-800">{fmt(data.biaya_perlengkapan)}</span>
+                        </div>
+                        {data.perlengkapan_details && data.perlengkapan_details.length > 0 && (
+                            <div className="bg-orange-50/20 rounded-xl p-3 border border-orange-100/50 space-y-1.5 mt-1">
+                                <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">Daftar Perlengkapan Dipesan:</p>
+                                {data.perlengkapan_details.map((x, idx) => (
+                                    <div key={idx} className="flex justify-between text-[11px] text-gray-750">
+                                        <span>• {x.nama_item}</span>
+                                        <span className="font-semibold text-gray-600">{fmt(x.nominal)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="flex justify-between py-2 border-b border-gray-200 font-semibold bg-gray-50 px-2 rounded">
+                            <span className="text-gray-700">Total Tagihan</span>
+                            <span className="text-gray-900">{fmt(data.total_tagihan)}</span>
+                        </div>
+                        <div className="flex justify-between py-1.5 border-b border-gray-100 text-green-600 font-medium px-2">
+                            <span>Total Pembayaran Disetujui (ACC)</span>
+                            <span>{fmt(data.total_dibayar)}</span>
+                        </div>
+                        <div className="flex justify-between py-2.5 px-2 rounded-lg bg-orange-100/60 text-orange-950 font-bold border border-orange-200 mt-2">
+                            <span>Sisa Kekurangan Pembayaran</span>
+                            <span className={data.sisa_kekurangan > 0 ? "text-red-600" : "text-green-600"}>
+                                {data.sisa_kekurangan > 0 ? fmt(data.sisa_kekurangan) : 'Lunas'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Modal Footer */}
+                <div className="border-t p-4 bg-gray-50 flex justify-end">
+                    <button onClick={onClose} className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm font-semibold transition active:scale-95">Tutup</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function CekStatus() {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState(null); // null = initial, [] = empty
     const [loading, setLoading] = useState(false);
     const [settings, setSettings] = useState({});
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [showDetail, setShowDetail] = useState(false);
     const timerRef = useRef(null);
 
     useEffect(() => {
@@ -85,7 +177,9 @@ export default function CekStatus() {
                                 const st = statusMap[item.status] || statusMap.pending;
                                 const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
                                 return (
-                                    <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all" style={{ animation: `fadeIn 0.3s ease ${i * 0.05}s both` }}>
+                                    <div key={i} onClick={() => { setSelectedItem(item); setShowDetail(true); }}
+                                        className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all cursor-pointer hover:border-orange-200 hover:bg-orange-50/5 active:scale-[0.99]" 
+                                        style={{ animation: `fadeIn 0.3s ease ${i * 0.05}s both` }}>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-[#E67E22]/10 rounded-full flex items-center justify-center flex-shrink-0">
@@ -132,6 +226,9 @@ export default function CekStatus() {
                 )}
             </main>
 
+            {/* Detail Modal */}
+            <DetailModal show={showDetail} onClose={() => setShowDetail(false)} data={selectedItem} />
+
             {/* Footer */}
             <footer className="bg-white border-t border-gray-100 py-4 mt-auto">
                 <div className="max-w-4xl mx-auto px-4 text-center">
@@ -139,7 +236,22 @@ export default function CekStatus() {
                 </div>
             </footer>
 
-            <style>{`@keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }`}</style>
+            <style>{`
+                @keyframes fadeIn { 
+                    from { opacity:0; transform:translateY(10px); } 
+                    to { opacity:1; transform:translateY(0); } 
+                }
+                @keyframes modalZoom {
+                    from { opacity:0; transform:scale(0.95); }
+                    to { opacity:1; transform:scale(1); }
+                }
+                .animate-fade-in {
+                    animation: fadeIn 0.2s ease-out forwards;
+                }
+                .animate-modal-zoom {
+                    animation: modalZoom 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+                }
+            `}</style>
         </div>
     );
 }
