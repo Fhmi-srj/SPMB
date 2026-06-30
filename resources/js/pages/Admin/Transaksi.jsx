@@ -129,6 +129,14 @@ export default function Transaksi() {
     const handleDelete = async (type, id) => {
         const ok = await Swal.fire({ title: 'Yakin ingin menghapus transaksi ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#E67E22', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal' });
         if (!ok.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Menghapus...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
         try {
             await axios.delete(`${API}/transaksi/${type}/${id}`, { headers });
             Swal.fire({ icon: 'success', title: 'Berhasil dihapus!', timer: 1500, showConfirmButton: false });
@@ -137,6 +145,13 @@ export default function Transaksi() {
     };
 
     const handleApprove = async (type, id) => {
+        Swal.fire({
+            title: 'Menyetujui Transaksi...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
         try {
             await axios.post(`${API}/transaksi/${type}/${id}/approve`, {}, { headers });
             Swal.fire({ icon: 'success', title: 'Berhasil di-ACC!', timer: 1500, showConfirmButton: false });
@@ -147,6 +162,14 @@ export default function Transaksi() {
     const handleReject = async (type, id) => {
         const { value: catatan } = await Swal.fire({ title: 'Alasan Penolakan', input: 'textarea', inputPlaceholder: 'Masukkan alasan (opsional)', showCancelButton: true, confirmButtonColor: '#E67E22', confirmButtonText: 'Tolak', cancelButtonText: 'Batal' });
         if (catatan === undefined) return;
+
+        Swal.fire({
+            title: 'Menolak Transaksi...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
         try {
             await axios.post(`${API}/transaksi/${type}/${id}/reject`, { catatan_approval: catatan }, { headers });
             Swal.fire({ icon: 'success', title: 'Transaksi ditolak', timer: 1500, showConfirmButton: false });

@@ -323,6 +323,13 @@ export default function Pendaftaran() {
         });
         if (!conf.isConfirmed) return;
 
+        Swal.fire({
+            title: 'Menghapus Data...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
         try {
             const res = await axios.delete(`/api/pendaftaran/${row.id}`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -339,6 +346,12 @@ export default function Pendaftaran() {
     };
 
     const handleNotifBerkas = async (row) => {
+        Swal.fire({
+            title: 'Mengirim Notifikasi...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
         try {
             const res = await axios.post(`/api/pendaftaran/${row.id}/notify-berkas`, {}, {
                 headers: { Authorization: `Bearer ${token}` }

@@ -47,6 +47,15 @@ export default function Perlengkapan() {
 
         if (!result.isConfirmed) return;
 
+        Swal.fire({
+            title: 'Memproses...',
+            text: 'Mohon tunggu sebentar',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
         try {
             await axios.post(`${API}/perlengkapan/pesanan/toggle`, {
                 pendaftaran_id: pesertaId,
