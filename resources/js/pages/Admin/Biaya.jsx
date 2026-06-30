@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import Swal from 'sweetalert2';
 
@@ -57,30 +58,39 @@ export default function Biaya() {
     const [formP, setFormP] = useState({ nama_item: '', nominal: 0, urutan: 0 });
     const [saving, setSaving] = useState(false);
 
+    const headers = { Authorization: `Bearer ${token}` };
+
     const fetchAll = useCallback(async () => {
         setLoading(true);
-        const [biayaRes, perlRes] = await Promise.all([
-            fetch('/api/biaya', { headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' } }),
-            fetch('/api/perlengkapan/items', { headers: { Authorization: `Bearer ${token}`, 'Accept': 'application/json' } }).catch(() => null),
-        ]);
-        const biayaD = await biayaRes.json();
-        if (biayaD.success) {
-            const all = [...(biayaD.data?.pendaftaran || []), ...(biayaD.data?.daftar_ulang || [])];
-            all.sort((a, b) => {
-                if (a.kategori === b.kategori) return (a.urutan || 0) - (b.urutan || 0);
-                return a.kategori === 'PENDAFTARAN' ? -1 : 1;
-            });
-            setBiayaList(all);
-        }
-        if (perlRes) {
-            const perlD = await perlRes.json();
-            if (perlD.success) {
-                setPerlengkapanList(perlD.data || []);
-            } else if (Array.isArray(perlD)) {
-                setPerlengkapanList(perlD);
+        try {
+            const [biayaRes, perlRes] = await Promise.all([
+                axios.get('/api/biaya', { headers }),
+                axios.get('/api/perlengkapan/items', { headers }).catch(() => null),
+            ]);
+            
+            const biayaD = biayaRes.data;
+            if (biayaD.success) {
+                const all = [...(biayaD.data?.pendaftaran || []), ...(biayaD.data?.daftar_ulang || [])];
+                all.sort((a, b) => {
+                    if (a.kategori === b.kategori) return (a.urutan || 0) - (b.urutan || 0);
+                    return a.kategori === 'PENDAFTARAN' ? -1 : 1;
+                });
+                setBiayaList(all);
             }
+            
+            if (perlRes) {
+                const perlD = perlRes.data;
+                if (perlD.success) {
+                    setPerlengkapanList(perlD.data || []);
+                } else if (Array.isArray(perlD)) {
+                    setPerlengkapanList(perlD);
+                }
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     }, [token]);
 
     useEffect(() => { fetchAll(); }, [fetchAll]);
@@ -89,30 +99,39 @@ export default function Biaya() {
     const handleBiayaSubmit = async (e, isEdit) => {
         e.preventDefault(); setSaving(true);
         const url = isEdit ? `/api/biaya/${editing.id}` : '/api/biaya';
-        const res = await fetch(url, {
-            method: isEdit ? 'PUT' : 'POST',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify(form)
-        });
-        const d = await res.json(); setSaving(false);
-        if (d.success) { isEdit ? setShowEdit(false) : setShowAdd(false); Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false }); fetchAll(); }
+        try {
+            const res = await axios({
+                method: isEdit ? 'put' : 'post',
+                url,
+                headers,
+                data: form
+            });
+            if (res.data.success) {
+                isEdit ? setShowEdit(false) : setShowAdd(false);
+                Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false });
+                fetchAll();
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || 'Terjadi kesalahan saat menyimpan data biaya' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleBiayaDelete = async (e) => {
         e.preventDefault(); setSaving(true);
-        await fetch(`/api/biaya/${deleting.id}`, {
-            method: 'DELETE',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Accept': 'application/json'
-            }
-        });
-        setSaving(false); setShowDelete(false);
-        Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false }); fetchAll();
+        try {
+            await axios.delete(`/api/biaya/${deleting.id}`, { headers });
+            setShowDelete(false);
+            Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false });
+            fetchAll();
+        } catch (err) {
+            console.error(err);
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || 'Terjadi kesalahan saat menghapus data biaya' });
+        } finally {
+            setSaving(false);
+        }
     };
 
     // Perlengkapan CRUD
@@ -120,27 +139,14 @@ export default function Biaya() {
         e.preventDefault(); setSaving(true);
         try {
             const url = isEdit ? `/api/perlengkapan/items/${editingP.id}` : '/api/perlengkapan/items';
-            const res = await fetch(url, {
-                method: isEdit ? 'PUT' : 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(formP)
+            const res = await axios({
+                method: isEdit ? 'put' : 'post',
+                url,
+                headers,
+                data: formP
             });
-
-            const contentType = res.headers.get("content-type");
-            let d = {};
-            if (contentType && contentType.includes("application/json")) {
-                d = await res.json();
-            } else {
-                const text = await res.text();
-                console.error("HTML response:", text);
-                throw new Error(`Server returned HTML error (${res.status})`);
-            }
-
-            if (res.ok && (d.success || d.data)) {
+            const d = res.data;
+            if (d.success || d.data) {
                 isEdit ? setShowEditP(false) : setShowAddP(false);
                 Swal.fire({ icon: 'success', title: 'Berhasil', timer: 1500, showConfirmButton: false });
                 fetchAll();
@@ -149,7 +155,7 @@ export default function Biaya() {
             }
         } catch (err) {
             console.error(err);
-            Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan saat menyimpan' });
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || err.message || 'Terjadi kesalahan saat menyimpan' });
         } finally {
             setSaving(false);
         }
@@ -158,24 +164,13 @@ export default function Biaya() {
     const handlePerlDelete = async (e) => {
         e.preventDefault(); setSaving(true);
         try {
-            const res = await fetch(`/api/perlengkapan/items/${deletingP.id}`, {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Accept': 'application/json'
-                }
-            });
-            if (res.ok) {
-                setShowDeleteP(false);
-                Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false });
-                fetchAll();
-            } else {
-                const d = await res.json().catch(() => null);
-                throw new Error(d?.message || 'Gagal menghapus item perlengkapan');
-            }
+            await axios.delete(`/api/perlengkapan/items/${deletingP.id}`, { headers });
+            setShowDeleteP(false);
+            Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false });
+            fetchAll();
         } catch (err) {
             console.error(err);
-            Swal.fire({ icon: 'error', title: 'Gagal', text: err.message || 'Terjadi kesalahan saat menghapus' });
+            Swal.fire({ icon: 'error', title: 'Gagal', text: err.response?.data?.message || err.message || 'Terjadi kesalahan saat menghapus' });
         } finally {
             setSaving(false);
         }
@@ -393,8 +388,24 @@ export default function Biaya() {
                     <div className="p-4 space-y-4">
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Perlengkapan</label>
                             <input type="text" value={formP.nama_item} onChange={e => setFormP(f => ({ ...f, nama_item: e.target.value }))} required placeholder="Contoh: Kasur, Almari, Bantal" className={inputCls} /></div>
-                        <div><label className="block text-sm font-medium text-gray-700 mb-1">Nominal (Rp)</label>
-                            <input type="number" value={formP.nominal} onChange={e => setFormP(f => ({ ...f, nominal: e.target.value }))} min="0" className={inputCls} /></div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nominal</label>
+                            <div className="relative flex rounded-lg shadow-sm">
+                                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    Rp
+                                </span>
+                                <input 
+                                    type="text" 
+                                    value={formP.nominal === 0 ? '' : String(formP.nominal).replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".")} 
+                                    onChange={e => {
+                                        const val = Number(e.target.value.replace(/\D/g, ''));
+                                        setFormP(f => ({ ...f, nominal: val }));
+                                    }} 
+                                    className={`${inputCls} rounded-l-none`} 
+                                    required 
+                                />
+                            </div>
+                        </div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
                             <input type="number" value={formP.urutan} onChange={e => setFormP(f => ({ ...f, urutan: e.target.value }))} min="0" className={inputCls} /></div>
                     </div>
@@ -414,8 +425,24 @@ export default function Biaya() {
                     <div className="p-4 space-y-4">
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Nama Perlengkapan</label>
                             <input type="text" value={formP.nama_item} onChange={e => setFormP(f => ({ ...f, nama_item: e.target.value }))} required className={inputCls} /></div>
-                        <div><label className="block text-sm font-medium text-gray-700 mb-1">Nominal (Rp)</label>
-                            <input type="number" value={formP.nominal} onChange={e => setFormP(f => ({ ...f, nominal: e.target.value }))} min="0" className={inputCls} /></div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Nominal</label>
+                            <div className="relative flex rounded-lg shadow-sm">
+                                <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
+                                    Rp
+                                </span>
+                                <input 
+                                    type="text" 
+                                    value={formP.nominal === 0 ? '' : String(formP.nominal).replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ".")} 
+                                    onChange={e => {
+                                        const val = Number(e.target.value.replace(/\D/g, ''));
+                                        setFormP(f => ({ ...f, nominal: val }));
+                                    }} 
+                                    className={`${inputCls} rounded-l-none`} 
+                                    required 
+                                />
+                            </div>
+                        </div>
                         <div><label className="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
                             <input type="number" value={formP.urutan} onChange={e => setFormP(f => ({ ...f, urutan: e.target.value }))} min="0" className={inputCls} /></div>
                     </div>
