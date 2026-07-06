@@ -463,6 +463,7 @@ export default function Pendaftaran() {
                                     </th>
                                     {renderHeader('No. Reg', 'no_registrasi')}
                                     {renderHeader('Nama', 'nama')}
+                                    {renderHeader('Alamat', 'alamat')}
                                     {renderHeader('Lembaga', 'lembaga')}
                                     {renderHeader('No. HP', 'no_hp_wali')}
                                     {renderHeader('Status', 'status')}
@@ -472,7 +473,7 @@ export default function Pendaftaran() {
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {data.length === 0 ? (
-                                    <tr><td colSpan={8} className="px-4 py-8 text-center text-gray-500 text-sm"><i className="fas fa-inbox text-4xl mb-3 text-gray-300 block"></i><p>Tidak ada data pendaftaran</p></td></tr>
+                                    <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500 text-sm"><i className="fas fa-inbox text-4xl mb-3 text-gray-300 block"></i><p>Tidak ada data pendaftaran</p></td></tr>
                                 ) : data.map(row => (
                                     <tr key={row.id} className="hover:bg-gray-50 transition">
                                         <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
@@ -487,6 +488,11 @@ export default function Pendaftaran() {
                                         <td className="px-2 py-2 sm:px-4 sm:py-3">
                                             <div className="font-medium text-[11px] sm:text-sm text-gray-800 leading-tight">{row.nama}</div>
                                             <div className="text-[10px] sm:text-xs text-gray-400 leading-tight mt-0.5">{row.asal_sekolah}</div>
+                                        </td>
+                                        <td className="px-2 py-2 sm:px-4 sm:py-3">
+                                            <div className="text-[11px] sm:text-sm text-gray-600 max-w-[200px] truncate" title={row.alamat}>
+                                                {row.alamat || <span className="text-gray-400 italic">-</span>}
+                                            </div>
                                         </td>
                                         <td className="px-2 py-2 sm:px-4 sm:py-3">
                                             <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-[10px] sm:text-xs">{row.lembaga}</span>

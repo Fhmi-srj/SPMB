@@ -53,7 +53,7 @@ class PendaftaranController extends Controller
 
         $sortBy = $request->query('sort_by', 'no_registrasi');
         $sortDir = $request->query('sort_dir', 'asc');
-        $allowedSort = ['no_registrasi', 'nama', 'lembaga', 'no_hp_wali', 'status', 'created_at'];
+        $allowedSort = ['no_registrasi', 'nama', 'alamat', 'lembaga', 'no_hp_wali', 'status', 'created_at'];
         if (!in_array($sortBy, $allowedSort)) {
             $sortBy = 'no_registrasi';
         }
@@ -846,7 +846,7 @@ class PendaftaranController extends Controller
         $headers = [
             'No', 'No. Reg', 'Nama Calon', 'Lembaga', 'Alamat', 
             'Status Pemberkasan', 'Tagihan (Sekolah & Pondok)', 
-            'Pemesanan (Perlengkapan)', 'Total Tagihan', 'Kekurangan Pembayaran'
+            'Pemesanan (Perlengkapan)', 'Total Tagihan', 'Total Pembayaran', 'Kekurangan Pembayaran'
         ];
 
         $col = 'A';
@@ -883,11 +883,12 @@ class PendaftaranController extends Controller
             $sheet->setCellValue('G' . $row, $tagihanFees);
             $sheet->setCellValue('H' . $row, $pemesananPerlengkapan);
             $sheet->setCellValue('I' . $row, $totalTagihan);
-            $sheet->setCellValue('J' . $row, $kekurangan);
+            $sheet->setCellValue('J' . $row, $totalPaid);
+            $sheet->setCellValue('K' . $row, $kekurangan);
             $row++;
         }
 
-        foreach (range('A', 'J') as $col) {
+        foreach (range('A', 'K') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

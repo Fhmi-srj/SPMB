@@ -177,15 +177,16 @@
         <thead>
             <tr>
                 <th width="3%" class="text-center">No</th>
-                <th width="9%">No. Reg</th>
-                <th width="18%">Nama Calon</th>
-                <th width="10%">Lembaga</th>
-                <th width="18%">Alamat</th>
-                <th width="12%">Pemberkasan</th>
-                <th class="text-right" width="10%">Tagihan</th>
-                <th class="text-right" width="10%">Pemesanan</th>
-                <th class="text-right" width="10%">Total Tagihan</th>
-                <th class="text-right" width="10%">Kekurangan</th>
+                <th width="8%">No. Reg</th>
+                <th width="15%">Nama Calon</th>
+                <th width="8%">Lembaga</th>
+                <th width="16%">Alamat</th>
+                <th width="10%">Pemberkasan</th>
+                <th class="text-right" width="8%">Tagihan</th>
+                <th class="text-right" width="8%">Pemesanan</th>
+                <th class="text-right" width="8%">Total Tagihan</th>
+                <th class="text-right" width="8%">Pembayaran</th>
+                <th class="text-right" width="8%">Kekurangan</th>
             </tr>
         </thead>
         <tbody>
@@ -206,6 +207,7 @@
                     <td class="text-right">Rp {{ number_format($item['tagihan'], 0, ',', '.') }}</td>
                     <td class="text-right">Rp {{ number_format($item['pemesanan'], 0, ',', '.') }}</td>
                     <td class="text-right"><strong>Rp {{ number_format($item['total_tagihan'], 0, ',', '.') }}</strong></td>
+                    <td class="text-right" style="color: #27ae60; font-weight: bold;">Rp {{ number_format($item['total_dibayar'], 0, ',', '.') }}</td>
                     <td class="text-right" style="color: {{ $item['kekurangan'] > 0 ? '#e74c3c' : '#27ae60' }}; font-weight: bold;">
                         Rp {{ number_format($item['kekurangan'], 0, ',', '.') }}
                     </td>

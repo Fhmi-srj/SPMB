@@ -333,20 +333,21 @@ export default function RekapPendaftaran() {
                             <tr className="bg-gray-50/70 border-b border-gray-100 text-gray-600 font-semibold uppercase tracking-wider text-[10px]">
                                 <th className="p-4 text-center" width="4%">No</th>
                                 <th className="p-4" width="10%">No. Reg</th>
-                                <th className="p-4" width="16%">Nama Calon</th>
-                                <th className="p-4" width="18%">Alamat</th>
-                                <th className="p-4 text-center" width="12%">Status Berkas</th>
-                                <th className="p-4 text-right" width="9%">Tagihan</th>
-                                <th className="p-4 text-right" width="9%">Pemesanan</th>
-                                <th className="p-4 text-right" width="10%">Total Tagihan</th>
-                                <th className="p-4 text-right" width="10%">Kekurangan</th>
+                                <th className="p-4" width="15%">Nama Calon</th>
+                                <th className="p-4" width="15%">Alamat</th>
+                                <th className="p-4 text-center" width="10%">Status Berkas</th>
+                                <th className="p-4 text-right text-gray-400 font-medium text-[9px]" width="8%">Tagihan</th>
+                                <th className="p-4 text-right text-gray-400 font-medium text-[9px]" width="8%">Pemesanan</th>
+                                <th className="p-4 text-right text-gray-800 font-bold" width="10%">Total Tagihan</th>
+                                <th className="p-4 text-right text-gray-800 font-bold" width="10%">Pembayaran</th>
+                                <th className="p-4 text-right text-gray-800 font-bold" width="10%">Kekurangan</th>
                                 <th className="p-4 text-center" width="8%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 text-gray-700">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="10" className="p-10 text-center text-gray-400">
+                                    <td colSpan="11" className="p-10 text-center text-gray-400">
                                         <div className="flex justify-center items-center gap-2">
                                             <div className="w-4 h-4 border-2 border-[#E67E22] border-t-transparent rounded-full animate-spin"></div>
                                             <span>Memuat data...</span>
@@ -355,7 +356,7 @@ export default function RekapPendaftaran() {
                                 </tr>
                             ) : data.length === 0 ? (
                                 <tr>
-                                    <td colSpan="10" className="p-10 text-center text-gray-400">Tidak ada data pendaftaran ditemukan</td>
+                                    <td colSpan="11" className="p-10 text-center text-gray-400">Tidak ada data pendaftaran ditemukan</td>
                                 </tr>
                             ) : (
                                 data.map((item, index) => {
@@ -382,11 +383,18 @@ export default function RekapPendaftaran() {
                                                     </span>
                                                 )}
                                             </td>
-                                            <td className="p-4 text-right font-medium">{fmt(item.tagihan)}</td>
-                                            <td className="p-4 text-right font-medium text-gray-500">{fmt(item.pemesanan)}</td>
-                                            <td className="p-4 text-right font-semibold text-gray-900">{fmt(item.total_tagihan)}</td>
-                                            <td className={`p-4 text-right font-bold ${item.kekurangan > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                                                {item.kekurangan > 0 ? fmt(item.kekurangan) : 'Lunas'}
+                                            <td className="p-4 text-right text-xs text-gray-400 font-normal whitespace-nowrap">{fmt(item.tagihan)}</td>
+                                            <td className="p-4 text-right text-xs text-gray-400 font-normal whitespace-nowrap">{fmt(item.pemesanan)}</td>
+                                            <td className="p-4 text-right text-xs sm:text-sm font-bold text-gray-900 whitespace-nowrap">{fmt(item.total_tagihan)}</td>
+                                            <td className={`p-4 text-right text-xs sm:text-sm whitespace-nowrap ${item.total_dibayar > 0 ? 'text-emerald-600 font-bold' : 'text-gray-300 font-medium'}`}>{fmt(item.total_dibayar)}</td>
+                                            <td className="p-4 text-right text-xs sm:text-sm whitespace-nowrap">
+                                                {item.kekurangan > 0 ? (
+                                                    <span className="text-rose-600 font-bold">{fmt(item.kekurangan)}</span>
+                                                ) : (
+                                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                        Lunas
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="p-4 text-center">
                                                 <button onClick={() => handleViewDetail(item)} className="p-1 px-2.5 bg-orange-50 hover:bg-[#E67E22] text-[#E67E22] hover:text-white rounded-lg text-xs font-semibold border border-orange-100/80 transition-all flex items-center gap-1 mx-auto shadow-sm">
