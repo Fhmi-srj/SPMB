@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PerlengkapanItem;
 use App\Models\PerlengkapanPesanan;
 use App\Models\Pendaftaran;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class PerlengkapanController extends Controller
@@ -122,5 +123,99 @@ class PerlengkapanController extends Controller
         );
 
         return response()->json(['success' => true]);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = Pendaftaran::query()
+            ->select('id', 'nama', 'lembaga', 'no_registrasi');
+
+        if ($request->search) {
+            $query->where('nama', 'like', '%' . $request->search . '%');
+        }
+        if ($request->lembaga) {
+            $query->where('lembaga', $request->lembaga);
+        }
+
+        $pendaftaranList = $query->orderByDesc('created_at')->get();
+
+        $items = PerlengkapanItem::where('aktif', true)->orderBy('urutan')->get();
+        $pesananAll = PerlengkapanPesanan::where('status', 1)->get()->groupBy('pendaftaran_id');
+
+        $customData = json_decode($request->input('custom_data', '{}'), true);
+        $mode = $request->input('mode', 'blank'); // blank or filled
+        $defaultTanggal = $request->input('tanggal_pengambilan', '');
+        $defaultKeterangan = $request->input('keterangan', '');
+
+        $result = [];
+        foreach ($pendaftaranList as $p) {
+            $pesanan = $pesananAll->get($p->id, collect());
+            if ($pesanan->isEmpty()) {
+                continue; // Skip if they didn't order any item
+            }
+
+            $perlengkapan = [];
+            $hasAnyActiveOrder = false;
+            foreach ($items as $item) {
+                $rec = $pesanan->firstWhere('perlengkapan_item_id', $item->id);
+                $isOrdered = $rec && $rec->status;
+                $perlengkapan[$item->id] = $isOrdered;
+                if ($isOrdered) {
+                    $hasAnyActiveOrder = true;
+                }
+            }
+
+            if (!$hasAnyActiveOrder) {
+                continue; // Skip if they don't have any active order
+            }
+
+            $studentId = $p->id;
+            $tanggal = '';
+            $keterangan = '';
+
+            if ($mode === 'filled') {
+                $tanggal = $customData[$studentId]['tanggal_pengambilan'] ?? $defaultTanggal;
+                $keterangan = $customData[$studentId]['keterangan'] ?? $defaultKeterangan;
+            }
+
+            $result[] = [
+                'id'            => $p->id,
+                'nama'          => $p->nama,
+                'lembaga'       => $p->lembaga,
+                'no_registrasi' => $p->no_registrasi,
+                'perlengkapan'  => $perlengkapan,
+                'tanggal'       => $tanggal,
+                'keterangan'    => $keterangan,
+            ];
+        }
+
+        $indonesianMonths = [
+            1 => 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+            'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+        ];
+        $formattedDate = date('d') . ' ' . $indonesianMonths[(int)date('m')] . ' ' . date('Y');
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.perlengkapan_penerimaan', [
+            'data' => $result,
+            'items' => $items,
+            'title' => 'Bukti Pengambilan Perlengkapan Santri',
+            'date' => date('d/m/Y H:i'),
+            'formattedDate' => $formattedDate,
+            'mode' => $mode,
+            'lembaga' => $request->lembaga ?: 'Semua Lembaga',
+        ]);
+
+        $pdf->setPaper('a4', 'landscape');
+
+        if (auth()->check()) {
+            ActivityLog::create([
+                'admin_id' => auth()->id(),
+                'action' => 'EXPORT',
+                'description' => 'Export bukti pengambilan perlengkapan ke PDF (' . count($result) . ' records)',
+                'ip_address' => request()->ip(),
+            ]);
+        }
+
+        return $pdf->download('bukti-pengambilan-perlengkapan-' . date('Ymd-His') . '.pdf');
     }
 }

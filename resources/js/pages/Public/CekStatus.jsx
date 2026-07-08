@@ -83,7 +83,11 @@ function DetailModal({ show, onClose, data }) {
                 </div>
 
                 {/* Modal Footer */}
-                <div className="border-t p-4 bg-gray-50 flex justify-end">
+                <div className="border-t p-4 bg-gray-50 flex justify-end gap-2">
+                    <button onClick={() => window.open(`/admin/pendaftaran/print-kartu?ids=${data.id}&no_reg=${encodeURIComponent(data.no_registrasi)}`, '_blank')}
+                        className="px-5 py-2 bg-[#E67E22] hover:bg-[#D35400] text-white rounded-lg text-sm font-semibold transition active:scale-95 flex items-center gap-2">
+                        <i className="fas fa-print"></i> Cetak Kartu
+                    </button>
                     <button onClick={onClose} className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-sm font-semibold transition active:scale-95">Tutup</button>
                 </div>
             </div>
@@ -102,6 +106,15 @@ export default function CekStatus() {
 
     useEffect(() => {
         fetch('/api/pengaturan/public').then(r => r.json()).then(d => { if (d.success) setSettings(d.data); }).catch(() => { });
+        
+        // Auto-search if q query parameter is present
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('q');
+        if (q) {
+            const queryVal = q.trim();
+            setQuery(queryVal);
+            search(queryVal);
+        }
     }, []);
 
     const search = (q) => {

@@ -380,6 +380,12 @@ export default function Pendaftaran() {
         }
     };
 
+    const handlePrintCards = (ids) => {
+        const idsArray = Array.isArray(ids) ? ids : [ids];
+        if (idsArray.length === 0) return;
+        window.open(`/admin/pendaftaran/print-kartu?ids=${idsArray.join(',')}&token=${token}`, '_blank');
+    };
+
     return (
         <div>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -389,11 +395,18 @@ export default function Pendaftaran() {
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto">
                     {selectedIds.length > 0 && (
-                        <button onClick={handleBulkVerify}
-                            className="bg-[#E67E22] hover:bg-[#D35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
-                            <i className="fas fa-check-double"></i>
-                            <span>Verifikasi Masal ({selectedIds.length})</span>
-                        </button>
+                        <>
+                            <button onClick={() => handlePrintCards(selectedIds)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                                <i className="fas fa-print"></i>
+                                <span>Cetak Kartu ({selectedIds.length})</span>
+                            </button>
+                            <button onClick={handleBulkVerify}
+                                className="bg-[#E67E22] hover:bg-[#D35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                                <i className="fas fa-check-double"></i>
+                                <span>Verifikasi Masal ({selectedIds.length})</span>
+                            </button>
+                        </>
                     )}
                     <button onClick={handleExport}
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
@@ -523,6 +536,7 @@ export default function Pendaftaran() {
                                         <td className="px-2 py-2 sm:px-4 sm:py-3 text-gray-500 text-[10px] sm:text-xs">{row.created_at ? new Date(row.created_at).toLocaleDateString('id') : '-'}</td>
                                         <td className="px-2 py-2 sm:px-4 sm:py-3">
                                             <div className="flex items-center justify-center gap-0.5">
+                                                <button onClick={() => handlePrintCards(row.id)} title="Cetak Kartu" className="p-1 text-blue-600 hover:bg-blue-100 rounded transition"><i className="fas fa-print text-[10px] sm:text-xs"></i></button>
                                                 <button onClick={() => openEdit(row)} title="Edit" className="p-1 text-[#E67E22] hover:bg-orange-100 rounded transition"><i className="fas fa-edit text-[10px] sm:text-xs"></i></button>
                                                 <button onClick={() => handleNotifBerkas(row)} title="Kirim WA Berkas" className="p-1 text-green-600 hover:bg-green-100 rounded transition"><i className="fab fa-whatsapp text-[10px] sm:text-xs"></i></button>
                                                 <button onClick={() => handleDelete(row)} title="Hapus" className="p-1 text-red-600 hover:bg-red-100 rounded transition"><i className="fas fa-trash text-[10px] sm:text-xs"></i></button>

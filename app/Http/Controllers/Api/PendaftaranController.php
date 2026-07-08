@@ -122,6 +122,7 @@ class PendaftaranController extends Controller
         }
 
         $results = Pendaftaran::where('nama', 'like', "%{$q}%")
+            ->orWhere('no_registrasi', 'like', "%{$q}%")
             ->orderBy('created_at', 'desc')
             ->limit(20)
             ->get(['id', 'nama', 'lembaga', 'no_registrasi', 'status', 'alamat', 'asal_sekolah', 'status_mukim', 'created_at']);
@@ -1038,5 +1039,81 @@ class PendaftaranController extends Controller
         ]);
 
         return $pdf->download('rekap-pendaftaran-' . date('Ymd-His') . '.pdf');
+    }
+
+    /** Print kartu pendaftaran (massal / individual) */
+    public function printKartu(Request $request)
+    {
+        $token = $request->query('token');
+        $noReg = $request->query('no_reg');
+        $isAdmin = false;
+        $admin = null;
+
+        if ($token) {
+            // Cari token secara manual dari personal_access_tokens
+            if (str_contains($token, '|')) {
+                [$id, $plain] = explode('|', $token, 2);
+                $pat = \Laravel\Sanctum\PersonalAccessToken::find($id);
+                if ($pat && hash_equals($pat->token, hash('sha256', $plain))) {
+                    if (!$pat->expires_at || !$pat->expires_at->isPast()) {
+                        $admin = $pat->tokenable;
+                        if ($admin) {
+                            $isAdmin = true;
+                        }
+                    }
+                }
+            } else {
+                $pat = \Laravel\Sanctum\PersonalAccessToken::where('token', hash('sha256', $token))->first();
+                if ($pat && (!$pat->expires_at || !$pat->expires_at->isPast())) {
+                    $admin = $pat->tokenable;
+                    if ($admin) {
+                        $isAdmin = true;
+                    }
+                }
+            }
+        }
+
+        $idsString = $request->query('ids', '');
+        if (empty($idsString)) {
+            return response('Bad Request: ID pendaftar tidak disertakan', 400);
+        }
+
+        $ids = array_filter(explode(',', $idsString));
+        if (empty($ids)) {
+            return response('Bad Request: ID pendaftar tidak valid', 400);
+        }
+
+        // Jika bukan admin, pastikan ada verifikasi no_reg pendaftar tunggal
+        if (!$isAdmin) {
+            if (!$noReg) {
+                return response('Unauthorized: Token tidak valid atau verifikasi tidak ditemukan', 401);
+            }
+            if (count($ids) > 1) {
+                return response('Unauthorized: Cetak massal hanya diperbolehkan untuk administrator', 403);
+            }
+            $students = Pendaftaran::where('id', $ids[0])->where('no_registrasi', $noReg)->get();
+        } else {
+            $students = Pendaftaran::whereIn('id', $ids)->get();
+        }
+
+        if ($students->isEmpty()) {
+            return response('Not Found: Data pendaftar tidak ditemukan', 404);
+        }
+
+        // Ambil tahun ajaran aktif dari pengaturan
+        $settings = Pengaturan::all()->keyBy('kunci')->map(fn($s) => $s->nilai);
+        $tahun_ajaran = $settings->get('tahun_ajaran', '2026/2027');
+
+        if ($isAdmin && $admin) {
+            // Catat aktivitas print
+            ActivityLog::create([
+                'admin_id'    => $admin->id,
+                'action'      => 'EXPORT',
+                'description' => 'Mencetak kartu tanda peserta untuk ' . $students->count() . ' pendaftar',
+                'ip_address'  => $request->ip(),
+            ]);
+        }
+
+        return view('print-kartu', compact('students', 'tahun_ajaran'));
     }
 }

@@ -128,6 +128,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('perlengkapan/items/{id}', [PerlengkapanController::class, 'destroyItem']);
     Route::get('perlengkapan/pesanan', [PerlengkapanController::class, 'indexPesanan']);
     Route::post('perlengkapan/pesanan/toggle', [PerlengkapanController::class, 'togglePesanan']);
+    Route::get('perlengkapan/export-pdf', [PerlengkapanController::class, 'exportPdf']);
 
     // ─── NEW: Pos Keuangan ───────────────────────────────────
     Route::get('pos-keuangan', [PosKeuanganController::class, 'index']);
