@@ -386,6 +386,20 @@ export default function Pendaftaran() {
         window.open(`/admin/pendaftaran/print-kartu?ids=${idsArray.join(',')}&token=${token}`, '_blank');
     };
 
+    const handlePrintDaftarHadir = (ids) => {
+        const idsArray = Array.isArray(ids) ? ids : [ids];
+        const params = new URLSearchParams();
+        params.append('token', token);
+        if (idsArray.length > 0) {
+            params.append('ids', idsArray.join(','));
+        } else {
+            if (filters.search) params.append('search', filters.search);
+            if (filters.lembaga) params.append('lembaga', filters.lembaga);
+            if (filters.status) params.append('status', filters.status);
+        }
+        window.open(`/admin/pendaftaran/print-daftar-hadir?${params.toString()}`, '_blank');
+    };
+
     return (
         <div>
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -394,12 +408,17 @@ export default function Pendaftaran() {
                     <p className="text-gray-500 text-sm">Kelola data pendaftaran siswa baru</p>
                 </div>
                 <div className="flex items-center gap-2 self-end sm:self-auto">
-                    {selectedIds.length > 0 && (
+                    {selectedIds.length > 0 ? (
                         <>
                             <button onClick={() => handlePrintCards(selectedIds)}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
                                 <i className="fas fa-print"></i>
                                 <span>Cetak Kartu ({selectedIds.length})</span>
+                            </button>
+                            <button onClick={() => handlePrintDaftarHadir(selectedIds)}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                                <i className="fas fa-file-signature"></i>
+                                <span>Daftar Hadir ({selectedIds.length})</span>
                             </button>
                             <button onClick={handleBulkVerify}
                                 className="bg-[#E67E22] hover:bg-[#D35400] text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
@@ -407,6 +426,12 @@ export default function Pendaftaran() {
                                 <span>Verifikasi Masal ({selectedIds.length})</span>
                             </button>
                         </>
+                    ) : (
+                        <button onClick={() => handlePrintDaftarHadir([])}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 shadow-sm">
+                            <i className="fas fa-file-signature"></i>
+                            <span>Cetak Daftar Hadir</span>
+                        </button>
                     )}
                     <button onClick={handleExport}
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">

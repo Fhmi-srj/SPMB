@@ -1116,4 +1116,84 @@ class PendaftaranController extends Controller
 
         return view('print-kartu', compact('students', 'tahun_ajaran'));
     }
+
+    public function printDaftarHadir(Request $request)
+    {
+        $token = $request->query('token');
+        $isAdmin = false;
+        $admin = null;
+
+        if ($token) {
+            if (str_contains($token, '|')) {
+                [$id, $plain] = explode('|', $token, 2);
+                $pat = \Laravel\Sanctum\PersonalAccessToken::find($id);
+                if ($pat && hash_equals($pat->token, hash('sha256', $plain))) {
+                    if (!$pat->expires_at || !$pat->expires_at->isPast()) {
+                        $admin = $pat->tokenable;
+                        if ($admin) {
+                            $isAdmin = true;
+                        }
+                    }
+                }
+            } else {
+                $pat = \Laravel\Sanctum\PersonalAccessToken::where('token', hash('sha256', $token))->first();
+                if ($pat && (!$pat->expires_at || !$pat->expires_at->isPast())) {
+                    $admin = $pat->tokenable;
+                    if ($admin) {
+                        $isAdmin = true;
+                    }
+                }
+            }
+        }
+
+        if (!$isAdmin) {
+            return response('Unauthorized: Token tidak valid atau verifikasi tidak ditemukan', 401);
+        }
+
+        $query = Pendaftaran::query();
+
+        $idsString = $request->query('ids', '');
+        if (!empty($idsString)) {
+            $ids = array_filter(explode(',', $idsString));
+            if (!empty($ids)) {
+                $query->whereIn('id', $ids);
+            }
+        } else {
+            if ($request->query('search')) {
+                $search = $request->query('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama', 'like', "%{$search}%")
+                        ->orWhere('no_registrasi', 'like', "%{$search}%")
+                        ->orWhere('asal_sekolah', 'like', "%{$search}%")
+                        ->orWhere('alamat', 'like', "%{$search}%");
+                });
+            }
+            if ($request->query('lembaga')) {
+                $query->where('lembaga', $request->query('lembaga'));
+            }
+            if ($request->query('status')) {
+                $query->where('status', $request->query('status'));
+            }
+        }
+
+        $students = $query->orderBy('lembaga')->orderBy('no_registrasi')->get();
+
+        // Group by lembaga to separate them into lists (SMP and MA)
+        $grouped = $students->groupBy('lembaga');
+
+        // Ambil tahun ajaran aktif dari pengaturan
+        $settings = Pengaturan::all()->keyBy('kunci')->map(fn($s) => $s->nilai);
+        $tahun_ajaran = $settings->get('tahun_ajaran', '2026/2027');
+
+        if ($admin) {
+            ActivityLog::create([
+                'admin_id'    => $admin->id,
+                'action'      => 'EXPORT',
+                'description' => 'Mencetak daftar hadir untuk ' . $students->count() . ' pendaftar',
+                'ip_address'  => $request->ip(),
+            ]);
+        }
+
+        return view('print-daftar-hadir', compact('grouped', 'tahun_ajaran'));
+    }
 }
