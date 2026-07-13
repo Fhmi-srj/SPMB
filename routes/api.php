@@ -103,6 +103,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('activity-log', [ActivityLogController::class, 'index']);
 
     // ─── NEW: Transaksi ──────────────────────────────────────
+    Route::get('transaksi/export-pdf', [TransaksiController::class, 'exportPdf']);
     Route::get('transaksi/pemasukan', [TransaksiController::class, 'indexPemasukan']);
     Route::post('transaksi/pemasukan', [TransaksiController::class, 'storePemasukan']);
     Route::put('transaksi/pemasukan/{id}', [TransaksiController::class, 'updatePemasukan']);

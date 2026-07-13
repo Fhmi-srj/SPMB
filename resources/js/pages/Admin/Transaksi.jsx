@@ -19,7 +19,7 @@ export default function Transaksi() {
     const [tab, setTab] = useState('pemasukan');
     const [pemasukan, setPemasukan] = useState([]);
     const [pengeluaran, setPengeluaran] = useState([]);
-    const [summary, setSummary] = useState({ total_masuk: 0, total_keluar: 0, saldo: 0 });
+    const [summary, setSummary] = useState({ total_masuk: 0, total_keluar: 0, saldo: 0, total_cash: 0, total_transfer: 0 });
     const [periode, setPeriode] = useState('semua');
     const [showModal, setShowModal] = useState(null); // 'pemasukan' | 'pengeluaran' | 'edit_pemasukan' | 'edit_pengeluaran'
     const [form, setForm] = useState({});
@@ -47,7 +47,22 @@ export default function Transaksi() {
             
             const total_masuk = res1.data.summary?.total_approved || 0;
             const total_keluar = res2.data.summary?.total_approved || 0;
-            setSummary({ total_masuk, total_keluar, saldo: total_masuk - total_keluar });
+            
+            const approvedPemasukan = (res1.data.data || []).filter(item => item.status === 'approved');
+            const total_cash = approvedPemasukan
+                .filter(item => item.jenis_pembayaran === 'Cash')
+                .reduce((sum, item) => sum + parseFloat(item.nominal || 0), 0);
+            const total_transfer = approvedPemasukan
+                .filter(item => item.jenis_pembayaran === 'Transfer')
+                .reduce((sum, item) => sum + parseFloat(item.nominal || 0), 0);
+
+            setSummary({
+                total_masuk,
+                total_keluar,
+                saldo: total_masuk - total_keluar,
+                total_cash,
+                total_transfer
+            });
         } catch (e) { console.error(e); }
         finally { setLoading(false); }
     }, [periode, token]);
@@ -187,6 +202,27 @@ export default function Transaksi() {
         setShowModal('edit_pengeluaran');
     };
 
+    const handleExportPdf = async () => {
+        try {
+            Swal.fire({ title: 'Membuat PDF...', didOpen: () => Swal.showLoading(), allowOutsideClick: false });
+            const res = await axios.get(`${API}/transaksi/export-pdf`, {
+                headers,
+                params: { periode },
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `laporan-transaksi-keuangan-${Date.now()}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            Swal.close();
+        } catch {
+            Swal.fire('Error', 'Gagal ekspor PDF', 'error');
+        }
+    };
+
     const today = new Date().toISOString().split('T')[0];
 
     const statusBadge = (status) => {
@@ -205,7 +241,7 @@ export default function Transaksi() {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
                 <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
                     <div className="flex items-center justify-between">
                         <div>
@@ -213,6 +249,24 @@ export default function Transaksi() {
                             <h3 className="text-sm sm:text-2xl font-bold">{fmt(summary.total_masuk)}</h3>
                         </div>
                         <div className="bg-white/20 p-1.5 sm:p-3 rounded-lg"><i className="fas fa-arrow-down text-sm sm:text-2xl"></i></div>
+                    </div>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-emerald-100 text-[10px] sm:text-sm mb-1">Total Uang Cash</p>
+                            <h3 className="text-sm sm:text-2xl font-bold">{fmt(summary.total_cash)}</h3>
+                        </div>
+                        <div className="bg-white/20 p-1.5 sm:p-3 rounded-lg"><i className="fas fa-money-bill-wave text-sm sm:text-2xl"></i></div>
+                    </div>
+                </div>
+                <div className="bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-teal-100 text-[10px] sm:text-sm mb-1">Total Uang TF</p>
+                            <h3 className="text-sm sm:text-2xl font-bold">{fmt(summary.total_transfer)}</h3>
+                        </div>
+                        <div className="bg-white/20 p-1.5 sm:p-3 rounded-lg"><i className="fas fa-credit-card text-sm sm:text-2xl"></i></div>
                     </div>
                 </div>
                 <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-3 sm:p-5 text-white">
@@ -250,6 +304,9 @@ export default function Transaksi() {
                     </button>
                     <button onClick={() => setPeriode('semua')} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
                         <i className="fas fa-redo"></i>
+                    </button>
+                    <button onClick={handleExportPdf} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-1.5 ml-auto">
+                        <i className="fas fa-file-pdf"></i>Cetak PDF
                     </button>
                 </div>
             </div>

@@ -22,10 +22,15 @@ class PosKeuanganController extends Controller
             ->pluck('nama_item')
             ->toArray();
 
-        // Registrasi fee
-        $registrasiFee = Biaya::where('nama_item', 'Registrasi')
-            ->where('kategori', 'DAFTAR_ULANG')
-            ->first();
+        // Registrasi fee (Fix #1: Registrasi has kategori PENDAFTARAN, not DAFTAR_ULANG)
+        $biayaRegistrasiRow = Biaya::where('nama_item', 'Registrasi')->first();
+
+        // Calculate school fees excluding Registrasi row
+        $biayaMAExclReg = Biaya::where('nama_item', '!=', 'Registrasi')->sum('biaya_ma');
+        $biayaSMPExclReg = Biaya::where('nama_item', '!=', 'Registrasi')->sum('biaya_smp');
+        
+        // Calculate pondok fees excluding Registrasi row
+        $biayaPondokExclReg = Biaya::where('nama_item', '!=', 'Registrasi')->sum('biaya_pondok');
 
         // Get all registrants
         $registrants = Pendaftaran::select('id', 'nama', 'lembaga', 'status_mukim', 'created_at')->orderByDesc('created_at')->get();
@@ -38,11 +43,11 @@ class PosKeuanganController extends Controller
                 ->where('status', 'approved')
                 ->sum('nominal');
 
-            // Biaya sekolah
+            // Biaya sekolah (including Registrasi for total tagihan display)
             $lembagaCol = ($reg->lembaga === 'SMP NU BP') ? 'biaya_smp' : 'biaya_ma';
             $totalBiayaSekolah = Biaya::sum($lembagaCol);
 
-            // Biaya pondok
+            // Biaya pondok (including Registrasi for total tagihan display)
             $isPondok = $reg->status_mukim === 'PONDOK PP MAMBAUL HUDA';
             $totalBiayaPondok = $isPondok ? Biaya::sum('biaya_pondok') : 0;
 
@@ -56,6 +61,7 @@ class PosKeuanganController extends Controller
             // Distribusi pos
             $sisa = $totalPembayaran;
             $pos = [
+                'pos_registrasi'   => 0,
                 'pos_ma'           => 0,
                 'pos_smp'          => 0,
                 'pos_pondok'       => 0,
@@ -63,28 +69,43 @@ class PosKeuanganController extends Controller
                 'pos_sisa'         => 0,
             ];
 
-            if (in_array($reg->lembaga, ['MA', 'MA ALHIKAM'])) {
-                $biayaMA = $totalBiayaSekolah;
-                if ($registrasiFee) $biayaMA += $registrasiFee->biaya_ma;
-                $pos['pos_ma'] = min($sisa, $biayaMA);
+            // 1. Allocate to Registrasi
+            $lembaga = strtoupper($reg->lembaga);
+            $biayaRegistrasi = 0;
+            if ($biayaRegistrasiRow) {
+                if (in_array($lembaga, ['MA', 'MA ALHIKAM'])) {
+                    $biayaRegistrasi = $biayaRegistrasiRow->biaya_ma;
+                } elseif (in_array($lembaga, ['SMP', 'SMP NU BP'])) {
+                    $biayaRegistrasi = $biayaRegistrasiRow->biaya_smp;
+                }
+            }
+            if ($biayaRegistrasi > 0) {
+                $pos['pos_registrasi'] = min($sisa, $biayaRegistrasi);
+                $sisa -= $pos['pos_registrasi'];
+            }
+
+            // 2. Allocate to School (MA / SMP)
+            if (in_array($lembaga, ['MA', 'MA ALHIKAM'])) {
+                $pos['pos_ma'] = min($sisa, $biayaMAExclReg);
                 $sisa -= $pos['pos_ma'];
-            } elseif (in_array($reg->lembaga, ['SMP', 'SMP NU BP'])) {
-                $biayaSMP = $totalBiayaSekolah;
-                if ($registrasiFee) $biayaSMP += $registrasiFee->biaya_smp;
-                $pos['pos_smp'] = min($sisa, $biayaSMP);
+            } elseif (in_array($lembaga, ['SMP', 'SMP NU BP'])) {
+                $pos['pos_smp'] = min($sisa, $biayaSMPExclReg);
                 $sisa -= $pos['pos_smp'];
             }
 
+            // 3. Allocate to Pondok
             if ($sisa > 0 && $isPondok) {
-                $pos['pos_pondok'] = min($sisa, $totalBiayaPondok);
+                $pos['pos_pondok'] = min($sisa, $biayaPondokExclReg);
                 $sisa -= $pos['pos_pondok'];
             }
 
+            // 4. Allocate to Perlengkapan
             if ($sisa > 0 && $totalPerlengkapan > 0) {
                 $pos['pos_perlengkapan'] = min($sisa, $totalPerlengkapan);
                 $sisa -= $pos['pos_perlengkapan'];
             }
 
+            // 5. Remaining goes to pos_sisa
             $pos['pos_sisa'] = $sisa;
 
             $result[] = array_merge([
@@ -98,19 +119,26 @@ class PosKeuanganController extends Controller
         }
 
         // Summary totals
+        $totalRegistrasi   = array_sum(array_column($result, 'pos_registrasi'));
         $totalMA           = array_sum(array_column($result, 'pos_ma'));
         $totalSMP          = array_sum(array_column($result, 'pos_smp'));
         $totalPondok       = array_sum(array_column($result, 'pos_pondok'));
         $totalPerlengkapan = array_sum(array_column($result, 'pos_perlengkapan'));
+        $totalSisa         = array_sum(array_column($result, 'pos_sisa'));
+
+        $totals = [
+            'total_registrasi'   => $totalRegistrasi,
+            'total_ma'           => $totalMA,
+            'total_smp'          => $totalSMP,
+            'total_pondok'       => $totalPondok,
+            'total_perlengkapan' => $totalPerlengkapan,
+            'total_sisa'         => $totalSisa,
+        ];
 
         return response()->json([
             'data'    => $result,
-            'summary' => [
-                'total_ma'           => $totalMA,
-                'total_smp'          => $totalSMP,
-                'total_pondok'       => $totalPondok,
-                'total_perlengkapan' => $totalPerlengkapan,
-            ],
+            'summary' => $totals,
+            'totals'  => $totals,
         ]);
     }
 }

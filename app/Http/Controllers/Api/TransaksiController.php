@@ -188,6 +188,94 @@ class TransaksiController extends Controller
         return response()->json(['message' => 'Pemasukan ditolak']);
     }
 
+    public function exportPdf(Request $request)
+    {
+        // 1. Fetch Pemasukan (both approved and pending for completeness, but summary sums approved)
+        $queryPemasukan = TransaksiPemasukan::query()
+            ->join('pendaftaran', 'transaksi_pemasukan.pendaftaran_id', '=', 'pendaftaran.id')
+            ->leftJoin('admin as u_input', 'transaksi_pemasukan.input_by', '=', 'u_input.id')
+            ->select('transaksi_pemasukan.*', 'pendaftaran.nama', 'pendaftaran.lembaga', 'pendaftaran.no_registrasi', 'u_input.nama as input_nama');
+
+        if ($request->periode && $request->periode !== 'semua') {
+            switch ($request->periode) {
+                case 'hari_ini':
+                    $queryPemasukan->whereDate('transaksi_pemasukan.tanggal', today());
+                    break;
+                case 'minggu_ini':
+                    $queryPemasukan->whereBetween('transaksi_pemasukan.tanggal', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'bulan_ini':
+                    $queryPemasukan->whereMonth('transaksi_pemasukan.tanggal', now()->month)
+                                   ->whereYear('transaksi_pemasukan.tanggal', now()->year);
+                    break;
+            }
+        }
+        $pemasukan = $queryPemasukan->orderByDesc('transaksi_pemasukan.tanggal')
+                                    ->orderByDesc('transaksi_pemasukan.created_at')
+                                    ->get();
+
+        // 2. Fetch Pengeluaran
+        $queryPengeluaran = TransaksiPengeluaran::query()
+            ->leftJoin('admin as u_input', 'transaksi_pengeluaran.input_by', '=', 'u_input.id')
+            ->select('transaksi_pengeluaran.*', 'u_input.nama as input_nama');
+
+        if ($request->periode && $request->periode !== 'semua') {
+            switch ($request->periode) {
+                case 'hari_ini':
+                    $queryPengeluaran->whereDate('transaksi_pengeluaran.tanggal', today());
+                    break;
+                case 'minggu_ini':
+                    $queryPengeluaran->whereBetween('transaksi_pengeluaran.tanggal', [now()->startOfWeek(), now()->endOfWeek()]);
+                    break;
+                case 'bulan_ini':
+                    $queryPengeluaran->whereMonth('transaksi_pengeluaran.tanggal', now()->month)
+                                     ->whereYear('transaksi_pengeluaran.tanggal', now()->year);
+                    break;
+            }
+        }
+        $pengeluaran = $queryPengeluaran->orderByDesc('transaksi_pengeluaran.tanggal')
+                                        ->orderByDesc('transaksi_pengeluaran.created_at')
+                                        ->get();
+
+        // 3. Calculate Summary (approved only)
+        $totalPemasukan = $pemasukan->where('status', 'approved')->sum('nominal');
+        $totalPengeluaran = $pengeluaran->where('status', 'approved')->sum('nominal');
+        
+        $totalCash = $pemasukan->where('status', 'approved')->where('jenis_pembayaran', 'Cash')->sum('nominal');
+        $totalTransfer = $pemasukan->where('status', 'approved')->where('jenis_pembayaran', 'Transfer')->sum('nominal');
+        
+        $saldo = $totalPemasukan - $totalPengeluaran;
+
+        $summary = [
+            'total_masuk'    => $totalPemasukan,
+            'total_keluar'   => $totalPengeluaran,
+            'total_cash'     => $totalCash,
+            'total_transfer' => $totalTransfer,
+            'saldo'          => $saldo,
+        ];
+
+        // 4. Load View
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.transaksi_keuangan', [
+            'pemasukan'   => $pemasukan,
+            'pengeluaran' => $pengeluaran,
+            'summary'     => $summary,
+            'periode'     => $request->periode ?? 'semua',
+            'title'       => 'Laporan Transaksi Keuangan SPMB',
+            'date'        => date('d/m/Y H:i'),
+        ]);
+
+        $pdf->setPaper('a4', 'portrait');
+
+        ActivityLog::create([
+            'admin_id'    => auth()->id(),
+            'action'      => 'EXPORT',
+            'description' => "Export laporan transaksi keuangan periode: " . ($request->periode ?? 'semua') . " ke PDF",
+            'ip_address'  => request()->ip(),
+        ]);
+
+        return $pdf->download('laporan-transaksi-keuangan-' . date('Ymd-His') . '.pdf');
+    }
+
     // ─── PENGELUARAN ─────────────────────────────────────────────
 
     public function indexPengeluaran(Request $request)
