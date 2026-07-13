@@ -3,7 +3,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 
 const API = '/api';
-const fmt = (n) => 'Rp' + (n || 0).toLocaleString('id-ID');
+const fmt = (n) => 'Rp' + Number(n || 0).toLocaleString('id-ID');
 
 export default function PosKeuangan() {
     const [data, setData] = useState([]);
