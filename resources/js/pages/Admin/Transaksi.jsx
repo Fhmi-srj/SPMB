@@ -399,6 +399,7 @@ export default function Transaksi() {
                                         <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Tgl Input</th>
                                         <th className="px-2 py-2 sm:px-4 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Nominal</th>
                                         <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Kategori</th>
+                                        <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Keterangan</th>
                                         <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Status</th>
                                         <th className="px-2 py-2 sm:px-4 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase">Aksi</th>
                                     </tr>
@@ -413,6 +414,7 @@ export default function Transaksi() {
                                             </td>
                                             <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-right font-semibold text-red-600">{fmt(row.nominal)}</td>
                                             <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-gray-600">{row.kategori}</td>
+                                            <td className="px-2 py-2 sm:px-4 sm:py-3 text-[11px] sm:text-sm text-gray-600 break-words max-w-[200px]">{row.keterangan || '-'}</td>
                                             <td className="px-2 py-2 sm:px-4 sm:py-3 text-center">
                                                 {statusBadge(row.status)}
                                                 {row.status === 'approved' && row.approved_at && <div className="text-[9px] sm:text-xs text-gray-400 mt-1">{new Date(row.approved_at).toLocaleDateString('id-ID')}</div>}
@@ -434,7 +436,7 @@ export default function Transaksi() {
                                             </td>
                                         </tr>
                                     ))}
-                                    {pengeluaran.length === 0 && <tr><td colSpan={6} className="px-2 py-8 text-center text-gray-500 text-sm">Tidak ada data pengeluaran</td></tr>}
+                                    {pengeluaran.length === 0 && <tr><td colSpan={7} className="px-2 py-8 text-center text-gray-500 text-sm">Tidak ada data pengeluaran</td></tr>}
                                 </tbody>
                             </table>
                         </div>

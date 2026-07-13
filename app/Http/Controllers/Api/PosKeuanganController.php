@@ -25,12 +25,15 @@ class PosKeuanganController extends Controller
         // Registrasi fee (Fix #1: Registrasi has kategori PENDAFTARAN, not DAFTAR_ULANG)
         $biayaRegistrasiRow = Biaya::where('nama_item', 'Registrasi')->first();
 
-        // Calculate school fees excluding Registrasi row
-        $biayaMAExclReg = Biaya::where('nama_item', '!=', 'Registrasi')->sum('biaya_ma');
-        $biayaSMPExclReg = Biaya::where('nama_item', '!=', 'Registrasi')->sum('biaya_smp');
+        // School fees (including Registrasi row)
+        $biayaMATotal = Biaya::sum('biaya_ma');
+        $biayaSMPTotal = Biaya::sum('biaya_smp');
         
         // Calculate pondok fees excluding Registrasi row
         $biayaPondokExclReg = Biaya::where('nama_item', '!=', 'Registrasi')->sum('biaya_pondok');
+
+        // Pondok registration fee
+        $biayaRegistrasiPondok = $biayaRegistrasiRow ? $biayaRegistrasiRow->biaya_pondok : 50000;
 
         // Get all registrants
         $registrants = Pendaftaran::select('id', 'nama', 'lembaga', 'status_mukim', 'created_at')->orderByDesc('created_at')->get();
@@ -58,6 +61,8 @@ class PosKeuanganController extends Controller
                 ->where('perlengkapan_pesanan.status', 1)
                 ->sum('perlengkapan_items.nominal');
 
+            $totalTagihan = $totalBiayaSekolah + $totalBiayaPondok + $totalPerlengkapan;
+
             // Distribusi pos
             $sisa = $totalPembayaran;
             $pos = [
@@ -69,31 +74,23 @@ class PosKeuanganController extends Controller
                 'pos_sisa'         => 0,
             ];
 
-            // 1. Allocate to Registrasi
-            $lembaga = strtoupper($reg->lembaga);
-            $biayaRegistrasi = 0;
-            if ($biayaRegistrasiRow) {
-                if (in_array($lembaga, ['MA', 'MA ALHIKAM'])) {
-                    $biayaRegistrasi = $biayaRegistrasiRow->biaya_ma;
-                } elseif (in_array($lembaga, ['SMP', 'SMP NU BP'])) {
-                    $biayaRegistrasi = $biayaRegistrasiRow->biaya_smp;
-                }
-            }
-            if ($biayaRegistrasi > 0) {
-                $pos['pos_registrasi'] = min($sisa, $biayaRegistrasi);
+            // 1. Allocate to Registrasi (only for Pondok students: 50k)
+            if ($isPondok && $biayaRegistrasiPondok > 0) {
+                $pos['pos_registrasi'] = min($sisa, $biayaRegistrasiPondok);
                 $sisa -= $pos['pos_registrasi'];
             }
 
-            // 2. Allocate to School (MA / SMP)
+            // 2. Allocate to School (MA / SMP, including school registrasi)
+            $lembaga = strtoupper($reg->lembaga);
             if (in_array($lembaga, ['MA', 'MA ALHIKAM'])) {
-                $pos['pos_ma'] = min($sisa, $biayaMAExclReg);
+                $pos['pos_ma'] = min($sisa, $biayaMATotal);
                 $sisa -= $pos['pos_ma'];
             } elseif (in_array($lembaga, ['SMP', 'SMP NU BP'])) {
-                $pos['pos_smp'] = min($sisa, $biayaSMPExclReg);
+                $pos['pos_smp'] = min($sisa, $biayaSMPTotal);
                 $sisa -= $pos['pos_smp'];
             }
 
-            // 3. Allocate to Pondok
+            // 3. Allocate to Pondok (excluding pondok registrasi)
             if ($sisa > 0 && $isPondok) {
                 $pos['pos_pondok'] = min($sisa, $biayaPondokExclReg);
                 $sisa -= $pos['pos_pondok'];
@@ -105,8 +102,8 @@ class PosKeuanganController extends Controller
                 $sisa -= $pos['pos_perlengkapan'];
             }
 
-            // 5. Remaining goes to pos_sisa
-            $pos['pos_sisa'] = $sisa;
+            // 5. Remaining unpaid tagihan goes to pos_sisa
+            $pos['pos_sisa'] = max(0, $totalTagihan - $totalPembayaran);
 
             $result[] = array_merge([
                 'id'               => $reg->id,
@@ -114,7 +111,7 @@ class PosKeuanganController extends Controller
                 'lembaga'          => $reg->lembaga,
                 'status_mukim'     => $reg->status_mukim,
                 'total_pembayaran' => $totalPembayaran,
-                'total_tagihan'    => $totalBiayaSekolah + $totalBiayaPondok + $totalPerlengkapan,
+                'total_tagihan'    => $totalTagihan,
             ], $pos);
         }
 
