@@ -102,8 +102,8 @@ class PosKeuanganController extends Controller
                 $sisa -= $pos['pos_perlengkapan'];
             }
 
-            // 5. Remaining unpaid tagihan goes to pos_sisa
-            $pos['pos_sisa'] = max(0, $totalTagihan - $totalPembayaran);
+            // 5. Remaining goes to pos_sisa (unallocated money)
+            $pos['pos_sisa'] = $sisa;
 
             $result[] = array_merge([
                 'id'               => $reg->id,

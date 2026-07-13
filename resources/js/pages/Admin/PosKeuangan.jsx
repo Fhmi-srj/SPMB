@@ -328,11 +328,8 @@ export default function PosKeuangan() {
                                 <th onClick={() => handleSort('pos_perlengkapan')} className="cursor-pointer hover:bg-orange-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-orange-50 select-none">
                                     <span className="flex items-center justify-end">Perlengkapan {renderSortIcon('pos_perlengkapan')}</span>
                                 </th>
-                                <th onClick={() => handleSort('pos_sisa')} className="cursor-pointer hover:bg-red-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-red-50 select-none">
-                                    <span className="flex items-center justify-end">Sisa {renderSortIcon('pos_sisa')}</span>
-                                </th>
                             </tr>
-
+ 
                             {/* Total Row */}
                             <tr className="bg-[#E67E22] text-white font-bold">
                                 <td colSpan={7} className="px-2 py-2 sm:px-3 sm:py-3 text-[10px] sm:text-sm">TOTAL</td>
@@ -341,7 +338,6 @@ export default function PosKeuangan() {
                                 <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_smp)}</td>
                                 <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_pondok)}</td>
                                 <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_perlengkapan)}</td>
-                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_sisa)}</td>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -359,11 +355,10 @@ export default function PosKeuangan() {
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-green-700 bg-green-50">{fmt(row.pos_smp)}</td>
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-purple-700 bg-purple-50">{fmt(row.pos_pondok)}</td>
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-orange-700 bg-orange-50">{fmt(row.pos_perlengkapan)}</td>
-                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-red-700 bg-red-50">{fmt(row.pos_sisa)}</td>
                                 </tr>
                             ))}
                             {filteredAndSorted.length === 0 && (
-                                <tr><td colSpan={13} className="px-3 py-8 text-center text-gray-500">Tidak ada data</td></tr>
+                                <tr><td colSpan={12} className="px-3 py-8 text-center text-gray-500">Tidak ada data</td></tr>
                             )}
                         </tbody>
                     </table>
