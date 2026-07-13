@@ -168,6 +168,9 @@
                 <div class="stats-card" style="border-left: 3px solid #f1c40f;">
                     <div class="stats-label">Saldo</div>
                     <div class="stats-value" style="color: #d35400;">Rp {{ number_format($summary['saldo'], 0, ',', '.') }}</div>
+                    <div style="font-size: 7px; color: #718096; font-weight: bold; text-transform: uppercase; margin-top: 3px; border-top: 1px dashed #e2e8f0; padding-top: 2px;">
+                        Cash: Rp {{ number_format($summary['saldo'] - ($summary['total_transfer'] ?? 0), 0, ',', '.') }}
+                    </div>
                 </div>
             </td>
         </tr>

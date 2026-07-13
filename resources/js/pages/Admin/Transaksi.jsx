@@ -283,6 +283,9 @@ export default function Transaksi() {
                         <div>
                             <p className="text-blue-100 text-[10px] sm:text-sm mb-1">Saldo</p>
                             <h3 className="text-sm sm:text-2xl font-bold">{fmt(summary.saldo)}</h3>
+                            <p className="text-blue-100 text-[9px] sm:text-xs mt-1 pt-1 border-t border-white/20">
+                                Saldo Cash: {fmt(summary.saldo - (summary.total_transfer || 0))}
+                            </p>
                         </div>
                         <div className="bg-white/20 p-1.5 sm:p-3 rounded-lg"><i className="fas fa-wallet text-sm sm:text-2xl"></i></div>
                     </div>
