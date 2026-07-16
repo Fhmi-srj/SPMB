@@ -173,14 +173,24 @@ export default function PosKeuangan() {
 
     const exportToExcel = () => {
         const headers = [
-            'No', 'Nama', 'Lembaga', 'Status Pondok', 'Tagihan', 'Pembayaran', 'Status',
-            'Registrasi', 'MA', 'SMP', 'Pondok', 'Perlengkapan'
+            'No', 'Nama', 'Lembaga', 'Status Pondok', 'Tagihan', 
+            'Tag. Registrasi', 'Tag. MA', 'Tag. SMP', 'Tag. Pondok', 'Tag. Perlengkapan',
+            'Pembayaran', 'Status',
+            'Bayar Registrasi', 'Bayar MA', 'Bayar SMP', 'Bayar Pondok', 'Bayar Perlengkapan'
         ];
 
         const aoa = [
             headers,
             [
-                'TOTAL', '', '', '', '', '', '',
+                'TOTAL', '', '', '', 
+                Number(calculatedTotals.total_all_tagihan || 0),
+                Number(calculatedTotals.total_tagihan_registrasi || 0),
+                Number(calculatedTotals.total_tagihan_ma || 0),
+                Number(calculatedTotals.total_tagihan_smp || 0),
+                Number(calculatedTotals.total_tagihan_pondok || 0),
+                Number(calculatedTotals.total_tagihan_perlengkapan || 0),
+                Number(calculatedTotals.total_all_pembayaran || 0),
+                '-',
                 Number(calculatedTotals.total_registrasi || 0),
                 Number(calculatedTotals.total_ma || 0),
                 Number(calculatedTotals.total_smp || 0),
@@ -196,6 +206,11 @@ export default function PosKeuangan() {
                 row.lembaga || '',
                 row.status_mukim || '',
                 Number(row.total_tagihan || 0),
+                Number(row.tagihan_registrasi || 0),
+                Number(row.tagihan_ma || 0),
+                Number(row.tagihan_smp || 0),
+                Number(row.tagihan_pondok || 0),
+                Number(row.tagihan_perlengkapan || 0),
                 Number(row.total_pembayaran || 0),
                 getRowStatusPembayaran(row),
                 Number(row.pos_registrasi || 0),
@@ -208,9 +223,9 @@ export default function PosKeuangan() {
 
         const ws = XLSX.utils.aoa_to_sheet(aoa);
 
-        // Merge A2 to G2 for "TOTAL" label
+        // Merge A2 to D2 for "TOTAL" label
         ws['!merges'] = [
-            { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } }
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } }
         ];
 
         // Format numeric cells as currency
@@ -221,9 +236,8 @@ export default function PosKeuangan() {
                 const cell = ws[cellRef];
                 if (!cell) continue;
 
-                // nominal columns are E, F, H, I, J, K, L
-                // columns: E=4, F=5, H=7, I=8, J=9, K=10, L=11
-                const isNominalCol = [4, 5, 7, 8, 9, 10, 11].includes(C);
+                // nominal columns: 4 (Tagihan), 5-9 (Tag. details), 10 (Pembayaran), 12-16 (Bayar details)
+                const isNominalCol = [4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16].includes(C);
                 
                 // Skip the header row (R = 0)
                 if (R > 0 && isNominalCol) {
