@@ -103,6 +103,13 @@ export default function PosKeuangan() {
         let total_perlengkapan = 0;
         let total_registrasi = 0;
         let total_sisa = 0;
+        let total_all_tagihan = 0;
+        let total_all_pembayaran = 0;
+        let total_tagihan_ma = 0;
+        let total_tagihan_smp = 0;
+        let total_tagihan_pondok = 0;
+        let total_tagihan_perlengkapan = 0;
+        let total_tagihan_registrasi = 0;
 
         filteredAndSorted.forEach(row => {
             total_registrasi += Number(row.pos_registrasi || 0);
@@ -111,6 +118,14 @@ export default function PosKeuangan() {
             total_pondok += Number(row.pos_pondok || 0);
             total_perlengkapan += Number(row.pos_perlengkapan || 0);
             total_sisa += Number(row.pos_sisa || 0);
+
+            total_all_tagihan += Number(row.total_tagihan || 0);
+            total_all_pembayaran += Number(row.total_pembayaran || 0);
+            total_tagihan_registrasi += Number(row.tagihan_registrasi || 0);
+            total_tagihan_ma += Number(row.tagihan_ma || 0);
+            total_tagihan_smp += Number(row.tagihan_smp || 0);
+            total_tagihan_pondok += Number(row.tagihan_pondok || 0);
+            total_tagihan_perlengkapan += Number(row.tagihan_perlengkapan || 0);
         });
 
         return {
@@ -119,7 +134,14 @@ export default function PosKeuangan() {
             total_pondok,
             total_perlengkapan,
             total_registrasi,
-            total_sisa
+            total_sisa,
+            total_all_tagihan,
+            total_all_pembayaran,
+            total_tagihan_ma,
+            total_tagihan_smp,
+            total_tagihan_pondok,
+            total_tagihan_perlengkapan,
+            total_tagihan_registrasi
         };
     }, [filteredAndSorted]);
 
@@ -150,8 +172,86 @@ export default function PosKeuangan() {
     };
 
     const exportToExcel = () => {
-        const tableEl = document.getElementById('posKeuanganTable');
-        const wb = XLSX.utils.table_to_book(tableEl, { sheet: "Pos Keuangan" });
+        const headers = [
+            'No', 'Nama', 'Lembaga', 'Status Pondok', 'Tagihan', 'Pembayaran', 'Status',
+            'Registrasi', 'MA', 'SMP', 'Pondok', 'Perlengkapan'
+        ];
+
+        const aoa = [
+            headers,
+            [
+                'TOTAL', '', '', '', '', '', '',
+                Number(calculatedTotals.total_registrasi || 0),
+                Number(calculatedTotals.total_ma || 0),
+                Number(calculatedTotals.total_smp || 0),
+                Number(calculatedTotals.total_pondok || 0),
+                Number(calculatedTotals.total_perlengkapan || 0)
+            ]
+        ];
+
+        filteredAndSorted.forEach((row, idx) => {
+            aoa.push([
+                idx + 1,
+                row.nama || '',
+                row.lembaga || '',
+                row.status_mukim || '',
+                Number(row.total_tagihan || 0),
+                Number(row.total_pembayaran || 0),
+                getRowStatusPembayaran(row),
+                Number(row.pos_registrasi || 0),
+                Number(row.pos_ma || 0),
+                Number(row.pos_smp || 0),
+                Number(row.pos_pondok || 0),
+                Number(row.pos_perlengkapan || 0)
+            ]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // Merge A2 to G2 for "TOTAL" label
+        ws['!merges'] = [
+            { s: { r: 1, c: 0 }, e: { r: 1, c: 6 } }
+        ];
+
+        // Format numeric cells as currency
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let R = range.s.r; R <= range.e.r; ++R) {
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                const cell = ws[cellRef];
+                if (!cell) continue;
+
+                // nominal columns are E, F, H, I, J, K, L
+                // columns: E=4, F=5, H=7, I=8, J=9, K=10, L=11
+                const isNominalCol = [4, 5, 7, 8, 9, 10, 11].includes(C);
+                
+                // Skip the header row (R = 0)
+                if (R > 0 && isNominalCol) {
+                    cell.t = 'n';
+                    cell.v = Number(cell.v || 0);
+                    cell.z = '"Rp"#,##0';
+                }
+            }
+        }
+
+        // Set column widths
+        const cols = [];
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            let maxLen = 10;
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                const cellRef = XLSX.utils.encode_cell({ r: R, c: C });
+                const cell = ws[cellRef];
+                if (cell && cell.v) {
+                    const len = String(cell.v).length;
+                    if (len > maxLen) maxLen = len;
+                }
+            }
+            cols.push({ wch: maxLen + 3 });
+        }
+        ws['!cols'] = cols;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Pos Keuangan");
         XLSX.writeFile(wb, 'Pos_Keuangan_' + new Date().toISOString().split('T')[0] + '.xlsx');
     };
 
@@ -307,32 +407,56 @@ export default function PosKeuangan() {
                                 <th onClick={() => handleSort('total_tagihan')} className="cursor-pointer hover:bg-gray-100 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase select-none">
                                     <span className="flex items-center justify-end">Tagihan {renderSortIcon('total_tagihan')}</span>
                                 </th>
+                                {/* Tagihan Details */}
+                                <th onClick={() => handleSort('tagihan_registrasi')} className="cursor-pointer hover:bg-gray-100 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-gray-50/60 select-none">
+                                    <span className="flex items-center justify-end">Tag. Registrasi {renderSortIcon('tagihan_registrasi')}</span>
+                                </th>
+                                <th onClick={() => handleSort('tagihan_ma')} className="cursor-pointer hover:bg-blue-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-blue-50/60 select-none">
+                                    <span className="flex items-center justify-end">Tag. MA {renderSortIcon('tagihan_ma')}</span>
+                                </th>
+                                <th onClick={() => handleSort('tagihan_smp')} className="cursor-pointer hover:bg-green-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-green-50/60 select-none">
+                                    <span className="flex items-center justify-end">Tag. SMP {renderSortIcon('tagihan_smp')}</span>
+                                </th>
+                                <th onClick={() => handleSort('tagihan_pondok')} className="cursor-pointer hover:bg-purple-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-purple-50/60 select-none">
+                                    <span className="flex items-center justify-end">Tag. Pondok {renderSortIcon('tagihan_pondok')}</span>
+                                </th>
+                                <th onClick={() => handleSort('tagihan_perlengkapan')} className="cursor-pointer hover:bg-orange-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-orange-50/60 select-none">
+                                    <span className="flex items-center justify-end">Tag. Perlengkapan {renderSortIcon('tagihan_perlengkapan')}</span>
+                                </th>
                                 <th onClick={() => handleSort('total_pembayaran')} className="cursor-pointer hover:bg-gray-100 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase select-none">
                                     <span className="flex items-center justify-end">Pembayaran {renderSortIcon('total_pembayaran')}</span>
                                 </th>
                                 <th onClick={() => handleSort('status_pembayaran')} className="cursor-pointer hover:bg-gray-100 px-2 py-2 sm:px-3 sm:py-3 text-center text-[10px] sm:text-xs font-medium text-gray-500 uppercase select-none">
                                     <span className="flex items-center justify-center">Status {renderSortIcon('status_pembayaran')}</span>
                                 </th>
-                                <th onClick={() => handleSort('pos_registrasi')} className="cursor-pointer hover:bg-blue-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-gray-50 select-none">
-                                    <span className="flex items-center justify-end">Registrasi {renderSortIcon('pos_registrasi')}</span>
+                                <th onClick={() => handleSort('pos_registrasi')} className="cursor-pointer hover:bg-gray-100 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-gray-50 select-none">
+                                    <span className="flex items-center justify-end">Bayar Registrasi {renderSortIcon('pos_registrasi')}</span>
                                 </th>
                                 <th onClick={() => handleSort('pos_ma')} className="cursor-pointer hover:bg-blue-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-blue-50 select-none">
-                                    <span className="flex items-center justify-end">MA {renderSortIcon('pos_ma')}</span>
+                                    <span className="flex items-center justify-end">Bayar MA {renderSortIcon('pos_ma')}</span>
                                 </th>
                                 <th onClick={() => handleSort('pos_smp')} className="cursor-pointer hover:bg-green-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-green-50 select-none">
-                                    <span className="flex items-center justify-end">SMP {renderSortIcon('pos_smp')}</span>
+                                    <span className="flex items-center justify-end">Bayar SMP {renderSortIcon('pos_smp')}</span>
                                 </th>
                                 <th onClick={() => handleSort('pos_pondok')} className="cursor-pointer hover:bg-purple-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-purple-50 select-none">
-                                    <span className="flex items-center justify-end">Pondok {renderSortIcon('pos_pondok')}</span>
+                                    <span className="flex items-center justify-end">Bayar Pondok {renderSortIcon('pos_pondok')}</span>
                                 </th>
                                 <th onClick={() => handleSort('pos_perlengkapan')} className="cursor-pointer hover:bg-orange-100/50 px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-xs font-medium text-gray-500 uppercase bg-orange-50 select-none">
-                                    <span className="flex items-center justify-end">Perlengkapan {renderSortIcon('pos_perlengkapan')}</span>
+                                    <span className="flex items-center justify-end">Bayar Perlengkapan {renderSortIcon('pos_perlengkapan')}</span>
                                 </th>
                             </tr>
  
                             {/* Total Row */}
                             <tr className="bg-[#E67E22] text-white font-bold">
-                                <td colSpan={7} className="px-2 py-2 sm:px-3 sm:py-3 text-[10px] sm:text-sm">TOTAL</td>
+                                <td colSpan={4} className="px-2 py-2 sm:px-3 sm:py-3 text-[10px] sm:text-sm">TOTAL</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_all_tagihan)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_tagihan_registrasi)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_tagihan_ma)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_tagihan_smp)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_tagihan_pondok)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_tagihan_perlengkapan)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_all_pembayaran)}</td>
+                                <td className="px-2 py-2 sm:px-3 sm:py-3 text-center text-[10px] sm:text-sm">-</td>
                                 <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_registrasi)}</td>
                                 <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_ma)}</td>
                                 <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-[10px] sm:text-sm">{fmt(calculatedTotals.total_smp)}</td>
@@ -348,6 +472,11 @@ export default function PosKeuangan() {
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-gray-600">{row.lembaga}</td>
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-gray-600 leading-tight">{row.status_mukim}</td>
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-gray-600">{fmt(row.total_tagihan)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-gray-600 bg-gray-50/60">{fmt(row.tagihan_registrasi)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-blue-600 bg-blue-50/60">{fmt(row.tagihan_ma)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-green-600 bg-green-50/60">{fmt(row.tagihan_smp)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-purple-600 bg-purple-50/60">{fmt(row.tagihan_pondok)}</td>
+                                    <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-orange-600 bg-orange-50/60">{fmt(row.tagihan_perlengkapan)}</td>
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-right font-semibold text-green-600">{fmt(row.total_pembayaran)}</td>
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-center">{statusPembayaranBadge(row.total_tagihan, row.total_pembayaran)}</td>
                                     <td className="px-2 py-2 sm:px-3 sm:py-3 text-right text-gray-700 bg-gray-50">{fmt(row.pos_registrasi)}</td>
@@ -358,7 +487,7 @@ export default function PosKeuangan() {
                                 </tr>
                             ))}
                             {filteredAndSorted.length === 0 && (
-                                <tr><td colSpan={12} className="px-3 py-8 text-center text-gray-500">Tidak ada data</td></tr>
+                                <tr><td colSpan={17} className="px-3 py-8 text-center text-gray-500">Tidak ada data</td></tr>
                             )}
                         </tbody>
                     </table>

@@ -889,6 +889,10 @@ class PendaftaranController extends Controller
             $row++;
         }
 
+        if ($row > 2) {
+            $sheet->getStyle('G2:K' . ($row - 1))->getNumberFormat()->setFormatCode('"Rp"#,##0');
+        }
+
         foreach (range('A', 'K') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }

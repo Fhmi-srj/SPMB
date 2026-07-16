@@ -63,6 +63,19 @@ class PosKeuanganController extends Controller
 
             $totalTagihan = $totalBiayaSekolah + $totalBiayaPondok + $totalPerlengkapan;
 
+            // Rincian tagihan
+            $tagihan_registrasi = ($isPondok && $biayaRegistrasiPondok > 0) ? $biayaRegistrasiPondok : 0;
+            $tagihan_ma = 0;
+            $tagihan_smp = 0;
+            $lembaga = strtoupper($reg->lembaga);
+            if (in_array($lembaga, ['MA', 'MA ALHIKAM'])) {
+                $tagihan_ma = $biayaMATotal;
+            } elseif (in_array($lembaga, ['SMP', 'SMP NU BP'])) {
+                $tagihan_smp = $biayaSMPTotal;
+            }
+            $tagihan_pondok = $isPondok ? $biayaPondokExclReg : 0;
+            $tagihan_perlengkapan = $totalPerlengkapan;
+
             // Distribusi pos
             $sisa = $totalPembayaran;
             $pos = [
@@ -81,7 +94,6 @@ class PosKeuanganController extends Controller
             }
 
             // 2. Allocate to School (MA / SMP, including school registrasi)
-            $lembaga = strtoupper($reg->lembaga);
             if (in_array($lembaga, ['MA', 'MA ALHIKAM'])) {
                 $pos['pos_ma'] = min($sisa, $biayaMATotal);
                 $sisa -= $pos['pos_ma'];
@@ -106,12 +118,17 @@ class PosKeuanganController extends Controller
             $pos['pos_sisa'] = $sisa;
 
             $result[] = array_merge([
-                'id'               => $reg->id,
-                'nama'             => $reg->nama,
-                'lembaga'          => $reg->lembaga,
-                'status_mukim'     => $reg->status_mukim,
-                'total_pembayaran' => $totalPembayaran,
-                'total_tagihan'    => $totalTagihan,
+                'id'                   => $reg->id,
+                'nama'                 => $reg->nama,
+                'lembaga'              => $reg->lembaga,
+                'status_mukim'         => $reg->status_mukim,
+                'total_pembayaran'     => $totalPembayaran,
+                'total_tagihan'        => $totalTagihan,
+                'tagihan_registrasi'   => $tagihan_registrasi,
+                'tagihan_ma'           => $tagihan_ma,
+                'tagihan_smp'          => $tagihan_smp,
+                'tagihan_pondok'       => $tagihan_pondok,
+                'tagihan_perlengkapan' => $tagihan_perlengkapan,
             ], $pos);
         }
 
@@ -123,6 +140,12 @@ class PosKeuanganController extends Controller
         $totalPerlengkapan = array_sum(array_column($result, 'pos_perlengkapan'));
         $totalSisa         = array_sum(array_column($result, 'pos_sisa'));
 
+        $totalTagihanRegistrasi   = array_sum(array_column($result, 'tagihan_registrasi'));
+        $totalTagihanMA           = array_sum(array_column($result, 'tagihan_ma'));
+        $totalTagihanSMP          = array_sum(array_column($result, 'tagihan_smp'));
+        $totalTagihanPondok       = array_sum(array_column($result, 'tagihan_pondok'));
+        $totalTagihanPerlengkapan = array_sum(array_column($result, 'tagihan_perlengkapan'));
+
         $totals = [
             'total_registrasi'   => $totalRegistrasi,
             'total_ma'           => $totalMA,
@@ -130,6 +153,11 @@ class PosKeuanganController extends Controller
             'total_pondok'       => $totalPondok,
             'total_perlengkapan' => $totalPerlengkapan,
             'total_sisa'         => $totalSisa,
+            'total_tagihan_registrasi'   => $totalTagihanRegistrasi,
+            'total_tagihan_ma'           => $totalTagihanMA,
+            'total_tagihan_smp'          => $totalTagihanSMP,
+            'total_tagihan_pondok'       => $totalTagihanPondok,
+            'total_tagihan_perlengkapan' => $totalTagihanPerlengkapan,
         ];
 
         return response()->json([
