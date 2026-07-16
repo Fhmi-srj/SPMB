@@ -7,6 +7,7 @@ use App\Models\Pendaftaran;
 use App\Models\ActivityLog;
 use App\Models\TransaksiPemasukan;
 use App\Models\TransaksiPengeluaran;
+use App\Models\Biaya;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,22 +78,107 @@ class DashboardController extends Controller
         // Pos Keuangan summary
         $posKeuangan = [];
         try {
-            $pemasukan = TransaksiPemasukan::where('status', 'approved')
-                ->selectRaw('jenis_pembayaran as kategori, SUM(nominal) as total')
-                ->groupBy('jenis_pembayaran')
-                ->pluck('total', 'kategori');
+            $biayaRegistrasiRow = Biaya::where('nama_item', 'Registrasi')->first();
+            $biayaMATotal = Biaya::sum('biaya_ma');
+            $biayaSMPTotal = Biaya::sum('biaya_smp');
+            $biayaPondokExclReg = Biaya::where('nama_item', '!=', 'Registrasi')->sum('biaya_pondok');
+            $biayaRegistrasiPondok = $biayaRegistrasiRow ? $biayaRegistrasiRow->biaya_pondok : 50000;
+
+            $registrants = Pendaftaran::select('id', 'nama', 'lembaga', 'status_mukim')->get();
+
+            $totalRegistrasiPemasukan = 0;
+            $totalMAPemasukan = 0;
+            $totalSMPPemasukan = 0;
+            $totalPondokPemasukan = 0;
+            $totalPerlengkapanPemasukan = 0;
+            $totalSisaPemasukan = 0;
+
+            $payments = TransaksiPemasukan::where('status', 'approved')
+                ->selectRaw('pendaftaran_id, SUM(nominal) as total')
+                ->groupBy('pendaftaran_id')
+                ->pluck('total', 'pendaftaran_id');
+
+            $perlengkapanTotals = DB::table('perlengkapan_pesanan')
+                ->join('perlengkapan_items', 'perlengkapan_pesanan.perlengkapan_item_id', '=', 'perlengkapan_items.id')
+                ->where('perlengkapan_pesanan.status', 1)
+                ->groupBy('perlengkapan_pesanan.pendaftaran_id')
+                ->selectRaw('perlengkapan_pesanan.pendaftaran_id, SUM(perlengkapan_items.nominal) as total')
+                ->pluck('total', 'pendaftaran_id');
+
+            foreach ($registrants as $reg) {
+                $totalPembayaran = $payments[$reg->id] ?? 0;
+                if ($totalPembayaran <= 0) {
+                    continue;
+                }
+
+                $isPondok = $reg->status_mukim === 'PONDOK PP MAMBAUL HUDA';
+                $totalPerlengkapan = $perlengkapanTotals[$reg->id] ?? 0;
+
+                $sisa = $totalPembayaran;
+
+                // 1. Allocate to Registrasi
+                $allocatedRegistrasi = 0;
+                if ($isPondok && $biayaRegistrasiPondok > 0) {
+                    $allocatedRegistrasi = min($sisa, $biayaRegistrasiPondok);
+                    $sisa -= $allocatedRegistrasi;
+                }
+                $totalRegistrasiPemasukan += $allocatedRegistrasi;
+
+                // 2. Allocate to School (MA / SMP)
+                $allocatedSchool = 0;
+                $lembaga = strtoupper($reg->lembaga);
+                if (in_array($lembaga, ['MA', 'MA ALHIKAM'])) {
+                    $allocatedSchool = min($sisa, $biayaMATotal);
+                    $sisa -= $allocatedSchool;
+                    $totalMAPemasukan += $allocatedSchool;
+                } elseif (in_array($lembaga, ['SMP', 'SMP NU BP'])) {
+                    $allocatedSchool = min($sisa, $biayaSMPTotal);
+                    $sisa -= $allocatedSchool;
+                    $totalSMPPemasukan += $allocatedSchool;
+                }
+
+                // 3. Allocate to Pondok
+                $allocatedPondok = 0;
+                if ($sisa > 0 && $isPondok) {
+                    $allocatedPondok = min($sisa, $biayaPondokExclReg);
+                    $sisa -= $allocatedPondok;
+                }
+                $totalPondokPemasukan += $allocatedPondok;
+
+                // 4. Allocate to Perlengkapan
+                $allocatedPerlengkapan = 0;
+                if ($sisa > 0 && $totalPerlengkapan > 0) {
+                    $allocatedPerlengkapan = min($sisa, $totalPerlengkapan);
+                    $sisa -= $allocatedPerlengkapan;
+                }
+                $totalPerlengkapanPemasukan += $allocatedPerlengkapan;
+
+                // 5. Sisa
+                $totalSisaPemasukan += $sisa;
+            }
 
             $pengeluaran = TransaksiPengeluaran::where('status', 'approved')
                 ->selectRaw('kategori, SUM(nominal) as total')
                 ->groupBy('kategori')
                 ->pluck('total', 'kategori');
 
-            $allKategori = $pemasukan->keys()->merge($pengeluaran->keys())->unique();
-            foreach ($allKategori as $kat) {
-                $posKeuangan[$kat] = [
-                    'pemasukan'   => (float)($pemasukan[$kat] ?? 0),
-                    'pengeluaran' => (float)($pengeluaran[$kat] ?? 0),
-                ];
+            $categoriesMapping = [
+                'Registrasi'   => $totalRegistrasiPemasukan,
+                'MA'           => $totalMAPemasukan,
+                'SMP'          => $totalSMPPemasukan,
+                'Pondok'       => $totalPondokPemasukan,
+                'Perlengkapan' => $totalPerlengkapanPemasukan,
+                'Sisa'         => $totalSisaPemasukan,
+            ];
+
+            foreach ($categoriesMapping as $name => $pemasukanTotal) {
+                $pengeluaranTotal = (float)($pengeluaran[$name] ?? 0);
+                if ($pemasukanTotal > 0 || $pengeluaranTotal > 0 || in_array($name, ['MA', 'SMP', 'Pondok', 'Perlengkapan'])) {
+                    $posKeuangan[$name] = [
+                        'pemasukan'   => (float)$pemasukanTotal,
+                        'pengeluaran' => $pengeluaranTotal,
+                    ];
+                }
             }
         } catch (\Exception $e) {
             // Tables might not exist yet
